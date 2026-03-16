@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DevThinh Phim</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  /* Rophim-style navy dark theme */
+  --bg:#0d1117;--bg2:#161b22;--bg3:#1f2937;
+  --surface:#1e2733;--surface2:#253044;
+  --accent:#f97316;--accent2:#ea6a00; /* bright orange - Rophim style */
+  --blue:#3b82f6;--green:#22c55e;
+  --text:#f0f6fc;--text2:#b8c4d0;--muted:#6b7f96;
+  --border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.14);
+  --radius:8px;--radius-lg:12px;--font:'Inter',sans-serif;
+  --shadow:0 4px 24px rgba(0,0,0,.5);
+  --trans:all .22s ease;
+  --red:#e50914;--red2:#b20710;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);overflow-x:hidden;min-height:100vh}
+a{text-decoration:none;color:inherit}
+button,input,select{font-family:inherit;outline:none;border:none;background:none;color:inherit}
+img{display:block;max-width:100%;}
+selected{color:var(--text)}
+
+/* HEADER */
+#header{position:fixed;top:0;left:0;right:0;z-index:200;padding:0 4vw;height:60px;display:flex;align-items:center;justify-content:space-between;background:rgba(13,17,23,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);transition:var(--trans)}
+#header.scrolled{box-shadow:0 4px 20px rgba(0,0,0,.5)}
+.logo{font-size:1.5rem;font-weight:800;color:var(--accent);letter-spacing:-1px;cursor:pointer;white-space:nowrap}
+.logo span{color:var(--text)}
+.nav-links{display:flex;gap:6px;margin-left:24px}
+.nav-links a{font-size:.875rem;font-weight:500;color:var(--text2);padding:5px 12px;border-radius:6px;transition:var(--trans)}
+.nav-links a:hover,.nav-links a.active{color:#fff;background:var(--surface2)}
+.header-right{display:flex;align-items:center;gap:10px}
+.search-box{display:flex;align-items:center;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:6px 14px;transition:var(--trans);width:230px}
+.search-box:focus-within{border-color:var(--accent);width:270px;box-shadow:0 0 0 2px rgba(249,115,22,.15)}
+.search-box input{flex:1;font-size:.875rem;color:var(--text);background:none}
+.search-box input::placeholder{color:var(--muted)}
+.search-box button{color:var(--muted);cursor:pointer;font-size:1rem;transition:color .2s}
+.search-box button:hover{color:var(--accent)}
+.source-btn{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--surface);font-size:.85rem;cursor:pointer;white-space:nowrap;color:var(--text2)}
+.source-btn select{cursor:pointer;color:var(--accent);font-weight:700;font-size:.85rem;background:transparent}
+.source-btn option{background:var(--bg2);color:var(--text)}
+.hamburger{display:none;font-size:1.3rem;cursor:pointer;color:var(--text2)}
+
+/* Mobile Drawer */
+.mob-drawer{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.6);backdrop-filter:blur(6px)}
+.mob-drawer.open{display:block}
+.mob-drawer-inner{position:absolute;top:0;right:0;bottom:0;width:290px;background:var(--bg2);border-left:1px solid var(--border);padding:24px;display:flex;flex-direction:column;gap:16px;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1)}
+.mob-drawer.open .mob-drawer-inner{transform:none}
+.mob-drawer-inner a{font-size:1rem;font-weight:500;padding:12px 14px;border-radius:8px;border-bottom:none;color:var(--text2);display:flex;align-items:center;gap:10px;transition:background .2s}
+.mob-drawer-inner a:hover{background:var(--surface2);color:#fff}
+.close-drawer{align-self:flex-end;font-size:1.4rem;cursor:pointer;color:var(--muted);margin-bottom:8px}
+
+/* MAIN */
+#main{margin-top:60px}
+
+/* HERO */
+.hero{position:relative;height:72vh;min-height:400px;background-size:cover;background-position:center top;display:flex;align-items:flex-end}
+.hero::before{content:'';position:absolute;inset:0;background:linear-gradient(105deg,rgba(13,17,23,.97) 0%,rgba(13,17,23,.55) 55%,rgba(13,17,23,.2) 100%)}
+.hero::after{content:'';position:absolute;left:0;right:0;bottom:0;height:200px;background:linear-gradient(to top,var(--bg),transparent)}
+.hero-body{position:relative;z-index:2;padding:0 4vw 90px;max-width:540px}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:#fff;font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:4px;margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px}
+.hero-title{font-size:clamp(1.8rem,3.5vw,3.2rem);font-weight:800;line-height:1.1;margin-bottom:8px;text-shadow:0 2px 12px rgba(0,0,0,.6)}
+.hero-sub{font-size:.9rem;color:var(--text2);margin-bottom:22px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;line-height:1.6}
+.hero-btns{display:flex;gap:10px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:9px 22px;border-radius:var(--radius);font-weight:600;font-size:.9rem;cursor:pointer;transition:var(--trans);white-space:nowrap}
+.btn-orange{background:var(--accent);color:#fff;box-shadow:0 4px 16px rgba(249,115,22,.35)}.btn-orange:hover{background:var(--accent2);transform:translateY(-1px)}
+.btn-gray{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.18)}.btn-gray:hover{background:rgba(255,255,255,.2)}
+.btn-white{background:#fff;color:#000}.btn-white:hover{background:#eee}
+
+/* MOVIE ROWS */
+.rows-section{padding:0 0 50px}
+.row-block{margin-bottom:18px}
+.row-head{display:flex;align-items:center;justify-content:space-between;padding:0 4vw;margin-bottom:10px}
+.row-head h2{font-size:clamp(1rem,1.3vw,1.2rem);font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
+.row-head h2::before{content:'';display:inline-block;width:3px;height:1.1em;background:var(--accent);border-radius:2px}
+.row-head a{font-size:.8rem;color:var(--accent);white-space:nowrap;display:flex;align-items:center;gap:4px;opacity:0;transition:opacity .2s}
+.row-block:hover .row-head a{opacity:1}
+.movie-row{display:flex;gap:10px;overflow-x:auto;padding:4px 4vw 12px;scroll-snap-type:x mandatory;scrollbar-width:none}
+.movie-row::-webkit-scrollbar{display:none}
+/* Card - Rophim style: poster + title below */
+.card{flex:0 0 var(--card-w,14.5%);min-width:130px;scroll-snap-align:start;border-radius:var(--radius-lg);overflow:hidden;background:var(--surface);cursor:pointer;transition:transform .28s ease,box-shadow .28s ease;display:flex;flex-direction:column}
+.card:hover{transform:translateY(-6px);box-shadow:0 12px 32px rgba(0,0,0,.6);z-index:10}
+.card-thumb{position:relative;aspect-ratio:2/3;overflow:hidden;background:var(--bg3)}
+.card-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .3s,opacity .3s}
+.card-thumb img.loading{opacity:0}
+.card:hover .card-thumb img{transform:scale(1.05)}
+.card-badge{position:absolute;top:6px;left:6px;background:var(--accent);color:#fff;font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;z-index:2}
+.card-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.45);opacity:0;transition:opacity .25s}
+.card-play i{font-size:2.5rem;color:#fff;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))}
+.card:hover .card-play{opacity:1}
+/* Title always visible below card */
+.card-info{padding:8px 10px 10px;flex:1;background:var(--surface)}
+.card-title{font-size:.82rem;font-weight:600;color:var(--text);line-height:1.35;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}
+.card-meta{font-size:.72rem;color:var(--muted);margin-top:4px;display:flex;gap:6px;align-items:center}
+.card-meta .dot{color:var(--border2)}
+.card-ep{font-size:.7rem;font-weight:600;color:var(--accent)}
+
+/* DETAIL PAGE */
+.detail-page{padding:80px 4vw 40px;animation:fadeUp .4s ease}
+.detail-wrap{display:flex;gap:40px;align-items:flex-start}
+.detail-poster{width:260px;min-width:260px;border-radius:10px;box-shadow:var(--shadow);object-fit:cover;aspect-ratio:2/3}
+.detail-info{flex:1;min-width:0}
+.detail-info h1{font-size:clamp(1.6rem,3vw,2.8rem);font-weight:800;line-height:1.1;margin-bottom:8px}
+.detail-origin{color:var(--muted);font-size:1rem;margin-bottom:18px}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.tag{padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,.2);font-size:.8rem;color:var(--text2)}
+.tag.green{border-color:#46d369;color:#46d369}
+.detail-desc{font-size:.95rem;line-height:1.7;color:var(--text2);margin-bottom:20px;max-width:700px}
+.meta-row{font-size:.85rem;color:var(--muted);margin-bottom:8px}
+.meta-row span{color:var(--text2);font-weight:500}
+.play-btn-big{display:inline-flex;align-items:center;gap:10px;background:var(--red);color:#fff;padding:12px 30px;border-radius:var(--radius);font-size:1.1rem;font-weight:700;cursor:pointer;border:none;margin-top:8px;transition:background .2s}
+.play-btn-big:hover{background:var(--red2)}
+
+/* SEARCH PAGE */
+.search-page{padding:80px 4vw 40px;animation:fadeUp .4s ease}
+.search-page h2{font-size:1.2rem;color:var(--muted);margin-bottom:20px}
+.search-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+
+/* WATCH PAGE */
+.watch-page{position:fixed;inset:0;z-index:300;background:#000;display:flex;flex-direction:column}
+.watch-top{position:absolute;top:0;left:0;right:0;z-index:10;background:linear-gradient(to bottom,rgba(0,0,0,.8),transparent);padding:14px 20px;display:flex;align-items:center;gap:14px;transition:opacity .3s}
+.watch-page.idle .watch-top{opacity:0}
+.watch-back{font-size:1.4rem;cursor:pointer;transition:color .2s}.watch-back:hover{color:var(--red)}
+.watch-title{font-size:1rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.watch-srv{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.srv-btn{padding:4px 12px;border-radius:4px;background:rgba(255,255,255,.15);font-size:.8rem;cursor:pointer;border:none;color:#fff;white-space:nowrap}
+.srv-btn.active{background:#fff;color:#000;font-weight:700}
+.player-wrap{flex:1;position:relative;overflow:hidden}
+.player-wrap video,.player-wrap iframe{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;border:none}
+.controls{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,.85),transparent);padding:12px 16px 16px;display:flex;flex-direction:column;gap:10px;z-index:5;transition:opacity .3s}
+.watch-page.idle .controls{opacity:0;pointer-events:none}
+.watch-page.paused .controls,.watch-page.paused .watch-top{opacity:1!important}
+.progress-wrap{height:4px;background:rgba(255,255,255,.25);border-radius:2px;cursor:pointer;position:relative;transition:height .15s}
+.progress-wrap:hover{height:6px}
+.progress-fill{height:100%;background:var(--red);border-radius:2px;pointer-events:none;position:relative}
+.progress-fill::after{content:'';position:absolute;right:-6px;top:50%;transform:translateY(-50%);width:12px;height:12px;background:var(--red);border-radius:50%;opacity:0;transition:opacity .15s}
+.progress-wrap:hover .progress-fill::after{opacity:1}
+.ctrl-row{display:flex;align-items:center;justify-content:space-between}
+.ctrl-left,.ctrl-right{display:flex;align-items:center;gap:16px}
+.cb{background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer;padding:4px;transition:transform .15s,color .15s}
+.cb:hover{transform:scale(1.15);color:var(--red)}
+.time-txt{font-size:.8rem;color:var(--text2);white-space:nowrap}
+
+/* Quality menu */
+.qmenu-wrap{position:relative}
+.qmenu{position:absolute;bottom:calc(100% + 10px);right:0;background:rgba(18,18,18,.98);border:1px solid rgba(255,255,255,.1);border-radius:var(--radius);padding:6px 0;min-width:130px;display:none;flex-direction:column;box-shadow:0 -4px 24px rgba(0,0,0,.8);z-index:20}
+.qmenu.open{display:flex;animation:fadeUp .18s ease}
+.qbtn{padding:9px 18px;font-size:.85rem;color:var(--text2);cursor:pointer;border:none;background:none;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:12px;white-space:nowrap}
+.qbtn:hover{background:rgba(255,255,255,.08);color:#fff}
+.qbtn.active{color:#fff;font-weight:700}
+.qbtn.active::after{content:'✓';color:var(--red)}
+
+/* Episodes overlay */
+.ep-overlay{position:absolute;top:0;right:0;bottom:0;width:320px;background:rgba(18,18,18,.97);border-left:1px solid rgba(255,255,255,.08);padding:16px;display:flex;flex-direction:column;z-index:15;transform:translateX(100%);transition:transform .3s}
+.ep-overlay.open{transform:none}
+.ep-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.ep-top h3{font-size:1rem;font-weight:700}
+.ep-top button{background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer}
+.ep-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;overflow-y:auto;flex:1}
+.ep-grid::-webkit-scrollbar{width:4px}
+.ep-grid::-webkit-scrollbar-thumb{background:#444;border-radius:4px}
+.ep-num{padding:8px 4px;background:var(--bg3);border:none;color:#fff;border-radius:4px;cursor:pointer;font-size:.8rem;text-align:center;transition:background .2s}
+.ep-num:hover{background:#444}
+.ep-num.active{background:var(--red)}
+
+/* LOADER */
+.loader{display:flex;justify-content:center;align-items:center;padding:80px 20px}
+.spin{width:44px;height:44px;border:3px solid rgba(229,9,20,.2);border-top-color:var(--red);border-radius:50%;animation:spin 1s linear infinite}
+
+/* EMPTY */
+.empty{text-align:center;padding:80px 20px;color:var(--muted)}
+.empty i{font-size:3rem;margin-bottom:16px;opacity:.5}
+.empty p{font-size:1rem}
+
+/* ANIMATIONS */
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#333;border-radius:6px}
+::-webkit-scrollbar-thumb:hover{background:#555}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .nav-links,.search-box{display:none}
+  .hamburger{display:block}
+  :root{--card-w:30%}
+  .card{min-width:110px}
+  .detail-wrap{flex-direction:column;gap:24px}
+  .detail-poster{width:180px;min-width:0;margin:0 auto}
+  .ep-overlay{width:100%;border-left:none;border-top:1px solid rgba(255,255,255,.08)}
+  .ep-grid{grid-template-columns:repeat(6,1fr)}
+}
+@media(max-width:540px){
+  :root{--card-w:44%}
+  .hero-title{font-size:1.6rem}
+  .detail-info h1{font-size:1.5rem}
+  .ctrl-left,.ctrl-right{gap:10px}
+  .cb{font-size:1rem}
+  .time-txt{font-size:.72rem}
+  .search-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}
+  .watch-srv{display:none}
+}
+</style>
+</head>
+<body>
+
+<header id="header">
+  <div style="display:flex;align-items:center;flex:1;min-width:0">
+    <div class="logo" onclick="App.goHome()">DevThinh<span>Phim</span></div>
+    <nav class="nav-links">
+      <a href="#" id="nav-home" class="active" onclick="App.goHome();return false">Trang Chủ</a>
+      <a href="#" onclick="App.browseCategory('phim-bo');return false">Phim Bộ</a>
+      <a href="#" onclick="App.browseCategory('phim-le');return false">Phim Lẻ</a>
+      <a href="#" onclick="App.browseCategory('hoat-hinh');return false">Anime</a>
+    </nav>
+  </div>
+  <div class="header-right">
+    <form class="search-box" onsubmit="App.search(event)">
+      <input id="q" placeholder="Tìm phim..." autocomplete="off">
+      <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+    </form>
+    <div class="source-btn">
+      <i class="fa-solid fa-database" style="color:var(--red)"></i>
+      <select id="src" onchange="App.setSource(this.value)">
+        <option value="kkphim" selected>KKPhim</option>
+        <option value="ophim">OPhim</option>
+      </select>
+    </div>
+    <i class="fa-solid fa-bars hamburger" onclick="App.toggleDrawer(true)"></i>
+  </div>
+</header>
+
+<div class="mob-drawer" id="drawer" onclick="App.toggleDrawer(false)">
+  <div class="mob-drawer-inner" onclick="event.stopPropagation()">
+    <i class="fa-solid fa-xmark close-drawer" onclick="App.toggleDrawer(false)"></i>
+    <a href="#" onclick="App.goHome();App.toggleDrawer(false);return false">🏠 Trang Chủ</a>
+    <a href="#" onclick="App.browseCategory('phim-bo');App.toggleDrawer(false);return false">📺 Phim Bộ</a>
+    <a href="#" onclick="App.browseCategory('phim-le');App.toggleDrawer(false);return false">🎬 Phim Lẻ</a>
+    <a href="#" onclick="App.browseCategory('hoat-hinh');App.toggleDrawer(false);return false">🎌 Anime</a>
+    <div class="source-btn" style="border:none;padding:0">
+      Nguồn:&nbsp;
+      <select id="src2" onchange="App.setSource(this.value);App.toggleDrawer(false)">
+        <option value="ophim">OPhim</option>
+        <option value="motchill">Motchill</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<main id="main"></main>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
+<script>
+/* ---------- UTILS ---------- */
+const $ = id => document.getElementById(id);
+const qs = (sel, el=document) => el.querySelector(sel);
+const IMG_FALLBACK = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300"><rect fill="%23222"/><text x="50%25" y="50%25" fill="%23555" font-size="14" text-anchor="middle" dominant-baseline="middle">No Image</text></svg>';
+
+function safeImg(url, base='') {
+  if (!url) return IMG_FALLBACK;
+  if (url.startsWith('http')) return url;
+  if (url.startsWith('//')) return 'https:' + url;
+  return base.replace(/\/$/, '') + '/' + url.replace(/^\//, '');
+}
+
+function el(tag, attrs={}, ...children) {
+  const e = document.createElement(tag);
+  for (const [k,v] of Object.entries(attrs)) {
+    if (k === 'class') e.className = v;
+    else if (k.startsWith('on')) e[k] = v;
+    else e.setAttribute(k, v);
+  }
+  for (const c of children) {
+    if (c == null) continue;
+    e.append(typeof c === 'string' ? document.createTextNode(c) : c);
+  }
+  return e;
+}
+
+function lazyImg(src, cls='', fallback=IMG_FALLBACK) {
+  const img = document.createElement('img');
+  img.className = cls + ' loading';
+  img.src = src || fallback;
+  img.onerror = () => { img.src = fallback; };
+  img.onload = () => img.classList.remove('loading');
+  if (!src) img.src = fallback;
+  return img;
+}
+
+function loader() {
+  return el('div', {class:'loader'}, el('div', {class:'spin'}));
+}
+
+/* ---------- CONFIG ---------- */
+const CFG = {
+  ophim: {
+    name: 'OPhim',
+    list: 'https://ophim1.com/danh-sach/phim-moi-cap-nhat?page=',
+    detail: 'https://ophim1.com/phim/',
+    search: 'https://ophim1.com/v1/api/tim-kiem?keyword=',
+    cats: {
+      'phim-bo': 'https://ophim1.com/v1/api/danh-sach/phim-bo',
+      'phim-le': 'https://ophim1.com/v1/api/danh-sach/phim-le',
+      'hoat-hinh': 'https://ophim1.com/v1/api/danh-sach/hoat-hinh',
+    },
+    img: 'https://img.ophim1.com/uploads/movies/'
+  },
+  kkphim: {
+    name: 'KKPhim',
+    list: 'https://phimapi.com/danh-sach/phim-moi-cap-nhat?page=',
+    detail: 'https://phimapi.com/phim/',
+    search: 'https://phimapi.com/v1/api/tim-kiem?keyword=',
+    cats: {
+      'phim-bo': 'https://phimapi.com/v1/api/danh-sach/phim-bo',
+      'phim-le': 'https://phimapi.com/v1/api/danh-sach/phim-le',
+      'hoat-hinh': 'https://phimapi.com/v1/api/danh-sach/hoat-hinh',
+      'tv-shows': 'https://phimapi.com/v1/api/danh-sach/tv-shows',
+    },
+    img: 'https://phimapi.com/uploads/movies/'
+  }
+};
+
+/* ---------- APP STATE ---------- */
+const App = (() => {
+  let src = 'kkphim';
+  const cache = new Map();
+  let movieData = null; // current movie for watch
+
+  function cfg() { return CFG[src]; }
+
+  async function fetchJSON(url) {
+    if (cache.has(url)) return cache.get(url);
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const d = await r.json();
+    cache.set(url, d);
+    return d;
+  }
+
+  function normalizeItems(data, fallbackImg) {
+    const items = data.items || (data.data && data.data.items) || [];
+    const cdnImg = (data.data && data.data.APP_DOMAIN_CDN_IMAGE) || fallbackImg;
+    return items.map(m => ({
+      ...m,
+      _thumb: safeImg(m.thumb_url, cdnImg),
+      _poster: safeImg(m.poster_url || m.thumb_url, cdnImg),
+    }));
+  }
+
+  function scrollBehavior() {
+    const h = $('header');
+    window.addEventListener('scroll', () => {
+      h.classList.toggle('scrolled', window.scrollY > 10);
+    }, {passive: true});
+  }
+
+  function setMain(node) {
+    const m = $('main');
+    m.innerHTML = '';
+    m.appendChild(node);
+  }
+
+  function setSource(val) {
+    src = val;
+    $('src').value = val;
+    const s2 = $('src2');
+    if (s2) s2.value = val;
+    cache.clear();
+    goHome();
+  }
+
+  function toggleDrawer(open) {
+    $('drawer').classList.toggle('open', open);
+  }
+
+  /* ---------- HOME ---------- */
+  async function goHome() {
+    const wrap = el('div');
+    // Hero placeholder
+    const heroEl = el('div', {class:'hero', style:'background:#111'});
+    const heroBody = el('div', {class:'hero-body'});
+    heroEl.appendChild(heroBody);
+    wrap.appendChild(heroEl);
+
+    const rowsEl = el('div', {class:'rows-section'});
+    wrap.appendChild(rowsEl);
+    rowsEl.appendChild(loader());
+    setMain(wrap);
+
+    const c = cfg();
+    // Fetch base list + categories in parallel
+    const rowDefs = [
+      {key:'latest', title:'🔥 Mới Cập Nhật', url: c.list+'1'},
+      ...Object.entries(c.cats).map(([id, url]) => ({
+        key:id,
+        title: id === 'phim-bo' ? '📺 Phim Bộ Đề Cử' : id === 'phim-le' ? '🎬 Phim Lẻ Đặc Sắc' : id === 'hoat-hinh' ? '🎌 Anime / Hoạt Hình' : '📡 TV Shows',
+        url
+      }))
+    ];
+
+    const results = await Promise.allSettled(rowDefs.map(r => fetchJSON(r.url)));
+
+    rowsEl.innerHTML = '';
+    let heroSet = false;
+    for (let i = 0; i < rowDefs.length; i++) {
+      const res = results[i];
+      if (res.status !== 'fulfilled') continue;
+      const items = normalizeItems(res.value, c.img);
+      if (!items.length) continue;
+
+      if (!heroSet) {
+        renderHero(heroBody, items[0]);
+        heroSet = true;
+      }
+      rowsEl.appendChild(buildRow(rowDefs[i].title, items));
+    }
+    if (!heroSet) heroEl.remove();
+  }
+
+  function renderHero(bodyEl, m) {
+    const hero = bodyEl.closest('.hero');
+    if (hero) {
+      hero.style.backgroundImage = `url('${m._poster}')`;
+      hero.style.backgroundSize = 'cover';
+      hero.style.backgroundPosition = 'center top';
+    }
+    bodyEl.innerHTML = `
+      <div class="hero-badge"><i class="fa-solid fa-fire"></i> Nổi Bật</div>
+      <h1 class="hero-title">${m.name}</h1>
+      <p class="hero-sub">${m.origin_name || ''} &middot; ${m.year || ''}</p>
+      <div class="hero-btns">
+        <button class="btn btn-orange" onclick="App.goDetail('${m.slug}')"><i class="fa-solid fa-play"></i> Xem Ngay</button>
+        <button class="btn btn-gray" onclick="App.goDetail('${m.slug}')"><i class="fa-solid fa-circle-info"></i> Chi tiết</button>
+      </div>`;
+  }
+
+  function buildRow(title, items) {
+    const wrapper = el('div', {class:'row-block'});
+    const head = el('div', {class:'row-head'});
+    head.innerHTML = `<h2>${title}</h2><a href="#">Xem tất cả <i class="fa-solid fa-chevron-right" style="font-size:.7rem"></i></a>`;
+    wrapper.appendChild(head);
+
+    const row = el('div', {class:'movie-row'});
+    for (const m of items) {
+      row.appendChild(buildCard(m));
+    }
+    wrapper.appendChild(row);
+    return wrapper;
+  }
+
+  function buildCard(m, style='') {
+    const card = el('div', {class:'card', style, onclick: () => goDetail(m.slug)});
+    // Thumbnail container
+    const thumb = el('div', {class:'card-thumb'});
+    const img = lazyImg(m._thumb || m._poster, '');
+    thumb.appendChild(img);
+    // Quality badge
+    const badge = el('div', {class:'card-badge'});
+    badge.textContent = m.quality || m.episode_current || 'HD';
+    thumb.appendChild(badge);
+    // Play icon overlay
+    const play = el('div', {class:'card-play'});
+    play.innerHTML = '<i class="fa-solid fa-play"></i>';
+    thumb.appendChild(play);
+    card.appendChild(thumb);
+    // Info below thumbnail (always visible - Rophim style)
+    const info = el('div', {class:'card-info'});
+    const title = el('div', {class:'card-title'});
+    title.textContent = m.name;
+    const meta = el('div', {class:'card-meta'});
+    if (m.year) { const y = el('span'); y.textContent = m.year; meta.appendChild(y); }
+    if (m.episode_current) {
+      if (m.year) { const dot = el('span',{class:'dot'}); dot.textContent='·'; meta.appendChild(dot); }
+      const ep = el('span', {class:'card-ep'}); ep.textContent = m.episode_current; meta.appendChild(ep);
+    }
+    info.appendChild(title);
+    info.appendChild(meta);
+    card.appendChild(info);
+    return card;
+  }
+
+  /* ---------- DETAIL ---------- */
+  async function goDetail(slug) {
+    const wrap = el('div', {class:'detail-page'});
+    wrap.appendChild(loader());
+    setMain(wrap);
+    window.scrollTo(0,0);
+
+    try {
+      const data = await fetchJSON(cfg().detail + slug);
+      movieData = { movie: data.movie || data.item, episodes: data.episodes || [] };
+      const m = movieData.movie;
+      const c = cfg();
+      const poster = safeImg(m.poster_url || m.thumb_url, c.img);
+
+      const firstServer = movieData.episodes[0];
+      const firstEp = firstServer && firstServer.server_data && firstServer.server_data[0];
+
+      wrap.innerHTML = '';
+      // dynamic bg for detail page
+      document.body.style.backgroundImage = `linear-gradient(to bottom,rgba(13,17,23,.82),var(--bg)),url('${poster}')`;
+      document.body.style.backgroundSize = 'cover';
+      document.body.style.backgroundAttachment = 'fixed';
+
+      const layout = el('div', {class:'detail-wrap'});
+      const img = lazyImg(poster, 'detail-poster');
+      layout.appendChild(img);
+
+      const info = el('div', {class:'detail-info'});
+      info.innerHTML = `
+        <h1>${m.name}</h1>
+        <div class="detail-origin">${m.origin_name || ''}</div>
+        <div class="tags">
+          <span class="tag green">${m.episode_current || 'Full'}</span>
+          <span class="tag">${m.year || ''}</span>
+          <span class="tag">${m.quality || 'FHD'}</span>
+          ${(m.category||[]).map(g=>`<span class="tag">${g.name||g}</span>`).join('')}
+        </div>
+        <p class="detail-desc">${m.content ? m.content.replace(/<[^>]+>/g,'') : 'Không có mô tả.'}</p>
+        <div class="meta-row">Diễn viên: <span>${(m.actor||[]).slice(0,5).join(', ') || 'N/A'}</span></div>
+        <div class="meta-row">Đạo diễn: <span>${(m.director||[]).join(', ') || 'N/A'}</span></div>`;
+
+      if (firstEp) {
+        const pb = el('button', {class:'play-btn-big', onclick: () => goWatch(slug, firstEp.slug, firstServer.server_name)});
+        pb.innerHTML = '<i class="fa-solid fa-play"></i> PHÁT TẬP 1';
+        info.appendChild(pb);
+      }
+      layout.appendChild(info);
+      wrap.appendChild(layout);
+    } catch(e) {
+      wrap.innerHTML = `<div class="empty"><i class="fa-solid fa-triangle-exclamation"></i><p>Không thể tải phim. Vui lòng thử lại!</p></div>`;
+    }
+  }
+
+  /* ---------- SEARCH ---------- */
+  async function search(e) {
+    e.preventDefault();
+    const kw = $('q').value.trim();
+    if (!kw) return;
+    const wrap = el('div', {class:'search-page'});
+    wrap.innerHTML = `<h2>Kết quả cho: <strong style="color:#fff">${kw}</strong></h2>`;
+    const grid = el('div', {class:'search-grid'});
+    wrap.appendChild(grid);
+    grid.appendChild(loader());
+    setMain(wrap);
+    window.scrollTo(0,0);
+
+    try {
+      const c = cfg();
+      const data = await fetchJSON(c.search + encodeURIComponent(kw));
+      const items = normalizeItems(data, c.img);
+      grid.innerHTML = '';
+      if (!items.length) {
+        grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><i class="fa-solid fa-magnifying-glass"></i><p>Không tìm thấy kết quả.</p></div>';
+      } else {
+        items.forEach(m => grid.appendChild(buildCard(m, 'aspect-ratio:2/3;max-width:100%')));
+      }
+    } catch(e) {
+      grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><p>Có lỗi xảy ra. Thử lại!</p></div>';
+    }
+  }
+
+  /* ---------- BROWSE CATEGORY ---------- */
+  const catTitles = {
+    'phim-bo': {label:'Phim Bộ', icon:'📺'},
+    'phim-le': {label:'Phim Lẻ', icon:'🎬'},
+    'hoat-hinh': {label:'Anime / Hoạt Hình', icon:'🎌'},
+    'tv-shows': {label:'TV Shows', icon:'📡'},
+  };
+
+  async function browseCategory(id) {
+    const c = cfg();
+    const baseUrl = c.cats[id];
+    if (!baseUrl) return;
+    const info = catTitles[id] || {label: id, icon:'🎞️'};
+
+    // --- Build page skeleton ---
+    const wrap = el('div', {class:'search-page'});
+    const head = el('div', {style:'display:flex;align-items:center;gap:12px;margin-bottom:24px'});
+    const backBtn = el('button', {
+      style:'background:var(--surface);border:none;color:var(--text2);padding:8px 14px;border-radius:var(--radius);cursor:pointer;font-size:.9rem;display:flex;align-items:center;gap:6px',
+      onclick: () => goHome()
+    });
+    backBtn.innerHTML = '<i class="fa-solid fa-chevron-left"></i> Trang chủ';
+    const hTitle = el('h2', {style:'font-size:1.5rem;font-weight:800;color:var(--text)'});
+    hTitle.textContent = `${info.icon} ${info.label}`;
+    const countBadge = el('span', {style:'margin-left:auto;font-size:.85rem;color:var(--muted)'});
+    head.appendChild(backBtn);
+    head.appendChild(hTitle);
+    head.appendChild(countBadge);
+    wrap.appendChild(head);
+
+    const grid = el('div', {class:'search-grid'});
+    wrap.appendChild(grid);
+    const loadWrap = el('div', {style:'display:flex;justify-content:center;margin-top:30px;padding-bottom:40px'});
+    wrap.appendChild(loadWrap);
+
+    setMain(wrap);
+    window.scrollTo(0, 0);
+
+    let page = 1;
+    let totalPages = 1;
+    let totalItems = 0;
+    let loadedCount = 0;
+    let loading = false;
+
+    function buildLoadMoreBtn() {
+      loadWrap.innerHTML = '';
+      if (page > totalPages) {
+        const done = el('p', {style:'color:var(--muted);font-size:.9rem'});
+        done.textContent = `Đã hiển thị tất cả ${loadedCount} phim`;
+        loadWrap.appendChild(done);
+        return;
+      }
+      const btn = el('button', {
+        style:'background:var(--accent);color:#fff;border:none;padding:11px 32px;border-radius:var(--radius);font-size:.95rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:10px;transition:background .2s',
+        onclick: () => loadPage()
+      });
+      btn.innerHTML = '<i class="fa-solid fa-angles-down"></i> Tải thêm phim';
+      btn.onmouseover = () => btn.style.background = 'var(--accent2)';
+      btn.onmouseout = () => btn.style.background = 'var(--accent)';
+      loadWrap.appendChild(btn);
+    }
+
+    async function loadPage() {
+      if (loading) return;
+      loading = true;
+      loadWrap.innerHTML = '';
+      loadWrap.appendChild(loader());
+
+      try {
+        const url = `${baseUrl}?page=${page}&sort_field=modified.time&sort_type=desc`;
+        const data = await fetchJSON(url);
+        const items = normalizeItems(data, c.img);
+
+        // Extract pagination info from API response
+        if (page === 1) {
+          const pag = (data.data && data.data.params && data.data.params.pagination)
+                   || (data.pagination)
+                   || {};
+          totalItems = pag.totalItems || pag.total_items || items.length;
+          totalPages = pag.totalItemsPerPage
+            ? Math.ceil(totalItems / pag.totalItemsPerPage)
+            : (pag.totalPages || pag.total || 1);
+          countBadge.textContent = `${totalItems.toLocaleString()} phim`;
+          grid.innerHTML = '';
+        }
+
+        items.forEach(m => grid.appendChild(buildCard(m)));
+        loadedCount += items.length;
+        page++;
+      } catch(err) {
+        console.error(err);
+        loadWrap.innerHTML = '<p style="color:var(--muted)">Có lỗi xảy ra, vui lòng thử lại.</p>';
+      }
+
+      loading = false;
+      buildLoadMoreBtn();
+    }
+
+    // First load
+    grid.appendChild(loader());
+    await loadPage();
+  }
+
+  /* ---------- WATCH ---------- */
+  function goWatch(movieSlug, epSlug, srvName) {
+    document.body.style.backgroundImage = 'none';
+    if (!movieData) return;
+    const { movie: m, episodes } = movieData;
+
+    const activeServer = episodes.find(s => s.server_name === srvName) || episodes[0];
+    const activeEp = activeServer && activeServer.server_data.find(e => e.slug === epSlug);
+    const playUrl = activeEp ? (activeEp.link_m3u8 || activeEp.link_embed) : null;
+    const playType = activeEp && activeEp.link_m3u8 ? 'm3u8' : 'iframe';
+
+    const page = el('div', {class:'watch-page paused'});
+
+    // top bar
+    const top = el('div', {class:'watch-top'});
+    top.innerHTML = `<i class="fa-solid fa-arrow-left watch-back" onclick="App.goDetail('${movieSlug}')"></i><div class="watch-title">${m.name}</div>`;
+    const srvDiv = el('div', {class:'watch-srv'});
+    episodes.forEach(s => {
+      const b = el('button', {class:`srv-btn${s.server_name===srvName?' active':''}`, onclick:()=> goWatch(movieSlug, s.server_data[0]?.slug||epSlug, s.server_name)});
+      b.textContent = s.server_name;
+      srvDiv.appendChild(b);
+    });
+    top.appendChild(srvDiv);
+    page.appendChild(top);
+
+    // player area
+    const pw = el('div', {class:'player-wrap'});
+    const vid = el('video', {id:'vid', playsinline:'', preload:'auto'});
+    const iframeWrap = el('div', {id:'ifr', style:'display:none;position:absolute;inset:0'});
+    pw.appendChild(vid);
+    pw.appendChild(iframeWrap);
+
+    // controls
+    const ctrlEl = el('div', {class:'controls'});
+    ctrlEl.innerHTML = `
+      <div class="progress-wrap" id="progwrap"><div class="progress-fill" id="progfill"></div></div>
+      <div class="ctrl-row">
+        <div class="ctrl-left">
+          <button class="cb" id="playbtn"><i class="fa-solid fa-play"></i></button>
+          <button class="cb" id="mutebtn"><i class="fa-solid fa-volume-high"></i></button>
+          <span class="time-txt" id="timetxt">00:00 / 00:00</span>
+        </div>
+        <div class="ctrl-right">
+          <button class="cb" id="epbtn" title="Danh sách tập"><i class="fa-solid fa-list"></i></button>
+          <div class="qmenu-wrap">
+            <button class="cb" id="qbtn" title="Chất lượng"><i class="fa-solid fa-gear"></i></button>
+            <div class="qmenu" id="qmenu"></div>
+          </div>
+          <button class="cb" id="fsbtn" title="Toàn màn hình"><i class="fa-solid fa-expand"></i></button>
+        </div>
+      </div>`;
+    pw.appendChild(ctrlEl);
+
+    // episode overlay
+    const epOv = el('div', {class:'ep-overlay', id:'epov'});
+    const epTop = el('div', {class:'ep-top'});
+    epTop.innerHTML = '<h3>Danh sách tập</h3>';
+    const epClose = el('button', {onclick:()=>epOv.classList.remove('open')});
+    epClose.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+    epTop.appendChild(epClose);
+    epOv.appendChild(epTop);
+    const epGrid = el('div', {class:'ep-grid'});
+    (activeServer?.server_data || []).forEach(ep => {
+      const b = el('button', {class:`ep-num${ep.slug===epSlug?' active':''}`, onclick:()=>goWatch(movieSlug, ep.slug, srvName)});
+      b.textContent = ep.name;
+      epGrid.appendChild(b);
+    });
+    epOv.appendChild(epGrid);
+    pw.appendChild(epOv);
+    page.appendChild(pw);
+    setMain(page);
+
+    // ---- PLAYER LOGIC ----
+    let hls = null;
+    let qOpen = false;
+    let idleTimer = null;
+
+    function fmtTime(s) {
+      if (!s || isNaN(s)) return '00:00';
+      const m = Math.floor(s/60), sec = Math.floor(s%60);
+      return `${m<10?'0':''}${m}:${sec<10?'0':''}${sec}`;
+    }
+
+    function resetIdle() {
+      page.classList.remove('idle');
+      clearTimeout(idleTimer);
+      if (!vid.paused) idleTimer = setTimeout(()=>{ if(!qOpen && !epOv.classList.contains('open')) page.classList.add('idle'); }, 3500);
+    }
+
+    pw.addEventListener('mousemove', resetIdle, {passive:true});
+    pw.addEventListener('touchstart', resetIdle, {passive:true});
+
+    vid.addEventListener('play', () => { page.classList.add('playing'); page.classList.remove('paused'); qs('#playbtn i', pw).className = 'fa-solid fa-pause'; resetIdle(); });
+    vid.addEventListener('pause', () => { page.classList.remove('playing'); page.classList.add('paused'); qs('#playbtn i', pw).className = 'fa-solid fa-play'; clearTimeout(idleTimer); });
+    vid.addEventListener('timeupdate', () => {
+      const pct = vid.duration ? (vid.currentTime / vid.duration)*100 : 0;
+      qs('#progfill', pw).style.width = pct + '%';
+      qs('#timetxt', pw).textContent = `${fmtTime(vid.currentTime)} / ${fmtTime(vid.duration)}`;
+    });
+
+    qs('#progwrap', pw).addEventListener('click', e => {
+      const r = e.currentTarget.getBoundingClientRect();
+      vid.currentTime = ((e.clientX-r.left)/r.width) * vid.duration;
+    });
+
+    qs('#playbtn', pw).onclick = () => vid.paused ? vid.play() : vid.pause();
+    vid.onclick = () => vid.paused ? vid.play() : vid.pause();
+
+    qs('#mutebtn', pw).onclick = () => {
+      vid.muted = !vid.muted;
+      qs('#mutebtn i', pw).className = vid.muted ? 'fa-solid fa-volume-xmark' : 'fa-solid fa-volume-high';
+    };
+    qs('#fsbtn', pw).onclick = () => {
+      if (!document.fullscreenElement) pw.requestFullscreen?.();
+      else document.exitFullscreen?.();
+    };
+    qs('#epbtn', pw).onclick = () => epOv.classList.toggle('open');
+
+    // Quality menu
+    const qbtn = qs('#qbtn', pw), qmenu = qs('#qmenu', pw);
+    qbtn.onclick = e => { e.stopPropagation(); qOpen = !qOpen; qmenu.classList.toggle('open', qOpen); };
+    document.addEventListener('click', e => { if (qOpen && !e.target.closest('.qmenu-wrap')) { qOpen = false; qmenu.classList.remove('open'); } });
+
+    function buildQMenu(levels, autoSelectLevel) {
+      qmenu.innerHTML = '';
+      if (!levels || levels.length <= 1) {
+        qmenu.innerHTML = '<div style="padding:10px 18px;color:var(--muted);font-size:.8rem">Chất lượng gốc</div>';
+        return;
+      }
+      const sorted = levels.map((l,i)=>({...l,i})).sort((a,b)=>(b.height||b.bitrate)-(a.height||a.bitrate));
+      // Auto button (not active by default since we force highest)
+      const auto = el('button', {class:'qbtn', 'data-lvl':'-1', onclick: e=>selectQ(e,-1,auto)});
+      auto.textContent = 'Tự động'; qmenu.appendChild(auto);
+      sorted.forEach(lv => {
+        const label = lv.height ? `${lv.height}p${lv.height>=1080?' ✦':''}` : `${(lv.bitrate/1e6).toFixed(1)} Mbps`;
+        const b = el('button', {class:'qbtn', 'data-lvl':lv.i, onclick: e=>selectQ(e,lv.i,b)});
+        b.textContent = label;
+        // Mark the currently active level as selected
+        if (lv.i === autoSelectLevel) b.classList.add('active');
+        qmenu.appendChild(b);
+      });
+    }
+
+    function selectQ(e, level, btn) {
+      e.stopPropagation();
+      if (hls) {
+        hls.currentLevel = level;
+        // When user manually picks a quality, lock it (don't auto-downgrade)
+        hls.loadLevel = level;
+      }
+      qmenu.querySelectorAll('.qbtn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      qOpen = false; qmenu.classList.remove('open');
+    }
+
+    // Load source
+    if (playType === 'm3u8' && playUrl) {
+      vid.style.display = 'block'; iframeWrap.style.display = 'none';
+      if (Hls.isSupported()) {
+        hls = new Hls({
+          maxMaxBufferLength: 60,
+          startLevel: -1,          // let HLS pick start, then we override
+          abrEwmaFastLive: 0.5,
+          abrEwmaSlowLive: 2,
+        });
+        hls.loadSource(playUrl);
+        hls.attachMedia(vid);
+        hls.on(Hls.Events.MANIFEST_PARSED, (_, d) => {
+          // Sort levels by height desc, pick the highest (1080p or best available)
+          const sorted = d.levels.map((l,i)=>({...l,i})).sort((a,b)=>(b.height||b.bitrate)-(a.height||a.bitrate));
+          const bestIdx = sorted[0]?.i ?? 0;
+          hls.currentLevel = bestIdx;  // force highest quality
+          hls.loadLevel = bestIdx;     // lock it (no auto-downgrade)
+          buildQMenu(d.levels, bestIdx);
+          vid.play().catch(()=>{});
+        });
+        hls.on(Hls.Events.ERROR, (_, d) => { if (d.fatal) console.warn('HLS Error', d); });
+      } else if (vid.canPlayType('application/vnd.apple.mpegurl')) {
+        vid.src = playUrl;
+        vid.play().catch(()=>{});
+      }
+    } else if (playType === 'iframe' && playUrl) {
+      vid.style.display = 'none'; iframeWrap.style.display = 'block';
+      iframeWrap.innerHTML = `<iframe src="${playUrl}" allowfullscreen allow="autoplay" style="position:absolute;inset:0;width:100%;height:100%;border:none"></iframe>`;
+      ctrlEl.style.display = 'none';
+    } else {
+      pw.innerHTML += '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:1rem">Không tìm thấy nguồn phim</div>';
+    }
+
+    // cleanup on navigate away (simple approach)
+    const origSetMain = setMain;
+    const obs = new MutationObserver(() => { if (!document.contains(page)) { hls?.destroy(); obs.disconnect(); } });
+    obs.observe(document.body, {childList:true});
+  }
+
+  // Init
+  function init() {
+    scrollBehavior();
+    goHome();
+  }
+
+  return { goHome, goDetail, goWatch, search, browseCategory, setSource, toggleDrawer, init };
+})();
+
+window.addEventListener('DOMContentLoaded', App.init);
+</script>
+</body>
+</html>
