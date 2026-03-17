@@ -905,8 +905,16 @@ const App = (() => {
       qs('#mutebtn i', pw).className = vid.muted ? 'fa-solid fa-volume-xmark' : 'fa-solid fa-volume-high';
     };
     qs('#fsbtn', pw).onclick = () => {
-      if (!document.fullscreenElement) pw.requestFullscreen?.();
-      else document.exitFullscreen?.();
+      // iOS Safari: only supports fullscreen on <video> directly
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        (document.exitFullscreen || document.webkitExitFullscreen || (() => {})).call(document);
+      } else if (isIOS && vid.webkitEnterFullscreen) {
+        vid.webkitEnterFullscreen();
+      } else {
+        const el = pw.requestFullscreen ? pw : vid;
+        (el.requestFullscreen || el.webkitRequestFullscreen || (() => {})).call(el);
+      }
     };
 
     // Quality menu
