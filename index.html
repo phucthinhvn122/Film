@@ -3,11 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#050510">
+<meta name="description" content="DevThinhPhim - Xem phim HD miễn phí, cập nhật nhanh nhất">
 <title>DevThinh Phim</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;will-change:auto}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
   /* Liquidglass neon style */
   --bg:#050510;--bg2:rgba(255,255,255,0.03);--bg3:rgba(255,255,255,0.08);
@@ -27,18 +33,20 @@ body{
   background-color: var(--bg);
   background-image: 
     radial-gradient(circle at 15% 50%, rgba(20, 60, 200, 0.25), transparent 50%),
-    radial-gradient(circle at 85% 30%, rgba(100, 20, 150, 0.25), transparent 50%),
-    radial-gradient(circle at 50% 100%, rgba(0, 200, 255, 0.15), transparent 50%);
+    radial-gradient(circle at 85% 30%, rgba(100, 20, 150, 0.25), transparent 50%);
+  /* Avoid fixed on mobile (performance hit): only use fixed on desktop */
   background-attachment: fixed;
   color:var(--text);overflow-x:hidden;min-height:100vh;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
 }
+@media(max-width:768px){ body{background-attachment:scroll} }
 a{text-decoration:none;color:inherit}
 button,input,select{font-family:inherit;outline:none;border:none;background:none;color:inherit}
 img{display:block;max-width:100%;}
-selected{color:var(--text)}
 
 /* HEADER */
-#header{position:fixed;top:0;left:0;right:0;z-index:600;padding:0 4vw;height:64px;display:flex;align-items:center;justify-content:space-between;background:rgba(20, 25, 40, 0.45);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border-bottom:1px solid rgba(255,255,255,0.08);transition:var(--trans);will-change:transform}
+#header{position:fixed;top:0;left:0;right:0;z-index:600;padding:0 4vw;height:64px;display:flex;align-items:center;justify-content:space-between;background:rgba(20, 25, 40, 0.45);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border-bottom:1px solid rgba(255,255,255,0.08);transition:background .3s,box-shadow .3s;will-change:transform}
 #header.scrolled{box-shadow:0 8px 32px rgba(0,0,0,.5);background:rgba(20, 25, 40, 0.7)}
 .logo{font-size:1.5rem;font-weight:800;color:var(--accent);letter-spacing:-1px;cursor:pointer;white-space:nowrap}
 .logo span{color:var(--text)}
@@ -119,7 +127,7 @@ selected{color:var(--text)}
 
 /* MOVIE ROWS */
 .rows-section{padding:0 0 50px}
-.row-block{margin-bottom:18px}
+.row-block{margin-bottom:18px;content-visibility:auto;contain-intrinsic-size:0 400px}
 .row-head{display:flex;align-items:center;justify-content:space-between;padding:0 4vw;margin-bottom:10px}
 .row-head h2{font-size:clamp(1rem,1.3vw,1.2rem);font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
 .row-head h2::before{content:'';display:inline-block;width:3px;height:1.1em;background:var(--accent);border-radius:2px}
@@ -128,7 +136,7 @@ selected{color:var(--text)}
 .movie-row{display:flex;gap:10px;overflow-x:auto;padding:4px 4vw 12px;scroll-snap-type:x mandatory;scrollbar-width:none}
 .movie-row::-webkit-scrollbar{display:none}
 /* Card - iOS 26 style */
-.card{flex:0 0 var(--card-w,14.5%);min-width:130px;scroll-snap-align:start;border-radius:var(--radius-lg);overflow:hidden;background:rgba(255,255,255,0.02);cursor:pointer;transition:var(--trans);display:flex;flex-direction:column;border:1px solid rgba(255,255,255,0.08);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);will-change:transform}
+.card{flex:0 0 var(--card-w,14.5%);min-width:130px;scroll-snap-align:start;border-radius:var(--radius-lg);overflow:hidden;background:rgba(255,255,255,0.02);cursor:pointer;transition:transform .25s cubic-bezier(0.175,0.885,0.32,1.1),box-shadow .25s;display:flex;flex-direction:column;border:1px solid rgba(255,255,255,0.08);will-change:transform;contain:layout style}
 .card:hover{transform:scale(1.04) translateY(-4px);box-shadow:0 20px 40px rgba(0,0,0,0.4), inset 0 0 1px 1px rgba(255,255,255,0.25);z-index:10;border-color:rgba(255,255,255,0.15)}
 .card:active{transform:scale(0.96)}
 .card-thumb{position:relative;aspect-ratio:2/3;overflow:hidden;background:var(--bg3);border-radius:var(--radius-lg) var(--radius-lg) 0 0}
@@ -178,7 +186,7 @@ selected{color:var(--text)}
 .srv-btn{padding:4px 12px;border-radius:4px;background:rgba(255,255,255,.15);font-size:.8rem;cursor:pointer;border:none;color:#fff;white-space:nowrap}
 .srv-btn.active{background:#fff;color:#000;font-weight:700}
 .player-wrap{position:relative;width:100%;aspect-ratio:16/9;max-height:85vh;background:#000;overflow:hidden;flex-shrink:0}
-.player-wrap video,.player-wrap iframe{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;border:none;background:#000;z-index:2;display:block!important;opacity:1!important;visibility:visible!important;transform:translateZ(0);will-change:transform, opacity}
+.player-wrap video,.player-wrap iframe{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;border:none;background:#000;z-index:2;display:block!important;opacity:1!important;visibility:visible!important;transform:translateZ(0);will-change:transform}
 .controls{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,.85),transparent);padding:12px 16px 16px;display:flex;flex-direction:column;gap:10px;z-index:20;transition:opacity .3s}
 .watch-page.idle .controls{opacity:0;pointer-events:none}
 .watch-page.paused .controls,.watch-page.paused .watch-top{opacity:1!important}
@@ -313,7 +321,7 @@ selected{color:var(--text)}
 
 <main id="main"></main>
 
-<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.8/dist/hls.min.js" defer></script>
 <script>
 /* ---------- UTILS ---------- */
 const $ = id => document.getElementById(id);
@@ -343,11 +351,13 @@ function el(tag, attrs={}, ...children) {
 
 function lazyImg(src, cls='', fallback=IMG_FALLBACK) {
   const img = document.createElement('img');
-  img.className = cls + ' loading';
+  if(cls) img.className = cls + ' loading';
+  else img.className = 'loading';
+  img.loading = 'lazy';      // native browser lazy load
+  img.decoding = 'async';    // async decode = no jank
   img.src = src || fallback;
-  img.onerror = () => { img.src = fallback; };
+  img.onerror = () => { if(img.src !== fallback) img.src = fallback; };
   img.onload = () => img.classList.remove('loading');
-  if (!src) img.src = fallback;
   return img;
 }
 
@@ -413,8 +423,14 @@ const App = (() => {
 
   function scrollBehavior() {
     const h = $('header');
+    // Throttle with rAF – never fires more than 60fps
+    let rafId = null;
     window.addEventListener('scroll', () => {
-      h.classList.toggle('scrolled', window.scrollY > 10);
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        h.classList.toggle('scrolled', window.scrollY > 10);
+        rafId = null;
+      });
     }, {passive: true});
   }
 
@@ -755,19 +771,13 @@ const App = (() => {
 
   /* ---------- WATCH ---------- */
   function goWatch(movieSlug, epSlug, srvName) {
-    console.log('[goWatch] Starting load:', movieSlug, epSlug, srvName);
     try {
       document.body.style.backgroundImage = 'none';
-      if (!movieData) {
-        console.warn('[goWatch] missing movieData!');
-        return;
-      }
+      if (!movieData) return;
       const { movie: m, episodes } = movieData;
 
       const activeServer = episodes.find(s => s.server_name === srvName) || episodes[0];
       const activeEp = activeServer && activeServer.server_data.find(e => e.slug === epSlug);
-      
-      console.log('[goWatch] Found server:', activeServer?.server_name, 'Episode:', activeEp?.name);
 
       const playUrl = activeEp ? (activeEp.link_m3u8 || activeEp.link_embed) : null;
       const playType = activeEp && activeEp.link_m3u8 ? 'm3u8' : 'iframe';
@@ -962,14 +972,23 @@ const App = (() => {
         vid.style.display = 'block'; vid.style.opacity = '1'; iframeWrap.style.display = 'none';
         if (typeof Hls !== 'undefined' && Hls.isSupported()) {
           hls = new Hls({
-            maxMaxBufferLength: 60,  // reduced to save memory
-            maxBufferLength: 30,     // reduced to save memory
-            maxBufferSize: 60 * 1000 * 1000,
+            // Smaller buffer = faster start, less RAM
+            maxBufferLength: 20,
+            maxMaxBufferLength: 40,
+            maxBufferSize: 30 * 1000 * 1000,
+            maxBufferHole: 0.5,
+            // ABR: react quickly to bandwidth changes
             startLevel: -1,
-            capLevelToPlayerSize: true, // IMPORTANT: stop 1080p loading on mobile
-            abrEwmaFastLive: 0.5,
-            abrEwmaSlowLive: 2,
-            enableWorker: true
+            abrEwmaFastLive: 3,
+            abrEwmaSlowLive: 9,
+            abrBandWidthFactor: 0.95,
+            abrBandWidthUpFactor: 0.7,
+            // Playback
+            capLevelToPlayerSize: true,
+            startFragPrefetch: true,    // pre-fetch first segment
+            autoStartLoad: true,
+            enableWorker: true,
+            progressive: true
           });
           hls.loadSource(playUrl);
           hls.attachMedia(vid);
@@ -981,12 +1000,9 @@ const App = (() => {
           });
           hls.on(Hls.Events.ERROR, (_, d) => { 
             if (d.fatal) {
-              console.warn('HLS Error', d); 
               if (d.type === Hls.ErrorTypes.NETWORK_ERROR) {
-                console.log("fatal network error encountered, try to recover");
                 hls.startLoad();
               } else if (d.type === Hls.ErrorTypes.MEDIA_ERROR) {
-                console.log("fatal media error encountered, try to recover");
                 hls.recoverMediaError();
               } else {
                 hls.destroy();
