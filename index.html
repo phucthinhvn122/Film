@@ -2,34 +2,44 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>DevThinh Phim</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
-*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;will-change:auto}
 :root{
-  /* Rophim-style navy dark theme */
-  --bg:#0d1117;--bg2:#161b22;--bg3:#1f2937;
-  --surface:#1e2733;--surface2:#253044;
-  --accent:#f97316;--accent2:#ea6a00; /* bright orange - Rophim style */
-  --blue:#3b82f6;--green:#22c55e;
-  --text:#f0f6fc;--text2:#b8c4d0;--muted:#6b7f96;
-  --border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.14);
-  --radius:8px;--radius-lg:12px;--font:'Inter',sans-serif;
-  --shadow:0 4px 24px rgba(0,0,0,.5);
-  --trans:all .22s ease;
-  --red:#e50914;--red2:#b20710;
+  /* Liquidglass neon style */
+  --bg:#050510;--bg2:rgba(255,255,255,0.03);--bg3:rgba(255,255,255,0.08);
+  --surface:rgba(20, 25, 40, 0.45);--surface2:rgba(40, 50, 80, 0.55);
+  --accent:#00f0ff;--accent2:#00c3ff;
+  --blue:#3b82f6;--green:#00ffa3;
+  --text:#ffffff;--text2:#c8d4e6;--muted:#8b9eb6;
+  --border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.18);
+  --radius:16px;--radius-lg:24px;--font:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  --shadow:0 12px 40px rgba(0,0,0,0.6);
+  --glass-shadow: inset 0 0 1px 1px rgba(255, 255, 255, 0.15), 0 8px 32px rgba(0, 0, 0, 0.6);
+  --trans:all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1); /* iOS 26 Spring */
+  --red:#ff0055;--red2:#d60047;
 }
-body{font-family:var(--font);background:var(--bg);color:var(--text);overflow-x:hidden;min-height:100vh}
+body{
+  font-family:var(--font);
+  background-color: var(--bg);
+  background-image: 
+    radial-gradient(circle at 15% 50%, rgba(20, 60, 200, 0.25), transparent 50%),
+    radial-gradient(circle at 85% 30%, rgba(100, 20, 150, 0.25), transparent 50%),
+    radial-gradient(circle at 50% 100%, rgba(0, 200, 255, 0.15), transparent 50%);
+  background-attachment: fixed;
+  color:var(--text);overflow-x:hidden;min-height:100vh;
+}
 a{text-decoration:none;color:inherit}
 button,input,select{font-family:inherit;outline:none;border:none;background:none;color:inherit}
 img{display:block;max-width:100%;}
 selected{color:var(--text)}
 
 /* HEADER */
-#header{position:fixed;top:0;left:0;right:0;z-index:200;padding:0 4vw;height:60px;display:flex;align-items:center;justify-content:space-between;background:rgba(13,17,23,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);transition:var(--trans)}
-#header.scrolled{box-shadow:0 4px 20px rgba(0,0,0,.5)}
+#header{position:fixed;top:0;left:0;right:0;z-index:600;padding:0 4vw;height:64px;display:flex;align-items:center;justify-content:space-between;background:rgba(20, 25, 40, 0.45);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border-bottom:1px solid rgba(255,255,255,0.08);transition:var(--trans);will-change:transform}
+#header.scrolled{box-shadow:0 8px 32px rgba(0,0,0,.5);background:rgba(20, 25, 40, 0.7)}
 .logo{font-size:1.5rem;font-weight:800;color:var(--accent);letter-spacing:-1px;cursor:pointer;white-space:nowrap}
 .logo span{color:var(--text)}
 .nav-links{display:flex;gap:6px;margin-left:24px}
@@ -45,32 +55,66 @@ selected{color:var(--text)}
 .source-btn{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--surface);font-size:.85rem;cursor:pointer;white-space:nowrap;color:var(--text2)}
 .source-btn select{cursor:pointer;color:var(--accent);font-weight:700;font-size:.85rem;background:transparent}
 .source-btn option{background:var(--bg2);color:var(--text)}
-.hamburger{display:none;font-size:1.3rem;cursor:pointer;color:var(--text2)}
+
+/* Hamburger Icon (Animated) */
+.hamburger{display:none;width:24px;height:18px;position:relative;cursor:pointer;z-index:501}
+.hamburger span{display:block;position:absolute;height:2px;width:100%;background:var(--text);border-radius:2px;opacity:1;left:0;transform:rotate(0deg);transition:var(--trans)}
+.hamburger span:nth-child(1){top:0}
+.hamburger span:nth-child(2){top:8px}
+.hamburger span:nth-child(3){top:16px}
+.hamburger.open span:nth-child(1){top:8px;transform:rotate(135deg)}
+.hamburger.open span:nth-child(2){opacity:0;left:-20px}
+.hamburger.open span:nth-child(3){top:8px;transform:rotate(-135deg)}
 
 /* Mobile Drawer */
-.mob-drawer{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.6);backdrop-filter:blur(6px)}
+.mob-drawer{display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.4);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 .mob-drawer.open{display:block}
-.mob-drawer-inner{position:absolute;top:0;right:0;bottom:0;width:290px;background:var(--bg2);border-left:1px solid var(--border);padding:24px;display:flex;flex-direction:column;gap:16px;transform:translateX(100%);transition:transform .35s cubic-bezier(.4,0,.2,1)}
+.mob-drawer-inner{position:absolute;top:0;right:0;bottom:0;width:290px;background:rgba(15, 20, 35, 0.45);backdrop-filter:blur(40px) saturate(250%);-webkit-backdrop-filter:blur(40px) saturate(250%);box-shadow:-10px 0 40px rgba(0,0,0,0.6), inset 1px 0 1px rgba(255,255,255,0.1);padding:80px 24px 24px;display:flex;flex-direction:column;gap:12px;transform:translateX(100%);transition:transform .4s cubic-bezier(0.175, 0.885, 0.32, 1);will-change:transform;z-index:550}
 .mob-drawer.open .mob-drawer-inner{transform:none}
-.mob-drawer-inner a{font-size:1rem;font-weight:500;padding:12px 14px;border-radius:8px;border-bottom:none;color:var(--text2);display:flex;align-items:center;gap:10px;transition:background .2s}
-.mob-drawer-inner a:hover{background:var(--surface2);color:#fff}
-.close-drawer{align-self:flex-end;font-size:1.4rem;cursor:pointer;color:var(--muted);margin-bottom:8px}
+.drawer-title{font-size:1.5rem;font-weight:800;color:var(--accent);margin-bottom:12px;letter-spacing:-1px}
+.drawer-title span{color:var(--text)}
+.mob-search{display:flex;align-items:center;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:12px 14px;margin-bottom:12px;box-shadow:inset 0 2px 4px rgba(0,0,0,0.2)}
+.mob-search input{flex:1;font-size:1rem;color:var(--text);background:none}
+.mob-search button{color:var(--muted);cursor:pointer;font-size:1.1rem;transition:color .2s}
+.mob-search button:hover{color:var(--accent)}
+.mob-drawer-inner a{font-size:1rem;font-weight:600;padding:14px 16px;border-radius:16px;color:var(--text2);display:flex;align-items:center;gap:12px;transition:var(--trans);background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.02)}
+.mob-drawer-inner a:hover, .mob-drawer-inner a:active{background:rgba(255,255,255,0.1);color:#fff;transform:scale(0.96);border-color:rgba(255,255,255,0.1)}
+.close-drawer{display:none} /* Hidden since hamburger becomes X */
 
-/* MAIN */
-#main{margin-top:60px}
+/* MAIN - Page Transition Config */
+#main {
+  margin-top: 64px;
+  transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1);
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+#main.page-exit {
+  opacity: 0;
+  transform: translateY(10px) scale(0.98);
+}
+#main.page-enter {
+  opacity: 0;
+  transform: translateY(15px) scale(0.96);
+}
+#main.page-enter-active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
 
 /* HERO */
-.hero{position:relative;height:72vh;min-height:400px;background-size:cover;background-position:center top;display:flex;align-items:flex-end}
-.hero::before{content:'';position:absolute;inset:0;background:linear-gradient(105deg,rgba(13,17,23,.97) 0%,rgba(13,17,23,.55) 55%,rgba(13,17,23,.2) 100%)}
-.hero::after{content:'';position:absolute;left:0;right:0;bottom:0;height:200px;background:linear-gradient(to top,var(--bg),transparent)}
-.hero-body{position:relative;z-index:2;padding:0 4vw 90px;max-width:540px}
+.hero{position:relative;height:72vh;min-height:400px;background-size:cover;background-position:center top;display:flex;align-items:flex-end;border-radius:0 0 var(--radius-lg) var(--radius-lg);overflow:hidden;box-shadow:var(--shadow)}
+.hero::before{content:'';position:absolute;inset:0;background:linear-gradient(105deg,rgba(5,5,16,0.9) 0%,rgba(5,5,16,0.5) 45%,rgba(5,5,16,0.1) 100%)}
+.hero::after{content:'';position:absolute;left:0;right:0;bottom:0;height:250px;background:linear-gradient(to top,var(--bg),transparent);pointer-events:none}
+.hero-body{position:relative;z-index:2;padding:0 4vw 90px;max-width:540px;transform:translateZ(0)}
 .hero-badge{display:inline-flex;align-items:center;gap:6px;background:var(--accent);color:#fff;font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:4px;margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px}
 .hero-title{font-size:clamp(1.8rem,3.5vw,3.2rem);font-weight:800;line-height:1.1;margin-bottom:8px;text-shadow:0 2px 12px rgba(0,0,0,.6)}
 .hero-sub{font-size:.9rem;color:var(--text2);margin-bottom:22px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;line-height:1.6}
 .hero-btns{display:flex;gap:10px;flex-wrap:wrap}
-.btn{display:inline-flex;align-items:center;gap:8px;padding:9px 22px;border-radius:var(--radius);font-weight:600;font-size:.9rem;cursor:pointer;transition:var(--trans);white-space:nowrap}
-.btn-orange{background:var(--accent);color:#fff;box-shadow:0 4px 16px rgba(249,115,22,.35)}.btn-orange:hover{background:var(--accent2);transform:translateY(-1px)}
-.btn-gray{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.18)}.btn-gray:hover{background:rgba(255,255,255,.2)}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:9px 22px;border-radius:var(--radius-lg);font-weight:600;font-size:.9rem;cursor:pointer;transition:var(--trans);white-space:nowrap}
+.btn-orange{background:linear-gradient(135deg, var(--accent), var(--blue));color:#fff;box-shadow:0 4px 20px rgba(0,240,255,0.4);border:1px solid rgba(255,255,255,0.2);backdrop-filter:blur(10px)}.btn-orange:hover{background:linear-gradient(135deg, var(--accent2), #2563eb);transform:scale(1.05);box-shadow:0 8px 30px rgba(0,240,255,0.6)}
+.btn-orange:active{transform:scale(0.95)}
+.btn-gray{background:var(--surface);color:#fff;border:1px solid var(--border2);backdrop-filter:blur(20px) saturate(150%);-webkit-backdrop-filter:blur(20px) saturate(150%);box-shadow:var(--glass-shadow)}.btn-gray:hover{background:var(--surface2);transform:scale(1.05)}
+.btn-gray:active{transform:scale(0.95)}
 .btn-white{background:#fff;color:#000}.btn-white:hover{background:#eee}
 
 /* MOVIE ROWS */
@@ -83,28 +127,29 @@ selected{color:var(--text)}
 .row-block:hover .row-head a{opacity:1}
 .movie-row{display:flex;gap:10px;overflow-x:auto;padding:4px 4vw 12px;scroll-snap-type:x mandatory;scrollbar-width:none}
 .movie-row::-webkit-scrollbar{display:none}
-/* Card - Rophim style: poster + title below */
-.card{flex:0 0 var(--card-w,14.5%);min-width:130px;scroll-snap-align:start;border-radius:var(--radius-lg);overflow:hidden;background:var(--surface);cursor:pointer;transition:transform .28s ease,box-shadow .28s ease;display:flex;flex-direction:column}
-.card:hover{transform:translateY(-6px);box-shadow:0 12px 32px rgba(0,0,0,.6);z-index:10}
-.card-thumb{position:relative;aspect-ratio:2/3;overflow:hidden;background:var(--bg3)}
+/* Card - iOS 26 style */
+.card{flex:0 0 var(--card-w,14.5%);min-width:130px;scroll-snap-align:start;border-radius:var(--radius-lg);overflow:hidden;background:rgba(255,255,255,0.02);cursor:pointer;transition:var(--trans);display:flex;flex-direction:column;border:1px solid rgba(255,255,255,0.08);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);will-change:transform}
+.card:hover{transform:scale(1.04) translateY(-4px);box-shadow:0 20px 40px rgba(0,0,0,0.4), inset 0 0 1px 1px rgba(255,255,255,0.25);z-index:10;border-color:rgba(255,255,255,0.15)}
+.card:active{transform:scale(0.96)}
+.card-thumb{position:relative;aspect-ratio:2/3;overflow:hidden;background:var(--bg3);border-radius:var(--radius-lg) var(--radius-lg) 0 0}
 .card-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .3s,opacity .3s}
 .card-thumb img.loading{opacity:0}
-.card:hover .card-thumb img{transform:scale(1.05)}
-.card-badge{position:absolute;top:6px;left:6px;background:var(--accent);color:#fff;font-size:.6rem;font-weight:700;padding:2px 6px;border-radius:4px;text-transform:uppercase;z-index:2}
-.card-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.45);opacity:0;transition:opacity .25s}
+.card:hover .card-thumb img{transform:scale(1.08)}
+.card-badge{position:absolute;top:8px;left:8px;background:linear-gradient(135deg, var(--accent), var(--blue));color:#fff;font-size:.6rem;font-weight:700;padding:3px 8px;border-radius:6px;text-transform:uppercase;z-index:2;box-shadow:0 2px 10px rgba(0,0,0,0.5)}
+.card-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.45);opacity:0;transition:opacity .25s;backdrop-filter:blur(2px)}
 .card-play i{font-size:2.5rem;color:#fff;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))}
 .card:hover .card-play{opacity:1}
 /* Title always visible below card */
-.card-info{padding:8px 10px 10px;flex:1;background:var(--surface)}
-.card-title{font-size:.82rem;font-weight:600;color:var(--text);line-height:1.35;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}
+.card-info{padding:10px 12px 12px;flex:1;background:transparent}
+.card-title{font-size:.85rem;font-weight:600;color:var(--text);line-height:1.35;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}
 .card-meta{font-size:.72rem;color:var(--muted);margin-top:4px;display:flex;gap:6px;align-items:center}
 .card-meta .dot{color:var(--border2)}
 .card-ep{font-size:.7rem;font-weight:600;color:var(--accent)}
 
 /* DETAIL PAGE */
-.detail-page{padding:80px 4vw 40px;animation:fadeUp .4s ease}
-.detail-wrap{display:flex;gap:40px;align-items:flex-start}
-.detail-poster{width:260px;min-width:260px;border-radius:10px;box-shadow:var(--shadow);object-fit:cover;aspect-ratio:2/3}
+.detail-page{padding:80px 4vw 40px;animation:fadeUp .4s cubic-bezier(0.175, 0.885, 0.32, 1)}
+.detail-wrap{display:flex;gap:40px;align-items:flex-start;background:rgba(20, 25, 40, 0.3);padding:30px;border-radius:32px;backdrop-filter:blur(30px) saturate(200%);-webkit-backdrop-filter:blur(30px) saturate(200%);border:1px solid rgba(255,255,255,0.1);box-shadow:0 24px 48px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.2)}
+.detail-poster{width:260px;min-width:260px;border-radius:20px;box-shadow:0 12px 32px rgba(0,0,0,0.6);object-fit:cover;aspect-ratio:2/3}
 .detail-info{flex:1;min-width:0}
 .detail-info h1{font-size:clamp(1.6rem,3vw,2.8rem);font-weight:800;line-height:1.1;margin-bottom:8px}
 .detail-origin{color:var(--muted);font-size:1rem;margin-bottom:18px}
@@ -114,16 +159,17 @@ selected{color:var(--text)}
 .detail-desc{font-size:.95rem;line-height:1.7;color:var(--text2);margin-bottom:20px;max-width:700px}
 .meta-row{font-size:.85rem;color:var(--muted);margin-bottom:8px}
 .meta-row span{color:var(--text2);font-weight:500}
-.play-btn-big{display:inline-flex;align-items:center;gap:10px;background:var(--red);color:#fff;padding:12px 30px;border-radius:var(--radius);font-size:1.1rem;font-weight:700;cursor:pointer;border:none;margin-top:8px;transition:background .2s}
-.play-btn-big:hover{background:var(--red2)}
+.play-btn-big{display:inline-flex;align-items:center;gap:10px;background:var(--red);color:#fff;padding:12px 30px;border-radius:var(--radius-lg);font-size:1.1rem;font-weight:700;cursor:pointer;border:none;margin-top:8px;transition:var(--trans);box-shadow:0 8px 24px rgba(255,0,85,0.4)}
+.play-btn-big:hover{background:var(--red2);transform:scale(1.05);box-shadow:0 12px 30px rgba(255,0,85,0.6)}
+.play-btn-big:active{transform:scale(0.95)}
 
 /* SEARCH PAGE */
-.search-page{padding:80px 4vw 40px;animation:fadeUp .4s ease}
-.search-page h2{font-size:1.2rem;color:var(--muted);margin-bottom:20px}
-.search-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.search-page{padding:80px 4vw 40px;animation:fadeUp .4s cubic-bezier(0.175, 0.885, 0.32, 1)}
+.search-page h2{font-size:1.2rem;color:var(--text);margin-bottom:20px;text-shadow:0 2px 10px rgba(0,0,0,0.5)}
+.search-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px}
 
 /* WATCH PAGE */
-.watch-page{position:fixed;inset:0;z-index:300;background:#000;display:flex;flex-direction:column}
+.watch-page{position:absolute;top:0;left:0;right:0;min-height:100vh;z-index:999;background:#06080e;display:flex;flex-direction:column;animation:fadeUp .4s ease}
 .watch-top{position:absolute;top:0;left:0;right:0;z-index:10;background:linear-gradient(to bottom,rgba(0,0,0,.8),transparent);padding:14px 20px;display:flex;align-items:center;gap:14px;transition:opacity .3s}
 .watch-page.idle .watch-top{opacity:0}
 .watch-back{font-size:1.4rem;cursor:pointer;transition:color .2s}.watch-back:hover{color:var(--red)}
@@ -131,9 +177,9 @@ selected{color:var(--text)}
 .watch-srv{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
 .srv-btn{padding:4px 12px;border-radius:4px;background:rgba(255,255,255,.15);font-size:.8rem;cursor:pointer;border:none;color:#fff;white-space:nowrap}
 .srv-btn.active{background:#fff;color:#000;font-weight:700}
-.player-wrap{flex:1;position:relative;overflow:hidden}
-.player-wrap video,.player-wrap iframe{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;border:none}
-.controls{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,.85),transparent);padding:12px 16px 16px;display:flex;flex-direction:column;gap:10px;z-index:5;transition:opacity .3s}
+.player-wrap{position:relative;width:100%;aspect-ratio:16/9;max-height:85vh;background:#000;overflow:hidden;flex-shrink:0}
+.player-wrap video,.player-wrap iframe{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;border:none;background:#000;z-index:2;display:block!important;opacity:1!important;visibility:visible!important;transform:translateZ(0);will-change:transform, opacity}
+.controls{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,.85),transparent);padding:12px 16px 16px;display:flex;flex-direction:column;gap:10px;z-index:20;transition:opacity .3s}
 .watch-page.idle .controls{opacity:0;pointer-events:none}
 .watch-page.paused .controls,.watch-page.paused .watch-top{opacity:1!important}
 .progress-wrap{height:4px;background:rgba(255,255,255,.25);border-radius:2px;cursor:pointer;position:relative;transition:height .15s}
@@ -156,18 +202,19 @@ selected{color:var(--text)}
 .qbtn.active{color:#fff;font-weight:700}
 .qbtn.active::after{content:'✓';color:var(--red)}
 
-/* Episodes overlay */
-.ep-overlay{position:absolute;top:0;right:0;bottom:0;width:320px;background:rgba(18,18,18,.97);border-left:1px solid rgba(255,255,255,.08);padding:16px;display:flex;flex-direction:column;z-index:15;transform:translateX(100%);transition:transform .3s}
-.ep-overlay.open{transform:none}
-.ep-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
-.ep-top h3{font-size:1rem;font-weight:700}
-.ep-top button{background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer}
-.ep-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;overflow-y:auto;flex:1}
-.ep-grid::-webkit-scrollbar{width:4px}
-.ep-grid::-webkit-scrollbar-thumb{background:#444;border-radius:4px}
-.ep-num{padding:8px 4px;background:var(--bg3);border:none;color:#fff;border-radius:4px;cursor:pointer;font-size:.8rem;text-align:center;transition:background .2s}
-.ep-num:hover{background:#444}
-.ep-num.active{background:var(--red)}
+/* Watch Info Section */
+.watch-info-section{padding:30px 4vw 60px;display:flex;flex-direction:column;gap:24px;max-width:1400px;margin:0 auto;width:100%}
+.watch-info-title{font-size:1.8rem;font-weight:800;color:#fff;line-height:1.2;margin-bottom:8px}
+.watch-info-meta{display:flex;gap:12px;color:var(--muted);font-size:.95rem;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+.watch-info-desc{color:var(--text2);line-height:1.7;font-size:.95rem;background:rgba(255,255,255,.03);padding:20px;border-radius:16px;border:1px solid rgba(255,255,255,.05)}
+
+.watch-server-list{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.w-srv-btn{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--text2);padding:10px 20px;border-radius:8px;cursor:pointer;font-size:.95rem;transition:all .2s;display:flex;align-items:center;gap:8px}
+.w-srv-btn:hover{background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.3)}
+.w-srv-btn.active{background:var(--red);color:#fff;border-color:var(--red);font-weight:600;box-shadow:0 4px 16px rgba(229,9,20,.3)}
+
+.watch-ep-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(60px,1fr));gap:10px;max-height:400px;overflow-y:auto;padding-right:10px}
+.ep-num.active{background:var(--red);font-weight:bold;box-shadow:0 0 12px rgba(229,9,20,.4)}
 
 /* LOADER */
 .loader{display:flex;justify-content:center;align-items:center;padding:80px 20px}
@@ -194,7 +241,7 @@ selected{color:var(--text)}
   .hamburger{display:block}
   :root{--card-w:30%}
   .card{min-width:110px}
-  .detail-wrap{flex-direction:column;gap:24px}
+  .detail-wrap{flex-direction:column;gap:24px;padding:20px}
   .detail-poster{width:180px;min-width:0;margin:0 auto}
   .ep-overlay{width:100%;border-left:none;border-top:1px solid rgba(255,255,255,.08)}
   .ep-grid{grid-template-columns:repeat(6,1fr)}
@@ -235,22 +282,30 @@ selected{color:var(--text)}
         <option value="ophim">OPhim</option>
       </select>
     </div>
-    <i class="fa-solid fa-bars hamburger" onclick="App.toggleDrawer(true)"></i>
+    <div class="hamburger" id="hamburger" onclick="App.toggleDrawer()">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
   </div>
 </header>
 
 <div class="mob-drawer" id="drawer" onclick="App.toggleDrawer(false)">
   <div class="mob-drawer-inner" onclick="event.stopPropagation()">
-    <i class="fa-solid fa-xmark close-drawer" onclick="App.toggleDrawer(false)"></i>
-    <a href="#" onclick="App.goHome();App.toggleDrawer(false);return false">🏠 Trang Chủ</a>
-    <a href="#" onclick="App.browseCategory('phim-bo');App.toggleDrawer(false);return false">📺 Phim Bộ</a>
-    <a href="#" onclick="App.browseCategory('phim-le');App.toggleDrawer(false);return false">🎬 Phim Lẻ</a>
-    <a href="#" onclick="App.browseCategory('hoat-hinh');App.toggleDrawer(false);return false">🎌 Anime</a>
-    <div class="source-btn" style="border:none;padding:0">
-      Nguồn:&nbsp;
-      <select id="src2" onchange="App.setSource(this.value);App.toggleDrawer(false)">
+    <div class="drawer-title">DevThinh<span>Phim</span></div>
+    <form class="mob-search" onsubmit="App.search(event);App.toggleDrawer(false)">
+      <input id="q-mob" placeholder="Tìm phim..." autocomplete="off">
+      <button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+    </form>
+    <a href="#" onclick="App.goHome();App.toggleDrawer(false);return false"><i class="fa-solid fa-house" style="width:20px"></i> Trang Chủ</a>
+    <a href="#" onclick="App.browseCategory('phim-bo');App.toggleDrawer(false);return false"><i class="fa-solid fa-tv" style="width:20px"></i> Phim Bộ</a>
+    <a href="#" onclick="App.browseCategory('phim-le');App.toggleDrawer(false);return false"><i class="fa-solid fa-film" style="width:20px"></i> Phim Lẻ</a>
+    <a href="#" onclick="App.browseCategory('hoat-hinh');App.toggleDrawer(false);return false"><i class="fa-brands fa-diaspora" style="width:20px"></i> Anime</a>
+    <div class="source-btn" style="border:none;padding:14px 16px;margin-top:auto;border-top:1px solid rgba(255,255,255,0.05);border-radius:0">
+      <i class="fa-solid fa-database" style="color:var(--red)"></i> Nguồn:&nbsp;
+      <select id="src2" onchange="App.setSource(this.value);App.toggleDrawer(false)" style="font-size:1rem;color:#fff">
         <option value="ophim">OPhim</option>
-        <option value="motchill">Motchill</option>
+        <option value="kkphim" selected>KKPhim</option>
       </select>
     </div>
   </div>
@@ -363,10 +418,30 @@ const App = (() => {
     }, {passive: true});
   }
 
-  function setMain(node) {
+  function setMain(node, onMounted) {
     const m = $('main');
-    m.innerHTML = '';
-    m.appendChild(node);
+    // iOS 26 smooth transition
+    if (m.hasChildNodes()) {
+      m.classList.add('page-exit');
+      setTimeout(() => {
+        m.innerHTML = '';
+        m.classList.remove('page-exit');
+        m.classList.add('page-enter');
+        m.appendChild(node);
+        if(onMounted) onMounted();
+        // trigger reflow
+        void m.offsetWidth;
+        m.classList.remove('page-enter');
+        m.classList.add('page-enter-active');
+        
+        // cleanup after transition
+        setTimeout(() => m.classList.remove('page-enter-active'), 400);
+      }, 300);
+    } else {
+      m.innerHTML = '';
+      m.appendChild(node);
+      if(onMounted) onMounted();
+    }
   }
 
   function setSource(val) {
@@ -378,8 +453,11 @@ const App = (() => {
     goHome();
   }
 
-  function toggleDrawer(open) {
+  function toggleDrawer(forceOpen) {
+    const isCurrentlyOpen = $('drawer').classList.contains('open');
+    const open = forceOpen !== undefined ? forceOpen : !isCurrentlyOpen;
     $('drawer').classList.toggle('open', open);
+    if ($('hamburger')) $('hamburger').classList.toggle('open', open);
   }
 
   /* ---------- HOME ---------- */
@@ -507,7 +585,7 @@ const App = (() => {
 
       wrap.innerHTML = '';
       // dynamic bg for detail page
-      document.body.style.backgroundImage = `linear-gradient(to bottom,rgba(13,17,23,.82),var(--bg)),url('${poster}')`;
+      document.body.style.backgroundImage = `linear-gradient(to bottom,rgba(5,5,16,.85),var(--bg)),url('${poster}')`;
       document.body.style.backgroundSize = 'cover';
       document.body.style.backgroundAttachment = 'fixed';
 
@@ -544,7 +622,10 @@ const App = (() => {
   /* ---------- SEARCH ---------- */
   async function search(e) {
     e.preventDefault();
-    const kw = $('q').value.trim();
+    const target = e.target.querySelector('input');
+    const kw = (target ? target.value : $('q').value).trim();
+    if ($('q')) $('q').value = kw;
+    if ($('q-mob')) $('q-mob').value = kw;
     if (!kw) return;
     const wrap = el('div', {class:'search-page'});
     wrap.innerHTML = `<h2>Kết quả cho: <strong style="color:#fff">${kw}</strong></h2>`;
@@ -674,35 +755,31 @@ const App = (() => {
 
   /* ---------- WATCH ---------- */
   function goWatch(movieSlug, epSlug, srvName) {
-    document.body.style.backgroundImage = 'none';
-    if (!movieData) return;
-    const { movie: m, episodes } = movieData;
+    console.log('[goWatch] Starting load:', movieSlug, epSlug, srvName);
+    try {
+      document.body.style.backgroundImage = 'none';
+      if (!movieData) {
+        console.warn('[goWatch] missing movieData!');
+        return;
+      }
+      const { movie: m, episodes } = movieData;
 
-    const activeServer = episodes.find(s => s.server_name === srvName) || episodes[0];
-    const activeEp = activeServer && activeServer.server_data.find(e => e.slug === epSlug);
-    const playUrl = activeEp ? (activeEp.link_m3u8 || activeEp.link_embed) : null;
-    const playType = activeEp && activeEp.link_m3u8 ? 'm3u8' : 'iframe';
+      const activeServer = episodes.find(s => s.server_name === srvName) || episodes[0];
+      const activeEp = activeServer && activeServer.server_data.find(e => e.slug === epSlug);
+      
+      console.log('[goWatch] Found server:', activeServer?.server_name, 'Episode:', activeEp?.name);
 
-    const page = el('div', {class:'watch-page paused'});
+      const playUrl = activeEp ? (activeEp.link_m3u8 || activeEp.link_embed) : null;
+      const playType = activeEp && activeEp.link_m3u8 ? 'm3u8' : 'iframe';
 
-    // top bar
-    const top = el('div', {class:'watch-top'});
-    top.innerHTML = `<i class="fa-solid fa-arrow-left watch-back" onclick="App.goDetail('${movieSlug}')"></i><div class="watch-title">${m.name}</div>`;
-    const srvDiv = el('div', {class:'watch-srv'});
-    episodes.forEach(s => {
-      const b = el('button', {class:`srv-btn${s.server_name===srvName?' active':''}`, onclick:()=> goWatch(movieSlug, s.server_data[0]?.slug||epSlug, s.server_name)});
-      b.textContent = s.server_name;
-      srvDiv.appendChild(b);
-    });
-    top.appendChild(srvDiv);
-    page.appendChild(top);
+      const page = el('div', {class:'watch-page', style:'display:flex;flex-direction:column;opacity:1!important;visibility:visible!important'});
 
-    // player area
-    const pw = el('div', {class:'player-wrap'});
-    const vid = el('video', {id:'vid', playsinline:'', preload:'auto'});
-    const iframeWrap = el('div', {id:'ifr', style:'display:none;position:absolute;inset:0'});
-    pw.appendChild(vid);
-    pw.appendChild(iframeWrap);
+      // 1. Player Area (Top)
+      const pw = el('div', {class:'player-wrap'});
+      const vid = el('video', {id:'vid', playsinline:'', autoplay:'', muted:'', preload:'auto'});
+      const iframeWrap = el('div', {id:'ifr', style:'display:none;position:absolute;inset:0'});
+      pw.appendChild(vid);
+      pw.appendChild(iframeWrap);
 
     // controls
     const ctrlEl = el('div', {class:'controls'});
@@ -715,7 +792,6 @@ const App = (() => {
           <span class="time-txt" id="timetxt">00:00 / 00:00</span>
         </div>
         <div class="ctrl-right">
-          <button class="cb" id="epbtn" title="Danh sách tập"><i class="fa-solid fa-list"></i></button>
           <div class="qmenu-wrap">
             <button class="cb" id="qbtn" title="Chất lượng"><i class="fa-solid fa-gear"></i></button>
             <div class="qmenu" id="qmenu"></div>
@@ -724,25 +800,69 @@ const App = (() => {
         </div>
       </div>`;
     pw.appendChild(ctrlEl);
-
-    // episode overlay
-    const epOv = el('div', {class:'ep-overlay', id:'epov'});
-    const epTop = el('div', {class:'ep-top'});
-    epTop.innerHTML = '<h3>Danh sách tập</h3>';
-    const epClose = el('button', {onclick:()=>epOv.classList.remove('open')});
-    epClose.innerHTML = '<i class="fa-solid fa-xmark"></i>';
-    epTop.appendChild(epClose);
-    epOv.appendChild(epTop);
-    const epGrid = el('div', {class:'ep-grid'});
-    (activeServer?.server_data || []).forEach(ep => {
-      const b = el('button', {class:`ep-num${ep.slug===epSlug?' active':''}`, onclick:()=>goWatch(movieSlug, ep.slug, srvName)});
-      b.textContent = ep.name;
-      epGrid.appendChild(b);
-    });
-    epOv.appendChild(epGrid);
-    pw.appendChild(epOv);
     page.appendChild(pw);
-    setMain(page);
+
+    // 2. Info Section (Below Player)
+    const infoSec = el('div', {class:'watch-info-section'});
+    
+    // Title & Back Button
+    const infoHead = el('div', {style:'display:flex;align-items:flex-start;gap:16px'});
+    const backBtn = el('button', {
+      style:'background:rgba(255,255,255,0.1);border:none;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s;flex-shrink:0',
+      id: 'watchbackbtn'
+    });
+    backBtn.innerHTML = '<i class="fa-solid fa-arrow-left"></i>';
+    backBtn.onmouseover = () => backBtn.style.background = 'var(--red)';
+    backBtn.onmouseout = () => backBtn.style.background = 'rgba(255,255,255,0.1)';
+    infoHead.appendChild(backBtn);
+    
+    const txtWrap = el('div', {style:'flex:1'});
+    txtWrap.innerHTML = `
+      <h1 class="watch-info-title">${m.name}</h1>
+      <div class="watch-info-meta">
+        <span><i class="fa-regular fa-calendar"></i> ${m.year || 'N/A'}</span>
+        <span><i class="fa-solid fa-language"></i> ${m.lang || 'Vietsub'}</span>
+        <span><i class="fa-solid fa-tv"></i> ${m.quality || 'FHD'}</span>
+      </div>`;
+    infoHead.appendChild(txtWrap);
+    infoSec.appendChild(infoHead);
+
+    // Server Selection
+    if (episodes.length > 1) {
+      const srvWrap = el('div');
+      srvWrap.innerHTML = '<div style="color:var(--text2);margin-bottom:8px;font-size:.9rem;font-weight:600">CHỌN MÁY CHỦ:</div>';
+      const srvList = el('div', {class:'watch-server-list'});
+      episodes.forEach(s => {
+        const b = el('button', {class:`w-srv-btn${s.server_name===srvName?' active':''}`, onclick:()=> goWatch(movieSlug, s.server_data[0]?.slug||epSlug, s.server_name)});
+        b.innerHTML = `<i class="fa-solid fa-server"></i> ${s.server_name}`;
+        srvList.appendChild(b);
+      });
+      srvWrap.appendChild(srvList);
+      infoSec.appendChild(srvWrap);
+    }
+
+    // Episodes Grid
+    if (activeServer && activeServer.server_data.length > 0) {
+      const epWrap = el('div');
+      epWrap.innerHTML = '<div style="color:var(--text2);margin-bottom:12px;font-size:.9rem;font-weight:600">DANH SÁCH TẬP:</div>';
+      const epGrid = el('div', {class:'watch-ep-grid'});
+      activeServer.server_data.forEach(ep => {
+        const b = el('button', {class:`ep-num${ep.slug===epSlug?' active':''}`, onclick:()=>goWatch(movieSlug, ep.slug, srvName)});
+        b.textContent = ep.name;
+        epGrid.appendChild(b);
+      });
+      epWrap.appendChild(epGrid);
+      infoSec.appendChild(epWrap);
+    }
+
+    // Movies Description setup
+    if (m.content) {
+      const desc = el('div', {class:'watch-info-desc'});
+      desc.innerHTML = m.content;
+      infoSec.appendChild(desc);
+    }
+
+    page.appendChild(infoSec);
 
     // ---- PLAYER LOGIC ----
     let hls = null;
@@ -758,7 +878,7 @@ const App = (() => {
     function resetIdle() {
       page.classList.remove('idle');
       clearTimeout(idleTimer);
-      if (!vid.paused) idleTimer = setTimeout(()=>{ if(!qOpen && !epOv.classList.contains('open')) page.classList.add('idle'); }, 3500);
+      if (!vid.paused) idleTimer = setTimeout(()=>{ if(!qOpen) page.classList.add('idle'); }, 3500);
     }
 
     pw.addEventListener('mousemove', resetIdle, {passive:true});
@@ -788,12 +908,13 @@ const App = (() => {
       if (!document.fullscreenElement) pw.requestFullscreen?.();
       else document.exitFullscreen?.();
     };
-    qs('#epbtn', pw).onclick = () => epOv.classList.toggle('open');
 
     // Quality menu
     const qbtn = qs('#qbtn', pw), qmenu = qs('#qmenu', pw);
-    qbtn.onclick = e => { e.stopPropagation(); qOpen = !qOpen; qmenu.classList.toggle('open', qOpen); };
-    document.addEventListener('click', e => { if (qOpen && !e.target.closest('.qmenu-wrap')) { qOpen = false; qmenu.classList.remove('open'); } });
+    if(qbtn && qmenu) {
+      qbtn.onclick = e => { e.stopPropagation(); qOpen = !qOpen; qmenu.classList.toggle('open', qOpen); };
+      document.addEventListener('click', e => { if (qOpen && !e.target.closest('.qmenu-wrap')) { qOpen = false; qmenu.classList.remove('open'); } });
+    } // End if (prevent crash if missing)
 
     function buildQMenu(levels, autoSelectLevel) {
       qmenu.innerHTML = '';
@@ -827,44 +948,80 @@ const App = (() => {
       qOpen = false; qmenu.classList.remove('open');
     }
 
-    // Load source
-    if (playType === 'm3u8' && playUrl) {
-      vid.style.display = 'block'; iframeWrap.style.display = 'none';
-      if (Hls.isSupported()) {
-        hls = new Hls({
-          maxMaxBufferLength: 60,
-          startLevel: -1,          // let HLS pick start, then we override
-          abrEwmaFastLive: 0.5,
-          abrEwmaSlowLive: 2,
-        });
-        hls.loadSource(playUrl);
-        hls.attachMedia(vid);
-        hls.on(Hls.Events.MANIFEST_PARSED, (_, d) => {
-          // Sort levels by height desc, pick the highest (1080p or best available)
-          const sorted = d.levels.map((l,i)=>({...l,i})).sort((a,b)=>(b.height||b.bitrate)-(a.height||a.bitrate));
-          const bestIdx = sorted[0]?.i ?? 0;
-          hls.currentLevel = bestIdx;  // force highest quality
-          hls.loadLevel = bestIdx;     // lock it (no auto-downgrade)
-          buildQMenu(d.levels, bestIdx);
+    // Load source ONCE the DOM is securely ready
+    function initPlayer() {
+      if (playType === 'm3u8' && playUrl) {
+        vid.style.display = 'block'; vid.style.opacity = '1'; iframeWrap.style.display = 'none';
+        if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+          hls = new Hls({
+            maxMaxBufferLength: 60,  // reduced to save memory
+            maxBufferLength: 30,     // reduced to save memory
+            maxBufferSize: 60 * 1000 * 1000,
+            startLevel: -1,
+            capLevelToPlayerSize: true, // IMPORTANT: stop 1080p loading on mobile
+            abrEwmaFastLive: 0.5,
+            abrEwmaSlowLive: 2,
+            enableWorker: true
+          });
+          hls.loadSource(playUrl);
+          hls.attachMedia(vid);
+          hls.on(Hls.Events.MANIFEST_PARSED, (_, d) => {
+            // Sắp xếp Menu Quality
+            const sorted = d.levels.map((l,i)=>({...l,i})).sort((a,b)=>(b.height||b.bitrate)-(a.height||a.bitrate));
+            buildQMenu(d.levels, -1); // Truyền -1 để hiển thị Auto mặc định
+            vid.play().catch(()=>{});
+          });
+          hls.on(Hls.Events.ERROR, (_, d) => { 
+            if (d.fatal) {
+              console.warn('HLS Error', d); 
+              if (d.type === Hls.ErrorTypes.NETWORK_ERROR) {
+                console.log("fatal network error encountered, try to recover");
+                hls.startLoad();
+              } else if (d.type === Hls.ErrorTypes.MEDIA_ERROR) {
+                console.log("fatal media error encountered, try to recover");
+                hls.recoverMediaError();
+              } else {
+                hls.destroy();
+              }
+            }
+          });
+        } else if (vid.canPlayType('application/vnd.apple.mpegurl')) {
+          vid.src = playUrl;
           vid.play().catch(()=>{});
-        });
-        hls.on(Hls.Events.ERROR, (_, d) => { if (d.fatal) console.warn('HLS Error', d); });
-      } else if (vid.canPlayType('application/vnd.apple.mpegurl')) {
-        vid.src = playUrl;
-        vid.play().catch(()=>{});
+        }
+      } else if (playType === 'iframe' && playUrl) {
+        vid.style.display = 'none'; iframeWrap.style.display = 'block';
+        iframeWrap.innerHTML = `<iframe src="${playUrl}" allowfullscreen allow="autoplay" style="position:absolute;inset:0;width:100%;height:100%;border:none"></iframe>`;
+        ctrlEl.style.display = 'none';
+      } else {
+        pw.innerHTML += '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:1rem;z-index:100">Không tìm thấy nguồn phim</div>';
       }
-    } else if (playType === 'iframe' && playUrl) {
-      vid.style.display = 'none'; iframeWrap.style.display = 'block';
-      iframeWrap.innerHTML = `<iframe src="${playUrl}" allowfullscreen allow="autoplay" style="position:absolute;inset:0;width:100%;height:100%;border:none"></iframe>`;
-      ctrlEl.style.display = 'none';
-    } else {
-      pw.innerHTML += '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:1rem">Không tìm thấy nguồn phim</div>';
     }
+    
+    // Attach Player initialization as a safe callback for setMain
+    setMain(page, () => {
+      initPlayer();
+    });
 
-    // cleanup on navigate away (simple approach)
-    const origSetMain = setMain;
-    const obs = new MutationObserver(() => { if (!document.contains(page)) { hls?.destroy(); obs.disconnect(); } });
-    obs.observe(document.body, {childList:true});
+    // cleanup on navigate away
+    qs('#watchbackbtn', page).onclick = () => {
+      if (hls) {
+        hls.destroy();
+        hls = null;
+      }
+      vid.pause();
+      vid.removeAttribute('src');
+      vid.load();
+      page.classList.add('page-exit');
+      setTimeout(() => {
+        page.remove();
+        App.goDetail(movieSlug);
+      }, 300);
+    };
+    } catch (e) {
+      console.error('[goWatch CRASHED]', e);
+      alert('Đã xảy ra lỗi khi tải phim! Vui lòng F5 trang.');
+    }
   }
 
   // Init
