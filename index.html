@@ -136,7 +136,7 @@ img{display:block;max-width:100%;}
 .btn{display:inline-flex;align-items:center;gap:8px;padding:9px 22px;border-radius:var(--radius-lg);font-weight:600;font-size:.9rem;cursor:pointer;transition:var(--trans);white-space:nowrap}
 .btn-orange{background:linear-gradient(135deg, var(--accent), var(--blue));color:#fff;box-shadow:0 4px 20px rgba(0,240,255,0.4);border:1px solid rgba(255,255,255,0.2);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}.btn-orange:hover{background:linear-gradient(135deg, var(--accent2), #2563eb);transform:scale(1.05);box-shadow:0 8px 30px rgba(0,240,255,0.6)}
 .btn-orange:active{transform:scale(0.95)}
-.btn-gray{background:var(--surface);color:#fff;border:1px solid var(--border2);backdrop-filter:blur(20px) saturate(150%);-webkit-backdrop-filter:blur(20px) saturate(150%);box-shadow:var(--glass-shadow)}.btn-gray:hover{background:var(--surface2);transform:scale(1.05)}
+.btn-gray{background:var(--surface);color:#fff;border:1px solid var(--border2);-webkit-backdrop-filter:blur(20px) saturate(150%);backdrop-filter:blur(20px) saturate(150%);box-shadow:var(--glass-shadow)}.btn-gray:hover{background:var(--surface2);transform:scale(1.05)}
 .btn-gray:active{transform:scale(0.95)}
 .btn-white{background:#fff;color:#000}.btn-white:hover{background:#eee}
 
@@ -174,7 +174,7 @@ img{display:block;max-width:100%;}
 
 /* DETAIL PAGE */
 .detail-page{padding:80px 4vw 40px;animation:fadeUp .4s cubic-bezier(0.175, 0.885, 0.32, 1)}
-.detail-wrap{display:flex;gap:40px;align-items:flex-start;background:rgba(20, 25, 40, 0.3);padding:30px;border-radius:32px;backdrop-filter:blur(30px) saturate(200%);-webkit-backdrop-filter:blur(30px) saturate(200%);border:1px solid rgba(255,255,255,0.1);box-shadow:0 24px 48px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.2)}
+.detail-wrap{display:flex;gap:40px;align-items:flex-start;background:rgba(20, 25, 40, 0.3);padding:30px;border-radius:32px;-webkit-backdrop-filter:blur(30px) saturate(200%);backdrop-filter:blur(30px) saturate(200%);border:1px solid rgba(255,255,255,0.1);box-shadow:0 24px 48px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.2)}
 .detail-poster{width:260px;min-width:260px;border-radius:20px;box-shadow:0 12px 32px rgba(0,0,0,0.6);object-fit:cover;aspect-ratio:2/3}
 .detail-info{flex:1;min-width:0}
 .detail-info h1{font-size:clamp(1.6rem,3vw,2.8rem);font-weight:800;line-height:1.1;margin-bottom:8px}
@@ -288,8 +288,8 @@ img{display:block;max-width:100%;}
   border:1px solid rgba(255,255,255,.12);
   box-shadow:0 24px 60px rgba(0,0,0,.6);
   background:rgba(0,0,0,.2);
-  backdrop-filter: blur(18px) saturate(180%);
   -webkit-backdrop-filter: blur(18px) saturate(180%);
+  backdrop-filter: blur(18px) saturate(180%);
 }
 .ep-preview.show{opacity:1;transform:translate(-50%,-55%) scale(1)}
 .ep-preview .ep-preview-img{
@@ -441,7 +441,7 @@ img{display:block;max-width:100%;}
 <header id="header">
   <div class="header-left">
     <div class="logo" onclick="App.goHome()">DevThinh<span>Phim</span></div>
-    <nav class="nav-links">
+    <nav class="nav-links" aria-label="Điều hướng chính">
       <a href="#" id="nav-home" class="active" onclick="App.goHome();return false">Trang Chủ</a>
       <a href="#" onclick="App.browseCategory('phim-bo');return false">Phim Bộ</a>
       <a href="#" onclick="App.browseCategory('phim-le');return false">Phim Lẻ</a>
@@ -479,10 +479,10 @@ img{display:block;max-width:100%;}
 <main id="main"></main>
 
 <nav class="mobile-bottom-nav" aria-label="Điều hướng nhanh">
-  <button class="mb-nav-item active" data-tab="home" onclick="App.goHome()"><i class="fa-solid fa-house"></i><span>Home</span></button>
-  <button class="mb-nav-item" data-tab="search" onclick="App.openSearchPage()"><i class="fa-solid fa-magnifying-glass"></i><span>Tìm</span></button>
-  <button class="mb-nav-item" data-tab="history" onclick="App.openHistoryPage()"><i class="fa-solid fa-clock-rotate-left"></i><span>Lịch sử</span></button>
-  <button class="mb-nav-item" data-tab="favorites" onclick="App.openFavoritesPage()"><i class="fa-solid fa-heart"></i><span>Yêu thích</span></button>
+  <button type="button" class="mb-nav-item active" data-tab="home" onclick="App.goHome()"><i class="fa-solid fa-house"></i><span>Home</span></button>
+  <button type="button" class="mb-nav-item" data-tab="search" onclick="App.openSearchPage()"><i class="fa-solid fa-magnifying-glass"></i><span>Tìm</span></button>
+  <button type="button" class="mb-nav-item" data-tab="history" onclick="App.openHistoryPage()"><i class="fa-solid fa-clock-rotate-left"></i><span>Lịch sử</span></button>
+  <button type="button" class="mb-nav-item" data-tab="favorites" onclick="App.openFavoritesPage()"><i class="fa-solid fa-heart"></i><span>Yêu thích</span></button>
 </nav>
 
 <script>
