@@ -621,6 +621,10 @@ body.watch-mode .mobile-bottom-nav{display:none!important}
 </nav>
 
 <script>
+// Guard runtime nếu có script obfuscation cũ còn sót trên bản deploy
+if (typeof window !== 'undefined' && typeof window._0x4e0fd9 === 'undefined') {
+  window._0x4e0fd9 = function(){ return ''; };
+}
 /* ---------- UTILS ---------- */
 const $ = id => document.getElementById(id);
 const qs = (sel, el=document) => el.querySelector(sel);
@@ -772,6 +776,8 @@ const App = (() => {
   const PREF_SERVER_MODE_KEY = 'devthinh:serverMode';
   const PREF_QUALITY_PROFILE_KEY = 'devthinh:qualityProfile';
   const PREF_SERVER_MEMORY_KEY = 'devthinh:serverMemory';
+  const SKIP_MARKER_KEY = 'devthinh:skipMarkers';
+  const WATCH_TOGETHER_KEY = 'devthinh:watchTogether';
 
   function fmtClock(seconds) {
     if (!seconds || !isFinite(seconds)) return '00:00';
@@ -937,6 +943,34 @@ const App = (() => {
 
   function saveSearchFilters(next) {
     try { localStorage.setItem(SEARCH_FILTERS_KEY, JSON.stringify(next || {})); } catch (_) {}
+  }
+
+  function loadSkipMarkers() {
+    try { return JSON.parse(localStorage.getItem(SKIP_MARKER_KEY) || '{}') || {}; } catch (_) { return {}; }
+  }
+
+  function getSkipMarker(movieSlug) {
+    const all = loadSkipMarkers();
+    return all[movieSlug] || { op: 0, ed: 0 };
+  }
+
+  function saveSkipMarker(movieSlug, partial = {}) {
+    if (!movieSlug) return;
+    const all = loadSkipMarkers();
+    const prev = all[movieSlug] || { op: 0, ed: 0 };
+    all[movieSlug] = {
+      op: Number(partial.op ?? prev.op ?? 0) || 0,
+      ed: Number(partial.ed ?? prev.ed ?? 0) || 0
+    };
+    try { localStorage.setItem(SKIP_MARKER_KEY, JSON.stringify(all)); } catch (_) {}
+  }
+
+  function loadWatchTogetherState() {
+    try { return JSON.parse(localStorage.getItem(WATCH_TOGETHER_KEY) || '{}') || {}; } catch (_) { return {}; }
+  }
+
+  function saveWatchTogetherState(state = {}) {
+    try { localStorage.setItem(WATCH_TOGETHER_KEY, JSON.stringify(state)); } catch (_) {}
   }
 
   async function fetchJSON(url, opts = {}) {
@@ -1568,6 +1602,49 @@ const App = (() => {
     return bar;
   }
 
+  function aiNormalizeKeyword(kw='') {
+    const k = String(kw || '').toLowerCase().trim();
+    const tokens = {
+      action: /(hành động|action|đánh đấm|bắn súng)/,
+      romance: /(tình cảm|romance|ngôn tình|yêu)/,
+      horror: /(kinh dị|horror|ma)/,
+      anime: /(anime|hoạt hình)/,
+      series: /(phim bộ|series|nhiều tập)/,
+      movie: /(phim lẻ|movie|điện ảnh)/,
+      blackHairMale: /(nam chính.*tóc đen|tóc đen.*nam chính)/
+    };
+    const q = { raw: kw, hints: [] };
+    if (tokens.action.test(k)) q.hints.push('hanh-dong');
+    if (tokens.romance.test(k)) q.hints.push('tinh-cam');
+    if (tokens.horror.test(k)) q.hints.push('kinh-di');
+    if (tokens.anime.test(k)) q.hints.push('hoat-hinh');
+    if (tokens.series.test(k)) q.hints.push('series');
+    if (tokens.movie.test(k)) q.hints.push('movie');
+    if (tokens.blackHairMale.test(k)) q.hints.push('male-black-hair');
+    return q;
+  }
+
+  function aiScoreMovie(movie, ai) {
+    if (!ai || !ai.hints || !ai.hints.length) return 0;
+    let s = 0;
+    const txt = `${movie.name || ''} ${(movie.origin_name || '')} ${(movie.content || '')}`.toLowerCase();
+    const cats = Array.isArray(movie.category) ? movie.category.map(c => String(c && (c.slug || c.name) || '').toLowerCase()) : [];
+    if (ai.hints.includes('hanh-dong') && (txt.includes('hành động') || cats.some(c => c.includes('hanh-dong')))) s += 4;
+    if (ai.hints.includes('tinh-cam') && (txt.includes('tình cảm') || cats.some(c => c.includes('tinh-cam')))) s += 4;
+    if (ai.hints.includes('kinh-di') && (txt.includes('kinh dị') || cats.some(c => c.includes('kinh-di')))) s += 4;
+    if (ai.hints.includes('hoat-hinh') && (txt.includes('anime') || cats.some(c => c.includes('hoat-hinh') || c.includes('anime')))) s += 5;
+    if (ai.hints.includes('series')) {
+      const isSeries = (movie.type || '').includes('series') || String(movie.episode_current || '').toLowerCase().includes('tập');
+      if (isSeries) s += 3;
+    }
+    if (ai.hints.includes('movie')) {
+      const isSeries = (movie.type || '').includes('series') || String(movie.episode_current || '').toLowerCase().includes('tập');
+      if (!isSeries) s += 3;
+    }
+    if (ai.hints.includes('male-black-hair') && txt.includes('tóc đen')) s += 2;
+    return s;
+  }
+
   async function search(e) {
     e.preventDefault();
     setActiveBottomTab('search');
@@ -1589,7 +1666,15 @@ const App = (() => {
         const c = cfg();
         const data = await fetchJSON(c.search + encodeURIComponent(kw), { signal: req.signal });
         if (req.signal.aborted || currentSearchKeyword !== kw) return;
-        const items = applySearchFilters(normalizeItems(data, c.img), filters);
+
+        let items = applySearchFilters(normalizeItems(data, c.img), filters);
+
+        // AI-ish ranking cho truy vấn tự nhiên
+        const ai = aiNormalizeKeyword(kw);
+        if (ai.hints.length) {
+          items = [...items].sort((a, b) => aiScoreMovie(b, ai) - aiScoreMovie(a, ai));
+        }
+
         grid.innerHTML = '';
         if (!items.length) {
           grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><i class="fa-solid fa-magnifying-glass"></i><p>Không tìm thấy kết quả phù hợp.</p></div>';
@@ -1967,6 +2052,7 @@ const App = (() => {
     infoHead.appendChild(shareBtn);
 
     const txtWrap = el('div', {style:'flex:1'});
+    const skipMark = getSkipMarker(movieSlug);
     txtWrap.innerHTML = `
       <h1 class="watch-info-title">${m.name}</h1>
       <div class="watch-info-meta">
@@ -1977,10 +2063,17 @@ const App = (() => {
       <div class="watch-action-row">
         <button class="watch-action-btn">❤️ Yêu thích</button>
         <button class="watch-action-btn">➕ Thêm vào</button>
-        <button class="watch-action-btn">🔁 Chuyển tập</button>
+        <button class="watch-action-btn" id="jumpEpisodeBtn">🔁 Chuyển tập</button>
         <button class="watch-action-btn">🔗 Chia sẻ</button>
         <button class="watch-action-btn" id="hqToggleBtn">🎞️ Ưu tiên chất lượng cao</button>
         <button class="watch-action-btn" id="qualityProfileBtn">📶 Chất lượng: AUTO</button>
+      </div>
+      <div class="watch-action-row" style="margin-top:8px">
+        <button class="watch-action-btn" id="setOpBtn">⏭️ Set OP</button>
+        <button class="watch-action-btn" id="setEdBtn">⏭️ Set ED</button>
+        <button class="watch-action-btn" id="skipOpBtn">Bỏ OP ${skipMark.op ? `(${fmtClock(skipMark.op)})` : ''}</button>
+        <button class="watch-action-btn" id="skipEdBtn">Bỏ ED ${skipMark.ed ? `(${fmtClock(skipMark.ed)})` : ''}</button>
+        <button class="watch-action-btn" id="watchTogetherBtn">👥 Xem chung</button>
       </div>`;
     infoHead.appendChild(txtWrap);
     mainCol.appendChild(infoHead);
@@ -2606,6 +2699,112 @@ const App = (() => {
           const selected = applyPreferredQuality(hls.levels);
           buildQMenu(hls.levels, selected);
         }
+      };
+    }
+
+    const jumpEpisodeBtn = qs('#jumpEpisodeBtn', page);
+    if (jumpEpisodeBtn) {
+      jumpEpisodeBtn.onclick = () => {
+        const epWrap = qs('.watch-ep-grid', page);
+        if (epWrap && epWrap.scrollIntoView) epWrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      };
+    }
+
+    const setOpBtn = qs('#setOpBtn', page);
+    const setEdBtn = qs('#setEdBtn', page);
+    const skipOpBtn = qs('#skipOpBtn', page);
+    const skipEdBtn = qs('#skipEdBtn', page);
+    const watchTogetherBtn = qs('#watchTogetherBtn', page);
+
+    function refreshSkipButtons() {
+      const mk = getSkipMarker(movieSlug);
+      if (skipOpBtn) skipOpBtn.textContent = `Bỏ OP ${mk.op ? `(${fmtClock(mk.op)})` : ''}`;
+      if (skipEdBtn) skipEdBtn.textContent = `Bỏ ED ${mk.ed ? `(${fmtClock(mk.ed)})` : ''}`;
+    }
+
+    if (setOpBtn) {
+      setOpBtn.onclick = () => {
+        const t = vid && isFinite(vid.currentTime) ? Math.floor(vid.currentTime) : 0;
+        saveSkipMarker(movieSlug, { op: t });
+        refreshSkipButtons();
+        toast(`Đã set OP: ${fmtClock(t)}`);
+      };
+    }
+
+    if (setEdBtn) {
+      setEdBtn.onclick = () => {
+        const t = vid && isFinite(vid.currentTime) ? Math.floor(vid.currentTime) : 0;
+        saveSkipMarker(movieSlug, { ed: t });
+        refreshSkipButtons();
+        toast(`Đã set ED: ${fmtClock(t)}`);
+      };
+    }
+
+    if (skipOpBtn) {
+      skipOpBtn.onclick = () => {
+        const mk = getSkipMarker(movieSlug);
+        if (mk.op > 0 && vid) {
+          try { vid.currentTime = mk.op; } catch (_) {}
+          toast(`Bỏ OP → ${fmtClock(mk.op)}`);
+        }
+      };
+    }
+
+    if (skipEdBtn) {
+      skipEdBtn.onclick = () => {
+        const mk = getSkipMarker(movieSlug);
+        if (mk.ed > 0 && vid) {
+          try { vid.currentTime = mk.ed; } catch (_) {}
+          toast(`Bỏ ED → ${fmtClock(mk.ed)}`);
+        }
+      };
+    }
+
+    if (watchTogetherBtn) {
+      watchTogetherBtn.onclick = async () => {
+        const state = loadWatchTogetherState();
+        const room = prompt('Nhập mã phòng xem chung (ví dụ: anime-night):', state.room || '');
+        if (!room) return;
+        const me = Math.random().toString(36).slice(2, 8);
+        const chan = `watch-${room}`;
+        let bc = null;
+        try { bc = new BroadcastChannel(chan); } catch (_) {}
+        saveWatchTogetherState({ room, me, channel: chan, at: Date.now() });
+        if (!bc) {
+          toast('Thiết bị không hỗ trợ BroadcastChannel');
+          return;
+        }
+
+        bc.onmessage = (ev) => {
+          const d = ev && ev.data ? ev.data : {};
+          if (!d || d.from === me) return;
+          if (d.type === 'sync' && vid) {
+            try {
+              if (Math.abs((vid.currentTime || 0) - (d.time || 0)) > 1.4) vid.currentTime = d.time || 0;
+              if (d.paused) vid.pause(); else vid.play().catch(()=>{});
+            } catch (_) {}
+          }
+        };
+
+        const pushSync = () => {
+          try {
+            bc.postMessage({
+              type: 'sync',
+              from: me,
+              time: vid && isFinite(vid.currentTime) ? vid.currentTime : 0,
+              paused: vid ? !!vid.paused : true,
+              movieSlug,
+              epSlug
+            });
+          } catch (_) {}
+        };
+
+        if (vid) {
+          vid.addEventListener('play', pushSync);
+          vid.addEventListener('pause', pushSync);
+          vid.addEventListener('seeked', pushSync);
+        }
+        toast(`Đã vào phòng: ${room}`);
       };
     }
 
