@@ -26,8 +26,8 @@
 :root{
   /* Minimal modern + eye-comfort */
   --row-pad:24px;
-  --safe-top: env(safe-area-inset-top, 0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: max(env(safe-area-inset-top, 0px), 12px);
+  --safe-bottom: max(env(safe-area-inset-bottom, 0px), 8px);
   --safe-left: env(safe-area-inset-left, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
   --bg:#0f131a;--bg2:rgba(255,255,255,0.03);--bg3:rgba(255,255,255,0.07);
@@ -62,7 +62,7 @@ img{display:block;max-width:100%;}
 :focus-visible{outline:none}
 
 /* HEADER */
-#header{position:fixed;top:0;left:0;right:0;z-index:600;padding:var(--safe-top) calc(clamp(16px,3vw,44px) + var(--safe-right)) 0 calc(clamp(16px,3vw,44px) + var(--safe-left));height:calc(72px + var(--safe-top));display:flex;align-items:center;justify-content:space-between;background:rgba(10,14,28,.66);-webkit-backdrop-filter:blur(24px) saturate(170%);backdrop-filter:blur(24px) saturate(170%);border-bottom:1px solid rgba(255,255,255,0.08);transition:background .3s,box-shadow .3s;will-change:transform;gap:14px}
+#header{position:fixed;top:0;left:0;right:0;z-index:600;padding:calc(var(--safe-top) + 2px) calc(clamp(16px,3vw,44px) + var(--safe-right)) 0 calc(clamp(16px,3vw,44px) + var(--safe-left));height:calc(72px + var(--safe-top));display:flex;align-items:center;justify-content:space-between;background:rgba(10,14,28,.66);-webkit-backdrop-filter:blur(24px) saturate(170%);backdrop-filter:blur(24px) saturate(170%);border-bottom:1px solid rgba(255,255,255,0.08);transition:background .3s,box-shadow .3s;will-change:transform;gap:14px}
 #header.scrolled{box-shadow:var(--shadow-soft);background:rgba(10,14,28,.84)}
 .logo{font-size:1.58rem;font-weight:800;color:var(--accent);letter-spacing:-1px;cursor:pointer;white-space:nowrap;flex:0 0 auto}
 .logo span{color:var(--text)}
@@ -477,8 +477,8 @@ img{display:block;max-width:100%;}
   body{font-size:15px}
   .nav-links,.search-box{display:none}
   .hamburger{display:block}
-  #header{height:62px;padding:0 14px}
-  #main{margin-top:62px}
+  #header{height:calc(62px + var(--safe-top));padding:calc(var(--safe-top) + 2px) calc(14px + var(--safe-right)) 0 calc(14px + var(--safe-left))}
+  #main{margin-top:calc(62px + var(--safe-top))}
   .logo{font-size:1.32rem}
   .card{min-width:118px}
   .hero{height:60vh;min-height:330px;border-radius:0 0 20px 20px}
