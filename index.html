@@ -632,10 +632,6 @@ body.watch-mode .mobile-bottom-nav{display:none!important}
 </nav>
 
 <script>
-// Guard runtime nếu có script obfuscation cũ còn sót trên bản deploy
-if (typeof window !== 'undefined' && typeof window._0x4e0fd9 === 'undefined') {
-  window._0x4e0fd9 = function(){ return ''; };
-}
 /* ---------- UTILS ---------- */
 const $ = id => document.getElementById(id);
 const qs = (sel, el=document) => el.querySelector(sel);
