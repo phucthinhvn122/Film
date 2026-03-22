@@ -2205,6 +2205,8 @@ const App = (() => {
     let lowBufferSince = 0;
     let lastAutoDowngradeAt = 0;
     let fallbackRecoverStableSince = 0;
+    let stallCount = 0;
+    let lastStallAt = 0;
     let qualityProfile = loadQualityProfile();
 
     let lastSaveAt = 0;
@@ -2289,6 +2291,28 @@ const App = (() => {
 
     vid.addEventListener('play', () => { page.classList.add('playing'); page.classList.remove('paused'); qs('#playbtn i', pw).className = 'fa-solid fa-pause'; resetIdle(); });
     vid.addEventListener('pause', () => { page.classList.remove('playing'); page.classList.add('paused'); qs('#playbtn i', pw).className = 'fa-solid fa-play'; clearTimeout(idleTimer); });
+
+    vid.addEventListener('waiting', () => {
+      if (playType !== 'm3u8' || !hls || !hls.levels || !hls.levels.length || qualityManual) return;
+      const now = Date.now();
+      if (now - lastStallAt < 2500) return;
+      lastStallAt = now;
+      stallCount += 1;
+
+      if (stallCount >= 2) {
+        autoFallbackCooldownUntil = now + 45000;
+        lastAutoDowngradeAt = now;
+        const cap = getProfileCapIndex(hls.levels);
+        hls.autoLevelCapping = cap;
+        hls.currentLevel = -1;
+        hls.loadLevel = -1;
+        toast('Mạng yếu, đang tự giảm chất lượng để mượt hơn');
+      }
+    });
+
+    vid.addEventListener('playing', () => {
+      stallCount = 0;
+    });
     vid.addEventListener('timeupdate', () => {
       const cur = vid.currentTime || 0;
       const dur = vid.duration || 0;
@@ -2402,7 +2426,18 @@ const App = (() => {
       try {
         const dur = vid.duration && isFinite(vid.duration) ? vid.duration : null;
         const next = vid.currentTime + delta;
-        requestSeek(dur ? Math.max(0, Math.min(next, dur)) : Math.max(0, next));
+        const target = dur ? Math.max(0, Math.min(next, dur)) : Math.max(0, next);
+        requestSeek(target);
+
+        // Sau seek lớn, ưu tiên ổn định buffer để giảm lag khúc vừa tua
+        if (hls && !qualityManual && Math.abs(delta) >= 10 && hls.levels && hls.levels.length > 1) {
+          autoFallbackCooldownUntil = Date.now() + 16000;
+          const cap = getProfileCapIndex(hls.levels);
+          hls.autoLevelCapping = cap;
+          hls.currentLevel = -1;
+          hls.loadLevel = -1;
+        }
+
         showGestureHint(delta < 0 ? 'left' : 'right');
       } catch (_) {}
     }
@@ -3022,26 +3057,31 @@ const App = (() => {
 
             if (typeof Hls !== 'undefined' && Hls.isSupported()) {
               hls = new Hls({
-                maxBufferLength: 30,
-                maxMaxBufferLength: 60,
-                backBufferLength: 30,
-                maxBufferSize: 36 * 1000 * 1000,
-                maxBufferHole: 0.5,
-                maxFragLookUpTolerance: 0.2,
-                nudgeOffset: 0.1,
-                nudgeMaxRetry: 8,
+                maxBufferLength: 34,
+                maxMaxBufferLength: 70,
+                backBufferLength: 45,
+                maxBufferSize: 48 * 1000 * 1000,
+                maxBufferHole: 0.7,
+                maxFragLookUpTolerance: 0.25,
+                nudgeOffset: 0.12,
+                nudgeMaxRetry: 10,
                 startLevel: -1,
-                abrEwmaFastLive: 4,
-                abrEwmaSlowLive: 12,
-                abrBandWidthFactor: 0.92,
-                abrBandWidthUpFactor: 0.85,
+                abrEwmaFastLive: 5,
+                abrEwmaSlowLive: 15,
+                abrBandWidthFactor: 0.9,
+                abrBandWidthUpFactor: 0.8,
                 capLevelToPlayerSize: true,
                 startFragPrefetch: true,
                 autoStartLoad: true,
                 enableWorker: true,
                 progressive: true,
                 lowLatencyMode: false,
-                testBandwidth: true
+                testBandwidth: true,
+                manifestLoadingTimeOut: 15000,
+                fragLoadingTimeOut: 20000,
+                fragLoadingMaxRetry: 8,
+                levelLoadingMaxRetry: 6,
+                appendErrorMaxRetry: 8
               });
               liveHls = hls;
               hls.loadSource(playUrl);
@@ -3091,11 +3131,16 @@ const App = (() => {
               });
               hls.on(Hls.Events.ERROR, (_, d) => {
                 if (d && d.type === Hls.ErrorTypes.NETWORK_ERROR && qualityAutoFallback && !qualityManual && hls && hls.levels && hls.levels.length) {
-                  autoFallbackCooldownUntil = Date.now() + 30000;
+                  autoFallbackCooldownUntil = Date.now() + 45000;
                   const cap = getProfileCapIndex(hls.levels);
                   hls.autoLevelCapping = cap;
                   hls.currentLevel = -1;
                   hls.loadLevel = -1;
+                }
+
+                if (d && d.type === Hls.ErrorTypes.MEDIA_ERROR && qualityAutoFallback && !qualityManual && hls && hls.levels && hls.levels.length) {
+                  const cap = getProfileCapIndex(hls.levels);
+                  hls.autoLevelCapping = cap;
                 }
 
                 if (d.fatal) {
