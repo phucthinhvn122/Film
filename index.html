@@ -2,8 +2,13 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="description" content="DevThinhPhim - Xem phim HD miễn phí, cập nhật nhanh nhất">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ThinhFilm">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.json">
 <title>DevThinh Phim</title>
 <link rel="dns-prefetch" href="//fonts.googleapis.com">
 <link rel="dns-prefetch" href="//fonts.gstatic.com">
@@ -42,7 +47,7 @@ body{
     radial-gradient(circle at 84% 18%, rgba(139,136,255,.08), transparent 36%),
     radial-gradient(circle at 20% 70%, rgba(53,208,167,.05), transparent 44%);
   background-attachment: fixed;
-  color:var(--text);overflow-x:hidden;min-height:100vh;
+  color:var(--text);overflow-x:hidden;min-height:100vh;min-height:100dvh;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
@@ -240,7 +245,7 @@ img{display:block;max-width:100%;}
 .qa-btn:hover{color:#fff;border-color:rgba(255,255,255,.28)}
 
 /* WATCH PAGE */
-.watch-page{position:absolute;top:0;left:0;right:0;min-height:100vh;z-index:999;background:#06080e;display:flex;flex-direction:column;overflow:hidden;isolation:isolate;animation:fadeUp .4s ease}
+.watch-page{position:absolute;top:0;left:0;right:0;min-height:100vh;min-height:100dvh;z-index:999;background:#06080e;display:flex;flex-direction:column;overflow:hidden;isolation:isolate;animation:fadeUp .4s ease;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
 .watch-bg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
 .watch-bg-img{position:absolute;inset:-30px;background-size:cover;background-position:center;filter: blur(16px) saturate(150%);transform:scale(1.08);opacity:0}
 .watch-bg-img.show{opacity:1;animation:bgFloat .8s cubic-bezier(0.175, 0.885, 0.32, 1) both}
@@ -547,11 +552,11 @@ img{display:block;max-width:100%;}
 }
 
 @media(max-width:900px){
-  .mobile-bottom-nav{position:fixed;left:0;right:0;bottom:0;height:64px;display:flex;align-items:center;justify-content:space-around;background:rgba(10,14,24,.85);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,.08);z-index:999}
+  .mobile-bottom-nav{position:fixed;left:0;right:0;bottom:0;height:calc(64px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);display:flex;align-items:center;justify-content:space-around;background:rgba(10,14,24,.85);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,.08);z-index:999}
   .mb-nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:.72rem;color:var(--muted);cursor:pointer}
   .mb-nav-item i{font-size:1.05rem}
   .mb-nav-item.active{color:#fff}
-  #main{padding-bottom:72px}
+  #main{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
 }
 
 /* Keep fullscreen controls reachable on mobile watch */
