@@ -26,6 +26,10 @@
 :root{
   /* Minimal modern + eye-comfort */
   --row-pad:24px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
   --bg:#0f131a;--bg2:rgba(255,255,255,0.03);--bg3:rgba(255,255,255,0.07);
   --surface:rgba(26, 31, 41, 0.78);--surface2:rgba(36, 43, 58, 0.86);
   --accent:#67b3ff;--accent2:#8b88ff;
@@ -58,7 +62,7 @@ img{display:block;max-width:100%;}
 :focus-visible{outline:none}
 
 /* HEADER */
-#header{position:fixed;top:0;left:0;right:0;z-index:600;padding:0 clamp(16px,3vw,44px);height:72px;display:flex;align-items:center;justify-content:space-between;background:rgba(10,14,28,.66);-webkit-backdrop-filter:blur(24px) saturate(170%);backdrop-filter:blur(24px) saturate(170%);border-bottom:1px solid rgba(255,255,255,0.08);transition:background .3s,box-shadow .3s;will-change:transform;gap:14px}
+#header{position:fixed;top:0;left:0;right:0;z-index:600;padding:var(--safe-top) calc(clamp(16px,3vw,44px) + var(--safe-right)) 0 calc(clamp(16px,3vw,44px) + var(--safe-left));height:calc(72px + var(--safe-top));display:flex;align-items:center;justify-content:space-between;background:rgba(10,14,28,.66);-webkit-backdrop-filter:blur(24px) saturate(170%);backdrop-filter:blur(24px) saturate(170%);border-bottom:1px solid rgba(255,255,255,0.08);transition:background .3s,box-shadow .3s;will-change:transform;gap:14px}
 #header.scrolled{box-shadow:var(--shadow-soft);background:rgba(10,14,28,.84)}
 .logo{font-size:1.58rem;font-weight:800;color:var(--accent);letter-spacing:-1px;cursor:pointer;white-space:nowrap;flex:0 0 auto}
 .logo span{color:var(--text)}
@@ -121,7 +125,9 @@ img{display:block;max-width:100%;}
 
 /* MAIN - Page Transition Config */
 #main {
-  margin-top: 72px;
+  margin-top: calc(72px + var(--safe-top));
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
   transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1);
   opacity: 1;
   transform: translateY(0) scale(1);
@@ -254,7 +260,7 @@ img{display:block;max-width:100%;}
   radial-gradient(circle at 80% 35%, rgba(139,136,255,0.12), transparent 50%),
   linear-gradient(to bottom, rgba(8,12,18,0.16), rgba(8,12,18,0.92))}
 @keyframes bgFloat{from{transform:scale(1.14) translateY(10px)}to{transform:scale(1.12) translateY(0)}}
-.watch-top{position:absolute;top:0;left:0;right:0;z-index:10;background:linear-gradient(to bottom,rgba(0,0,0,.8),transparent);padding:14px 20px;display:flex;align-items:center;gap:14px;transition:opacity .3s}
+.watch-top{position:absolute;top:0;left:0;right:0;z-index:10;background:linear-gradient(to bottom,rgba(0,0,0,.8),transparent);padding:calc(14px + var(--safe-top)) calc(20px + var(--safe-right)) 14px calc(20px + var(--safe-left));display:flex;align-items:center;gap:14px;transition:opacity .3s}
 .watch-page.idle .watch-top{opacity:0}
 .watch-back{font-size:1.4rem;cursor:pointer;transition:color .2s}.watch-back:hover{color:var(--red)}
 .watch-title{font-size:1rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -552,11 +558,11 @@ img{display:block;max-width:100%;}
 }
 
 @media(max-width:900px){
-  .mobile-bottom-nav{position:fixed;left:0;right:0;bottom:0;height:calc(64px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);display:flex;align-items:center;justify-content:space-around;background:rgba(10,14,24,.85);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,.08);z-index:999}
+  .mobile-bottom-nav{position:fixed;left:0;right:0;bottom:0;padding-left:var(--safe-left);padding-right:var(--safe-right);height:calc(64px + var(--safe-bottom));padding-bottom:var(--safe-bottom);display:flex;align-items:center;justify-content:space-around;background:rgba(10,14,24,.85);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,.08);z-index:999}
   .mb-nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:.72rem;color:var(--muted);cursor:pointer}
   .mb-nav-item i{font-size:1.05rem}
   .mb-nav-item.active{color:#fff}
-  #main{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+  #main{padding-bottom:calc(72px + var(--safe-bottom))}
 }
 
 /* Keep fullscreen controls reachable on mobile watch */
