@@ -639,6 +639,7 @@ const IMG_FALLBACK = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000
 
 const scriptCache = new Map();
 const manifestPrefetchCache = new Set();
+const imageProxyCache = new Map();
 function loadScriptOnce(src) {
   if (scriptCache.has(src)) return scriptCache.get(src);
   const p = new Promise((resolve, reject) => {
@@ -664,21 +665,33 @@ function loadScriptOnce(src) {
   return p;
 }
 
-function buildImageProxyUrl(url='') {
+function buildImageProxyUrl(url='', opts = {}) {
   const u = String(url || '').trim();
   if (!u || u.startsWith('data:')) return u;
-  return `/img-proxy?url=${encodeURIComponent(u)}`;
+
+  const width = Number(opts.width || 0);
+  const quality = Number(opts.quality || 0);
+  const key = `${u}|w=${width || 0}|q=${quality || 0}`;
+  if (imageProxyCache.has(key)) return imageProxyCache.get(key);
+
+  const qp = new URLSearchParams({ url: u });
+  if (width > 0) qp.set('w', String(Math.max(64, Math.min(1600, Math.round(width)))));
+  if (quality > 0) qp.set('q', String(Math.max(40, Math.min(90, Math.round(quality)))));
+
+  const proxied = `/img-proxy?${qp.toString()}`;
+  imageProxyCache.set(key, proxied);
+  return proxied;
 }
 
-function safeImg(url, base='') {
+function safeImg(url, base='', opts = {}) {
   if (!url) return IMG_FALLBACK;
   let resolved = '';
   if (url.startsWith('http')) resolved = url;
   else if (url.startsWith('//')) resolved = 'https:' + url;
   else resolved = base.replace(/\/$/, '') + '/' + url.replace(/^\//, '');
 
-  // fallback-friendly: ưu tiên proxy để tránh 403 hotlink ảnh
-  return buildImageProxyUrl(resolved);
+  // fallback-friendly: ưu tiên proxy để tránh 403 hotlink ảnh + resize mobile
+  return buildImageProxyUrl(resolved, opts);
 }
 
 function el(tag, attrs={}, ...children) {
@@ -700,16 +713,30 @@ function lazyImg(src, cls='', fallback=IMG_FALLBACK) {
   if(cls) img.className = cls + ' loading';
   else img.className = 'loading';
   const isPriority = String(cls || '').includes('detail-poster') || String(cls || '').includes('person-avatar');
-  img.loading = isPriority ? 'eager' : 'lazy';
-  img.decoding = 'async';
-  img.fetchPriority = isPriority ? 'high' : 'low';
-  img.referrerPolicy = 'no-referrer';
+  const isCard = String(cls || '').includes('card-img') || String(cls || '').includes('hero-thumb');
+  const dpr = (typeof window !== 'undefined' && window.devicePixelRatio) ? window.devicePixelRatio : 1;
   const target = src || fallback;
-  img.src = target;
+
+  img.loading = isPriority ? 'eager' : 'lazy';
+  img.decoding = isPriority ? 'sync' : 'async';
+  img.fetchPriority = isPriority ? 'high' : (isCard ? 'low' : 'auto');
+  img.referrerPolicy = 'no-referrer';
+
   if (target && target !== fallback) {
-    img.srcset = `${target} 1x, ${target} 2x`;
-    img.sizes = isPriority ? '(max-width: 900px) 45vw, 320px' : '(max-width: 900px) 40vw, 180px';
+    const baseW = isPriority ? 420 : (isCard ? 220 : 280);
+    const w1 = Math.max(120, Math.round(baseW * Math.min(2, dpr)));
+    const w2 = Math.max(w1 + 80, Math.round(baseW * Math.min(3, dpr * 2)));
+    const q = isPriority ? 78 : 64;
+    const u1 = target.includes('/img-proxy?') ? `${target}&w=${w1}&q=${q}` : target;
+    const u2 = target.includes('/img-proxy?') ? `${target}&w=${w2}&q=${q}` : target;
+
+    img.src = u1;
+    img.srcset = `${u1} 1x, ${u2} 2x`;
+    img.sizes = isPriority ? '(max-width: 900px) 62vw, 420px' : '(max-width: 900px) 46vw, 220px';
+  } else {
+    img.src = target;
   }
+
   img.onerror = () => { if(img.src !== fallback) img.src = fallback; };
   img.onload = () => img.classList.remove('loading');
   return img;

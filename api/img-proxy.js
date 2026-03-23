@@ -98,6 +98,9 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Invalid image url' });
   }
 
+  const width = Math.max(0, Math.min(1800, Number(req.query.w || 0) || 0));
+  const quality = Math.max(40, Math.min(90, Number(req.query.q || 72) || 72));
+
   try {
     const upstream = await fetch(target.toString(), {
       method: 'GET',
@@ -117,10 +120,14 @@ export default async function handler(req, res) {
       return res.status(415).json({ error: 'Upstream is not an image' });
     }
 
-    const cacheControl = upstream.headers.get('cache-control') || 'public, max-age=3600, stale-while-revalidate=600';
+    // Passthrough tối ưu: hint cho Vercel Edge cache theo biến thể w/q
+    const cacheControl = upstream.headers.get('cache-control') || 'public, max-age=86400, stale-while-revalidate=604800';
     res.setHeader('Content-Type', ct);
     res.setHeader('Cache-Control', cacheControl);
+    res.setHeader('Vary', 'Accept');
     res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    if (width > 0) res.setHeader('X-Image-Width-Hint', String(width));
+    if (quality > 0) res.setHeader('X-Image-Quality-Hint', String(quality));
 
     const arr = await upstream.arrayBuffer();
     return res.status(200).send(Buffer.from(arr));
