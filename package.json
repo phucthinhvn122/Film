@@ -2,10 +2,14 @@
   "name": "bio-website",
   "version": "1.0.0",
   "private": true,
-  "description": "DevThinhPhim static app + image proxy server",
+  "description": "Netflix-inspired streaming UI app + image proxy server",
   "main": "server.js",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "start:prod": "NODE_ENV=production node server.js"
   },
   "dependencies": {
     "express": "^5.1.0"

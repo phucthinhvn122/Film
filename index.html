@@ -378,12 +378,19 @@ img{display:block;max-width:100%;}
 .watch-main-col{min-width:0;display:flex;flex-direction:column;gap:12px}
 .watch-card{background:#181818;border:1px solid rgba(255,255,255,.08);border-radius:2px;padding:12px;box-shadow:0 8px 20px rgba(0,0,0,.4)}
 .watch-content-align{padding-left:6px;padding-right:6px;margin-top:0}
-.watch-info-title{font-size:2rem;font-weight:800;color:#fff;line-height:1.2;margin-bottom:10px}
-.watch-info-meta{display:flex;gap:12px;color:var(--muted);font-size:1rem;margin-bottom:16px;flex-wrap:wrap;align-items:center}
-.watch-info-desc{color:var(--text2);line-height:1.7;font-size:.96rem;background:rgba(255,255,255,.02);padding:16px;border-radius:6px;border:1px solid rgba(255,255,255,.08)}
-.watch-action-row{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 4px}
+.watch-info-title{font-size:1.7rem;font-weight:800;color:#fff;line-height:1.2;margin-bottom:8px}
+.watch-info-meta{display:flex;gap:10px;color:var(--muted);font-size:.92rem;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+.watch-info-desc{color:var(--text2);line-height:1.65;font-size:.92rem;background:rgba(255,255,255,.02);padding:14px;border-radius:4px;border:1px solid rgba(255,255,255,.08)}
+.watch-action-row{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 2px}
 .watch-action-btn{padding:7px 11px;border-radius:4px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:var(--text2);font-size:.8rem;cursor:pointer}
 .watch-action-btn:hover{color:#fff;border-color:rgba(255,255,255,.24);background:rgba(255,255,255,.12)}
+.lang-switch{display:flex;gap:6px;flex-wrap:wrap}
+.lang-btn{padding:6px 10px;border-radius:4px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#e5e5e5;font-size:.76rem;font-weight:700;cursor:pointer}
+.lang-btn.active{background:#e50914;border-color:#e50914;color:#fff}
+.ep-split-panel{display:none;position:absolute;top:74px;right:10px;bottom:14px;width:min(340px,38vw);z-index:35;background:rgba(18,18,18,.95);border:1px solid rgba(255,255,255,.12);border-radius:4px;padding:10px;overflow:auto;box-shadow:0 16px 40px rgba(0,0,0,.6)}
+.watch-page.split-ep .ep-split-panel{display:block}
+.watch-page.split-ep .player-wrap{width:min(1360px,98vw);padding-right:min(350px,40vw)}
+.watch-page.split-ep .controls{right:min(350px,40vw)}
 
 .watch-server-list{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
 .w-srv-btn{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--text2);padding:7px 12px;border-radius:4px;cursor:pointer;font-size:.82rem;transition:all .2s;display:flex;align-items:center;gap:6px}
@@ -489,8 +496,9 @@ img{display:block;max-width:100%;}
   #header{height:calc(62px + var(--safe-top));padding:calc(var(--safe-top) + 2px) calc(14px + var(--safe-right)) 0 calc(14px + var(--safe-left))}
   #main{margin-top:calc(62px + var(--safe-top))}
   .logo{font-size:1.32rem}
-  .card{min-width:118px}
-  .hero{height:60vh;min-height:330px;border-radius:0 0 20px 20px}
+  .card{min-width:118px;transition:none}
+  .card:hover{transform:none;box-shadow:none}
+  .hero{height:60vh;min-height:330px;border-radius:0 0 14px 14px;box-shadow:none}
   .hero-body{padding:0 16px 70px;max-width:100%}
   .hero-thumbs{display:none}
   .hero-desc{-webkit-line-clamp:2;line-clamp:2}
@@ -506,9 +514,9 @@ img{display:block;max-width:100%;}
   .detail-poster{width:180px;min-width:0;margin:0 auto}
   .watch-info-section{padding:18px 14px 44px;grid-template-columns:1fr;gap:14px}
   .watch-card{padding:12px;border-radius:2px}
-  .watch-info-title{font-size:1.42rem}
-  .watch-info-meta{font-size:.84rem;gap:7px}
-  .watch-action-btn{font-size:.78rem;padding:8px 10px}
+  .watch-info-title{font-size:1.34rem}
+  .watch-info-meta{font-size:.8rem;gap:6px}
+  .watch-action-btn{font-size:.74rem;padding:7px 9px}
   .watch-content-align{padding-left:0}
   .search-page,.detail-page{padding-left:16px;padding-right:16px}
   .ep-overlay{width:100%;border-left:none;border-top:1px solid rgba(255,255,255,.08)}
@@ -518,37 +526,37 @@ img{display:block;max-width:100%;}
 /* Mobile */
 @media(max-width:540px){
   :root{--card-w:48%}
-  .mob-drawer-inner{width:min(88vw,320px);padding:74px 16px 16px}
-  .hero{height:56vh;min-height:300px}
-  .hero-title{font-size:1.7rem}
-  .hero-sub{font-size:.84rem;-webkit-line-clamp:2;line-clamp:2}
-  .hero-desc{font-size:.8rem;-webkit-line-clamp:2;line-clamp:2;margin-bottom:14px}
-  .hero-meta{margin-bottom:12px}
-  .hero-chip{font-size:.66rem;padding:3px 8px}
+  .mob-drawer-inner{width:min(88vw,320px);padding:74px 16px 16px;-webkit-backdrop-filter:none;backdrop-filter:none}
+  .hero{height:54vh;min-height:290px}
+  .hero-title{font-size:1.6rem}
+  .hero-sub{font-size:.82rem;-webkit-line-clamp:2;line-clamp:2}
+  .hero-desc{font-size:.78rem;-webkit-line-clamp:2;line-clamp:2;margin-bottom:12px}
+  .hero-meta{margin-bottom:10px}
+  .hero-chip{font-size:.64rem;padding:3px 8px}
   .hero-btns{gap:8px}
-  .btn{padding:10px 14px;font-size:.84rem}
+  .btn{padding:9px 13px;font-size:.82rem}
   .home-sections{padding:8px 12px 6px}
-  .section-title{font-size:.96rem}
-  .section-sub{font-size:.74rem}
+  .section-title{font-size:.92rem}
+  .section-sub{font-size:.72rem}
   .section-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-  .category-chip{padding:7px 10px;font-size:.76rem}
-  .card{min-width:0}
-  .card-info{padding:8px 10px 10px}
-  .card-title{font-size:.8rem}
-  .detail-info h1{font-size:1.45rem}
-  .detail-desc{font-size:.9rem;line-height:1.6}
-  .ctrl-left,.ctrl-right{gap:9px}
-  .cb{font-size:.95rem}
-  .time-txt{font-size:.68rem}
-  .search-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .category-chip{padding:7px 10px;font-size:.74rem}
+  .card{min-width:0;box-shadow:none}
+  .card-info{padding:8px 9px 9px}
+  .card-title{font-size:.78rem}
+  .detail-info h1{font-size:1.36rem}
+  .detail-desc{font-size:.86rem;line-height:1.52}
+  .ctrl-left,.ctrl-right{gap:8px}
+  .cb{font-size:.9rem}
+  .time-txt{font-size:.66rem}
+  .search-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
   .watch-srv{display:none}
-  .watch-bg-img{filter: blur(10px) saturate(135%)}
-  .watch-info-title{font-size:1.25rem}
-  .watch-info-meta{font-size:.8rem;gap:6px}
-  .watch-info-desc{padding:12px;font-size:.86rem;line-height:1.6}
-  .watch-ep-grid{grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:12px}
-  .ep-num{padding:10px 8px;border-radius:10px;font-size:.82rem;min-height:48px}
-  .watch-action-btn{font-size:.73rem;padding:7px 9px}
+  .watch-bg-img{filter: blur(7px) saturate(120%)}
+  .watch-info-title{font-size:1.12rem}
+  .watch-info-meta{font-size:.74rem;gap:5px}
+  .watch-info-desc{padding:9px;font-size:.8rem;line-height:1.5}
+  .watch-ep-grid{grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:7px}
+  .ep-num{padding:7px 5px;border-radius:4px;font-size:.74rem;min-height:36px}
+  .watch-action-btn{font-size:.68rem;padding:6px 7px}
 }
 
 /* Mobile bottom nav + feature UI */
@@ -566,11 +574,11 @@ img{display:block;max-width:100%;}
 }
 
 @media(max-width:900px){
-  .mobile-bottom-nav{position:fixed;left:0;right:0;bottom:0;padding-left:var(--safe-left);padding-right:var(--safe-right);height:calc(64px + var(--safe-bottom));padding-bottom:var(--safe-bottom);display:flex;align-items:center;justify-content:space-around;background:rgba(10,14,24,.85);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,.08);z-index:999}
-  .mb-nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:.72rem;color:var(--muted);cursor:pointer}
-  .mb-nav-item i{font-size:1.05rem}
+  .mobile-bottom-nav{position:fixed;left:0;right:0;bottom:0;padding-left:var(--safe-left);padding-right:var(--safe-right);height:calc(62px + var(--safe-bottom));padding-bottom:var(--safe-bottom);display:flex;align-items:center;justify-content:space-around;background:rgba(16,16,16,.96);-webkit-backdrop-filter:none;backdrop-filter:none;border-top:1px solid rgba(255,255,255,.08);z-index:999}
+  .mb-nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:.7rem;color:var(--muted);cursor:pointer}
+  .mb-nav-item i{font-size:1rem}
   .mb-nav-item.active{color:#fff}
-  #main{padding-bottom:calc(72px + var(--safe-bottom))}
+  #main{padding-bottom:calc(68px + var(--safe-bottom))}
 }
 
 /* Keep fullscreen controls reachable on mobile watch */
@@ -817,9 +825,8 @@ const App = (() => {
   const FAVORITES_KEY = 'devthinh:favorites';
   const PREF_KEY = 'devthinh:preferences';
   const SEARCH_FILTERS_KEY = 'devthinh:searchFilters';
-  const PREF_HIGH_QUALITY_KEY = 'devthinh:preferHighQuality';
   const PREF_SERVER_MODE_KEY = 'devthinh:serverMode';
-  const PREF_QUALITY_PROFILE_KEY = 'devthinh:qualityProfile';
+  const QUALITY_LOCK_1080 = true;
   const PREF_SERVER_MEMORY_KEY = 'devthinh:serverMemory';
   const SKIP_MARKER_KEY = 'devthinh:skipMarkers';
   const WATCH_TOGETHER_KEY = 'devthinh:watchTogether';
@@ -909,19 +916,6 @@ const App = (() => {
     } catch (_) { return {}; }
   }
 
-  function loadPreferHighQuality() {
-    try {
-      const v = localStorage.getItem(PREF_HIGH_QUALITY_KEY);
-      if (v === null) return true;
-      return v === 'true';
-    } catch (_) {
-      return true;
-    }
-  }
-
-  function savePreferHighQuality(on) {
-    try { localStorage.setItem(PREF_HIGH_QUALITY_KEY, on ? 'true' : 'false'); } catch (_) {}
-  }
 
   function loadServerMode() {
     try {
@@ -939,16 +933,10 @@ const App = (() => {
 
 
   function loadQualityProfile() {
-    try {
-      const v = localStorage.getItem(PREF_QUALITY_PROFILE_KEY) || 'auto';
-      return ['auto','1080','720','480'].includes(v) ? v : 'auto';
-    } catch (_) { return 'auto'; }
+    return '1080';
   }
 
-  function saveQualityProfile(v) {
-    const next = ['auto','1080','720','480'].includes(v) ? v : 'auto';
-    try { localStorage.setItem(PREF_QUALITY_PROFILE_KEY, next); } catch (_) {}
-  }
+  function saveQualityProfile() {}
 
   function loadServerMemory() {
     try {
@@ -1076,14 +1064,35 @@ const App = (() => {
     return next;
   }
 
-  function normalizeItems(data, fallbackImg) {
+  async function fetchTmdbMeta(title = '', year = '') {
+    const t = String(title || '').trim();
+    if (!t) return null;
+    try {
+      const qs = new URLSearchParams({ title: t });
+      if (year) qs.set('year', String(year));
+      const data = await fetchJSON(`/api/tmdb-meta?${qs.toString()}`, { cache: 'force-cache' });
+      return data && data.meta ? data.meta : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  async function normalizeItems(data, fallbackImg) {
     const items = data.items || (data.data && data.data.items) || [];
     const cdnImg = (data.data && data.data.APP_DOMAIN_CDN_IMAGE) || fallbackImg;
-    return items.map(m => ({
-      ...m,
-      _thumb: safeImg(m.thumb_url, cdnImg),
-      _poster: safeImg(m.poster_url || m.thumb_url, cdnImg),
-    }));
+
+    const metas = await Promise.all(items.map(m => fetchTmdbMeta(m.name || m.origin_name || '', m.year || '')));
+
+    return items.map((m, i) => {
+      const meta = metas[i] || null;
+      const tmdbPoster = meta && meta.poster ? safeImg(meta.poster, '') : '';
+      const tmdbBackdrop = meta && meta.backdrop ? safeImg(meta.backdrop, '') : '';
+      return {
+        ...m,
+        _thumb: tmdbPoster || safeImg(m.thumb_url, cdnImg),
+        _poster: tmdbBackdrop || safeImg(m.poster_url || m.thumb_url, cdnImg),
+      };
+    });
   }
 
   function pickPreferredServer(episodes = [], requestedName = '', mode = 'auto', rememberedName = '') {
@@ -1250,7 +1259,7 @@ const App = (() => {
     for (let i = 0; i < rowDefs.length; i++) {
       const res = results[i];
       if (res.status !== 'fulfilled') continue;
-      const items = normalizeItems(res.value, c.img);
+      const items = await normalizeItems(res.value, c.img);
       if (!items.length) continue;
 
       if (!heroSet) {
@@ -2058,6 +2067,13 @@ const App = (() => {
           <span class="time-txt" id="timetxt">00:00 / 00:00</span>
         </div>
         <div class="ctrl-right">
+          <div class="qmenu-wrap">
+            <button class="cb" id="qbtn" title="Chất lượng"><i class="fa-solid fa-gear"></i></button>
+            <div class="qmenu" id="qmenu"></div>
+          </div>
+          <button class="cb" id="speedbtn" title="Tốc độ phát"><span class="speed-txt" id="speedTxt">1x</span></button>
+          <button class="cb" id="pipbtn" title="Picture in Picture"><i class="fa-regular fa-clone"></i></button>
+          <button class="cb" id="theaterbtn" title="Chế độ rạp"><i class="fa-solid fa-clapperboard"></i></button>
           <button class="cb" id="autonextbtn" title="Tự động phát tập tiếp"><i class="fa-solid fa-forward-fast"></i></button>
           <button class="cb" id="fsbtn" title="Toàn màn hình"><i class="fa-solid fa-expand"></i></button>
         </div>
@@ -2136,9 +2152,13 @@ const App = (() => {
         <span><i class="fa-solid fa-certificate"></i> ${m.lang || '13+'}</span>
       </div>
       <div class="watch-action-row">
+        <button class="watch-action-btn" id="splitEpBtn"><i class="fa-solid fa-table-columns"></i> Chia màn hình tập</button>
         <button class="watch-action-btn" id="jumpEpisodeBtn"><i class="fa-solid fa-list"></i> Danh sách tập</button>
-        <button class="watch-action-btn" id="hqToggleBtn"><i class="fa-solid fa-film"></i> Chất lượng cao</button>
-        <button class="watch-action-btn" id="qualityProfileBtn"><i class="fa-solid fa-signal"></i> Chất lượng: AUTO</button>
+      </div>
+      <div class="lang-switch" id="langSwitch">
+        <button class="lang-btn active" data-lang="vietsub">Vietsub</button>
+        <button class="lang-btn" data-lang="thuyet-minh">Thuyết minh</button>
+        <button class="lang-btn" data-lang="long-tieng">Lồng tiếng</button>
       </div>
       </div>`;
     infoHead.appendChild(txtWrap);
@@ -2163,6 +2183,11 @@ const App = (() => {
       const epWrap = el('div', {class:'watch-content-align watch-card', style:'margin-top:10px;padding-bottom:12px'});
       epWrap.innerHTML = '<div style="color:var(--text2);margin-bottom:12px;font-size:.9rem;font-weight:700;letter-spacing:.3px">TẬP PHIM</div>';
       const epGrid = el('div', {class:'watch-ep-grid'});
+      const epSplitPanel = el('div', {class:'ep-split-panel', id:'epSplitPanel'});
+      const epSplitGrid = el('div', {class:'watch-ep-grid', id:'epSplitGrid'});
+      epSplitPanel.appendChild(el('div', {style:'color:var(--text2);margin-bottom:10px;font-size:.86rem;font-weight:700;letter-spacing:.3px'}, 'CHỌN TẬP NHANH'));
+      epSplitPanel.appendChild(epSplitGrid);
+      page.appendChild(epSplitPanel);
 
       const epPreview = el('div', {class:'ep-preview', id:'epPreview'});
       epPreview.innerHTML = `
@@ -2175,13 +2200,12 @@ const App = (() => {
       const epPreviewTag = qs('#epPreviewTag', page);
       const supportsHover = !!(window.matchMedia && window.matchMedia('(hover:hover)').matches);
 
-      activeServer.server_data.forEach(ep => {
+      const makeEpButton = (ep, targetGrid) => {
         const b = el('button', {class:`ep-num${ep.slug===epSlug?' active':''}`, onclick:()=>goWatch(movieSlug, ep.slug, srvName)});
         b.textContent = ep.name;
-        epGrid.appendChild(b);
+        targetGrid.appendChild(b);
 
         const epThumb = safeImg(ep.poster_url || ep.thumb_url || ep.image || ep.poster || '', c.img) || bgPosterUrl;
-
         if (supportsHover) {
           b.addEventListener('pointerenter', () => {
             epPreviewImg.style.backgroundImage = `url('${epThumb}')`;
@@ -2194,6 +2218,11 @@ const App = (() => {
           });
           b.addEventListener('pointerleave', () => epPreview.classList.remove('show'));
         }
+      };
+
+      activeServer.server_data.forEach(ep => {
+        makeEpButton(ep, epGrid);
+        makeEpButton(ep, epSplitGrid);
       });
 
       epWrap.appendChild(epGrid);
@@ -2235,8 +2264,8 @@ const App = (() => {
     let idleTimer = null;
 
     let pendingSeekTimer = null;
-    let preferHighQuality = loadPreferHighQuality();
-    let qualityAutoFallback = true;
+    let preferHighQuality = true;
+    let qualityAutoFallback = false;
     let autoFallbackCooldownUntil = 0;
     let lowBufferSince = 0;
     let lastAutoDowngradeAt = 0;
@@ -2731,45 +2760,12 @@ const App = (() => {
       document.addEventListener('click', e => { if (qOpen && !e.target.closest('.qmenu-wrap')) { qOpen = false; qmenu.classList.remove('open'); } });
     } // End if (prevent crash if missing)
 
-    const hqToggleBtn = qs('#hqToggleBtn', page);
-    if (hqToggleBtn) {
-      const paintHQ = () => {
-        hqToggleBtn.textContent = preferHighQuality ? '🎞️ Max lock 1080p: BẬT' : '🎞️ Max lock 1080p: TẮT';
-        hqToggleBtn.style.borderColor = preferHighQuality ? 'rgba(229,9,20,.55)' : 'rgba(255,255,255,.12)';
-        hqToggleBtn.style.color = preferHighQuality ? '#fff' : 'var(--text2)';
-      };
-      paintHQ();
-      hqToggleBtn.onclick = () => {
-        preferHighQuality = !preferHighQuality;
-        savePreferHighQuality(preferHighQuality);
-        paintHQ();
-        if (hls && hls.levels && hls.levels.length > 0) {
-          const selected = applyPreferredQuality(hls.levels);
-          buildQMenu(hls.levels, selected);
-        }
-      };
-    }
 
-    const qualityProfileBtn = qs('#qualityProfileBtn', page);
-    if (qualityProfileBtn) {
-      const order = ['auto', '1080', '720', '480'];
-      const paint = () => {
-        const labelMap = { auto: 'AUTO', '1080':'1080p', '720':'720p', '480':'480p' };
-        const fallbackTag = qualityAutoFallback ? ' · Smart' : '';
-        qualityProfileBtn.textContent = `📶 Chất lượng: ${labelMap[qualityProfile] || 'AUTO'}${fallbackTag}`;
-        qualityProfileBtn.style.borderColor = qualityProfile === 'auto' ? 'rgba(255,255,255,.12)' : 'rgba(229,9,20,.55)';
-        qualityProfileBtn.style.color = '#fff';
-      };
-      paint();
-      qualityProfileBtn.onclick = () => {
-        const i = order.indexOf(qualityProfile);
-        qualityProfile = order[(i + 1) % order.length];
-        saveQualityProfile(qualityProfile);
-        paint();
-        if (hls && hls.levels && hls.levels.length) {
-          const selected = applyPreferredQuality(hls.levels);
-          buildQMenu(hls.levels, selected);
-        }
+    const splitEpBtn = qs('#splitEpBtn', page);
+    if (splitEpBtn) {
+      splitEpBtn.onclick = () => {
+        page.classList.toggle('split-ep');
+        splitEpBtn.classList.toggle('on', page.classList.contains('split-ep'));
       };
     }
 
@@ -2779,6 +2775,37 @@ const App = (() => {
         const epWrap = qs('.watch-ep-grid', page);
         if (epWrap && epWrap.scrollIntoView) epWrap.scrollIntoView({ behavior: 'smooth', block: 'center' });
       };
+    }
+
+    const langSwitch = qs('#langSwitch', page);
+    if (langSwitch) {
+      const langBtns = langSwitch.querySelectorAll('.lang-btn');
+      const applyLanguage = (mode) => {
+        if (!Array.isArray(episodes) || !episodes.length) return;
+        const keyMap = {
+          'vietsub': ['vietsub', 'sub', 'phụ đề'],
+          'thuyet-minh': ['thuyết minh', 'thuyet minh', 'tm'],
+          'long-tieng': ['lồng tiếng', 'long tieng', 'lt']
+        };
+        const keys = keyMap[mode] || [];
+        const found = episodes.find(s => {
+          const name = String((s && s.server_name) || '').toLowerCase();
+          return keys.some(k => name.includes(k));
+        });
+        if (found && found.server_data && found.server_data.length) {
+          goWatch(movieSlug, found.server_data[0].slug || epSlug, found.server_name);
+        } else {
+          toast('Không có nguồn cho chế độ này');
+        }
+      };
+
+      langBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          langBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          applyLanguage(btn.dataset.lang || 'vietsub');
+        });
+      });
     }
 
 
@@ -2849,35 +2876,7 @@ const App = (() => {
     function getProfileCapIndex(levels=[]) {
       if (!Array.isArray(levels) || !levels.length) return -1;
 
-      // Nếu băng thông ước tính dưới 2Mbps thì cap xuống 720p để giảm giật
-      if (!qualityManual && hls && Number(hls.bandwidthEstimate || 0) > 0 && Number(hls.bandwidthEstimate) < 2000000) {
-        return get720LockIndex(levels);
-      }
-
-      // Auto fallback mode: lock xuống 1 level để giữ playback ổn định
-      if (qualityAutoFallback && qualityProfile === 'auto' && !qualityManual) {
-        const now = Date.now();
-        if (now < autoFallbackCooldownUntil) {
-          const baseline = preferHighQuality ? get1080LockIndex(levels) : getBestLevelIndex(levels);
-          if (baseline <= 0) return baseline;
-          return Math.max(0, baseline - 1);
-        }
-      }
-
-      if (qualityProfile === 'auto') return preferHighQuality ? get1080LockIndex(levels) : -1;
-      const cap = Number(qualityProfile || 0);
-      if (!cap) return -1;
-      let idx = -1;
-      let score = -1;
-      levels.forEach((lv, i) => {
-        const h = Number((lv && lv.height) || 0);
-        const b = Number((lv && lv.bitrate) || 0);
-        if (h > 0 && h <= cap) {
-          const s = h * 10000000 + b;
-          if (s > score) { score = s; idx = i; }
-        }
-      });
-      return idx >= 0 ? idx : getLowestLevelIndex(levels);
+      return get1080LockIndex(levels);
     }
 
     let qualityManual = false;
@@ -2908,7 +2907,7 @@ const App = (() => {
 
     function applyPreferredQuality(levels=[]) {
       if (!hls || !Array.isArray(levels) || !levels.length) return -1;
-      const capIdx = getProfileCapIndex(levels);
+      const capIdx = QUALITY_LOCK_1080 ? get1080LockIndex(levels) : getProfileCapIndex(levels);
       hls.autoLevelCapping = capIdx;
       hls.currentLevel = -1;
       hls.loadLevel = -1;

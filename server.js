@@ -2,9 +2,21 @@ const express = require('express');
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT || 3000);
 
 app.disable('x-powered-by');
+app.set('trust proxy', true);
+
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  next();
+});
+
+app.get('/health', (_req, res) => {
+  res.status(200).json({ ok: true, uptime: process.uptime() });
+});
 
 function isAllowedRemoteUrl(raw) {
   try {
@@ -55,7 +67,14 @@ app.get('/img-proxy', async (req, res) => {
 
 app.use(express.static(path.join(__dirname), {
   extensions: ['html'],
-  maxAge: '10m'
+  maxAge: '10m',
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-cache');
+    } else if (/(\.js|\.css|\.png|\.jpg|\.jpeg|\.webp|\.svg|\.ico)$/.test(filePath)) {
+      res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=86400');
+    }
+  }
 }));
 
 app.use((req, res) => {
