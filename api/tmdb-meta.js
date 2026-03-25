@@ -26,16 +26,43 @@ async function searchTmdb(title, year) {
   return Array.isArray(data.results) ? data.results : [];
 }
 
-function toMeta(item = {}) {
+async function fetchMovieDetail(tmdbId) {
+  const params = new URLSearchParams({
+    api_key: TMDB_API_KEY,
+    language: 'vi-VN',
+    append_to_response: 'credits'
+  });
+  const res = await fetch(`${TMDB_BASE}/movie/${tmdbId}?${params.toString()}`, {
+    headers: { Accept: 'application/json' }
+  });
+  if (!res.ok) throw new Error(`TMDB detail failed: ${res.status}`);
+  return await res.json();
+}
+
+function toMeta(item = {}, detail = null) {
   const posterPath = item.poster_path || '';
   const backdropPath = item.backdrop_path || '';
+
+  const cast = detail && detail.credits && Array.isArray(detail.credits.cast)
+    ? detail.credits.cast.slice(0, 8).map(c => ({
+        id: c.id,
+        name: c.name || '',
+        character: c.character || '',
+        avatar: c.profile_path ? `${TMDB_IMG}/w185${c.profile_path}` : ''
+      }))
+    : [];
+
   return {
     tmdbId: item.id || null,
     title: item.title || item.original_title || '',
-    overview: item.overview || '',
+    overview: (detail && detail.overview) || item.overview || '',
     year: String(item.release_date || '').slice(0, 4) || '',
     poster: posterPath ? `${TMDB_IMG}/w500${posterPath}` : '',
-    backdrop: backdropPath ? `${TMDB_IMG}/w1280${backdropPath}` : ''
+    backdrop: backdropPath ? `${TMDB_IMG}/w1280${backdropPath}` : '',
+    imdb: detail && detail.vote_average ? Number(detail.vote_average).toFixed(1) : '',
+    runtime: detail && detail.runtime ? detail.runtime : '',
+    genres: detail && Array.isArray(detail.genres) ? detail.genres.map(g => g.name).filter(Boolean) : [],
+    cast
   };
 }
 
@@ -65,7 +92,16 @@ export default async function handler(req, res) {
 
   try {
     const results = await searchTmdb(title, year);
-    const best = results[0] ? toMeta(results[0]) : null;
+    let best = null;
+
+    if (results[0]) {
+      try {
+        const detail = await fetchMovieDetail(results[0].id);
+        best = toMeta(results[0], detail);
+      } catch (_) {
+        best = toMeta(results[0], null);
+      }
+    }
 
     cache.set(key, {
       meta: best,

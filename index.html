@@ -239,7 +239,12 @@ img{display:block;max-width:100%;}
 .detail-desc{font-size:.95rem;line-height:1.7;color:var(--text2);margin-bottom:20px;max-width:700px}
 .meta-row{font-size:.85rem;color:var(--muted);margin-bottom:8px}
 .meta-row span{color:var(--text2);font-weight:500}
-.play-btn-big{display:inline-flex;align-items:center;gap:10px;background:var(--red);color:#fff;padding:12px 30px;border-radius:var(--radius-lg);font-size:1.1rem;font-weight:700;cursor:pointer;border:none;margin-top:8px;transition:var(--trans);box-shadow:0 8px 24px rgba(255,0,85,0.4)}
+.cast-strip{display:flex;gap:10px;overflow-x:auto;padding:8px 0 6px;margin:10px 0 8px}
+.cast-item{width:84px;flex:0 0 auto;text-align:center}
+.cast-item img{width:56px;height:56px;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,.18);display:block;margin:0 auto 6px}
+.cast-name{font-size:.72rem;color:#fff;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cast-role{font-size:.64rem;color:var(--muted)}
+.play-btn-big{display:inline-flex;align-items:center;gap:10px;background:var(--red);color:#fff;padding:12px 30px;border-radius:var(--radius-lg);font-size:1.1rem;font-weight:700;cursor:pointer;border:none;margin-top:8px;transition:var(--trans);box-shadow:0 8px 24px rgba(255,0,85,0.4)
 .play-btn-big:hover{background:var(--red2);transform:scale(1.05);box-shadow:0 12px 30px rgba(255,0,85,0.6)}
 .play-btn-big:active{transform:scale(0.95)}
 
@@ -731,7 +736,7 @@ function lazyImg(src, cls='', fallback=IMG_FALLBACK) {
   const img = document.createElement('img');
   if(cls) img.className = cls + ' loading';
   else img.className = 'loading';
-  const isPriority = String(cls || '').includes('detail-poster') || String(cls || '').includes('person-avatar');
+  const isPriority = String(cls || '').includes('detail-poster');
   const isCard = String(cls || '').includes('card-img') || String(cls || '').includes('hero-thumb');
   const dpr = (typeof window !== 'undefined' && window.devicePixelRatio) ? window.devicePixelRatio : 1;
   const target = src || fallback;
@@ -761,10 +766,6 @@ function lazyImg(src, cls='', fallback=IMG_FALLBACK) {
   return img;
 }
 
-function avatarByName(name='') {
-  const txt = encodeURIComponent(String(name || 'N/A').trim() || 'N/A');
-  return `https://ui-avatars.com/api/?name=${txt}&background=0f172a&color=ffffff&size=160&rounded=true&bold=true&format=png`;
-}
 
 function stripHtml(text='') {
   return String(text || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
@@ -1046,12 +1047,6 @@ const App = (() => {
     });
   }
 
-  function buildPeopleList(localMovie) {
-    return [
-      ...((localMovie.actor || []).slice(0, 6).map(n => ({name:n, role:'DV', avatar:avatarByName(n)}))),
-      ...((localMovie.director || []).slice(0, 3).map(n => ({name:n, role:'ĐD', avatar:avatarByName(n)})))
-    ];
-  }
 
   function abortRequest(kind) {
     const target = kind === 'home' ? homeAbort : searchAbort;
@@ -1070,9 +1065,15 @@ const App = (() => {
     try {
       const qs = new URLSearchParams({ title: t });
       if (year) qs.set('year', String(year));
-      const data = await fetchJSON(`/api/tmdb-meta?${qs.toString()}`, { cache: 'force-cache' });
+      const res = await fetch(`/api/tmdb-meta?${qs.toString()}`, { cache: 'force-cache' });
+      if (!res.ok) {
+        console.warn('TMDB meta API failed:', res.status, t);
+        return null;
+      }
+      const data = await res.json();
       return data && data.meta ? data.meta : null;
-    } catch (_) {
+    } catch (err) {
+      console.warn('TMDB meta error:', err && err.message ? err.message : err);
       return null;
     }
   }
@@ -1091,6 +1092,7 @@ const App = (() => {
         ...m,
         _thumb: tmdbPoster || safeImg(m.thumb_url, cdnImg),
         _poster: tmdbBackdrop || safeImg(m.poster_url || m.thumb_url, cdnImg),
+        _tmdb: meta || null
       };
     });
   }
@@ -1339,8 +1341,9 @@ const App = (() => {
     const cleanDesc = stripHtml(m.content || m.description || m.origin_name || '');
     const chips = [
       m.quality || m.episode_current || 'HD',
-      m.year || '',
-      (m.lang || m.language || 'Vietsub')
+      m.year || (m._tmdb && m._tmdb.year) || '',
+      (m.lang || m.language || 'Vietsub'),
+      (m._tmdb && m._tmdb.imdb) ? `IMDb ${m._tmdb.imdb}` : ''
     ].filter(Boolean);
 
     bodyEl.innerHTML = `
@@ -1348,7 +1351,7 @@ const App = (() => {
       <h1 class="hero-title">${m.name}</h1>
       <p class="hero-sub">${m.origin_name || ''}</p>
       <div class="hero-meta">${chips.map(c => `<span class="hero-chip">${c}</span>`).join('')}</div>
-      <p class="hero-desc">${cleanDesc || 'Khám phá bộ phim đang được quan tâm nhất hôm nay.'}</p>
+      <p class="hero-desc">${cleanDesc || (m._tmdb && m._tmdb.overview) || 'Khám phá bộ phim đang được quan tâm nhất hôm nay.'}</p>
       <div class="hero-btns">
         <button class="btn btn-orange" onclick="App.goDetail('${m.slug}')"><i class="fa-solid fa-play"></i> Xem Ngay</button>
         <button class="btn btn-gray" onclick="App.goDetail('${m.slug}')"><i class="fa-solid fa-circle-info"></i> Chi tiết</button>
@@ -1462,7 +1465,7 @@ const App = (() => {
 
     // Quality badge
     const badge = el('div', {class:'card-badge'});
-    badge.textContent = m.quality || m.episode_current || 'HD';
+    badge.textContent = (m._tmdb && m._tmdb.imdb ? `IMDb ${m._tmdb.imdb}` : (m.quality || m.episode_current || 'HD'));
     thumb.appendChild(badge);
     // Play icon overlay
     const play = el('div', {class:'card-play'});
@@ -1563,8 +1566,9 @@ const App = (() => {
       movieData = { movie: data.movie || data.item, episodes: data.episodes || [], sourceKey };
       const m = movieData.movie;
       const c = useCfg;
-      const poster = safeImg(m.poster_url || m.thumb_url, c.img);
-      const peopleMeta = buildPeopleList(m);
+      const tmdbMeta = await fetchTmdbMeta(m.name || m.origin_name || '', m.year || '');
+      m._tmdb = tmdbMeta || null;
+      const poster = (tmdbMeta && tmdbMeta.poster) ? safeImg(tmdbMeta.poster, '') : safeImg(m.poster_url || m.thumb_url, c.img);
 
       const rememberedServer = getRememberedServer(m.slug || slug);
       const firstServer = pickPreferredServer(movieData.episodes, '', loadServerMode(), rememberedServer);
@@ -1583,35 +1587,34 @@ const App = (() => {
       const info = el('div', {class:'detail-info'});
       info.innerHTML = `
         <h1>${m.name}</h1>
-        <div class="detail-origin">${m.origin_name || ''}</div>
+        <div class="detail-origin">${m.origin_name || (m._tmdb && m._tmdb.title) || ''}</div>
         <div class="tags">
           <span class="tag green">${m.episode_current || 'Full'}</span>
-          <span class="tag">${m.year || ''}</span>
+          <span class="tag">${m.year || (m._tmdb && m._tmdb.year) || ''}</span>
           <span class="tag">${m.quality || 'FHD'}</span>
-          ${(m.category||[]).map(g=>`<span class="tag">${g.name||g}</span>`).join('')}
+          ${(m._tmdb && m._tmdb.imdb) ? `<span class="tag">IMDb ${m._tmdb.imdb}</span>` : ''}
+          ${(m._tmdb && m._tmdb.runtime) ? `<span class="tag">${m._tmdb.runtime} phút</span>` : ''}
+          ${((m._tmdb && m._tmdb.genres && m._tmdb.genres.length) ? m._tmdb.genres : (m.category||[]).map(g => g.name || g)).slice(0,4).map(g=>`<span class="tag">${g}</span>`).join('')}
         </div>
-        <p class="detail-desc">${m.content ? m.content.replace(/<[^>]+>/g,'') : 'Không có mô tả.'}</p>
-        <div class="meta-row">Diễn viên: <span>${(m.actor||[]).slice(0,5).join(', ') || 'N/A'}</span></div>
+        <p class="detail-desc">${m.content ? m.content.replace(/<[^>]+>/g,'') : ((m._tmdb && m._tmdb.overview) || 'Không có mô tả.')}</p>
+        <div class="meta-row">Diễn viên: <span>${(m._tmdb && m._tmdb.cast && m._tmdb.cast.length ? m._tmdb.cast.map(x => x.name).slice(0,5) : (m.actor||[]).slice(0,5)).join(', ') || 'N/A'}</span></div>
         <div class="meta-row">Đạo diễn: <span>${(m.director||[]).join(', ') || 'N/A'}</span></div>`;
 
-      const people = el('div', {style:'display:flex;gap:10px;flex-wrap:wrap;margin:12px 0 4px'});
-      peopleMeta.forEach(p => {
-        const card = el('div', {style:'width:88px;text-align:center'});
-        const av = lazyImg(p.avatar || avatarByName(p.name), 'person-avatar');
-        av.style.width = '56px';
-        av.style.height = '56px';
-        av.style.borderRadius = '50%';
-        av.style.margin = '0 auto 6px';
-        av.style.objectFit = 'cover';
-        av.style.border = '1px solid rgba(255,255,255,.15)';
-        const nm = el('div', {style:'font-size:.72rem;color:#fff;line-height:1.2;overflow:hidden;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2'}, p.name || 'N/A');
-        const rl = el('div', {style:'font-size:.65rem;color:var(--muted)'}, p.role === 'DV' ? 'Diễn viên' : (p.role === 'ĐD' ? 'Đạo diễn' : p.role));
-        card.appendChild(av);
-        card.appendChild(nm);
-        card.appendChild(rl);
-        people.appendChild(card);
-      });
-      if (people.childNodes.length) info.appendChild(people);
+      if (m._tmdb && Array.isArray(m._tmdb.cast) && m._tmdb.cast.length) {
+        const castStrip = el('div', {class:'cast-strip'});
+        m._tmdb.cast.forEach(p => {
+          const item = el('div', {class:'cast-item'});
+          const img = lazyImg(p.avatar || '', '');
+          img.alt = p.name || 'Cast';
+          const name = el('div', {class:'cast-name'}, p.name || 'N/A');
+          const role = el('div', {class:'cast-role'}, p.character || 'Diễn viên');
+          item.appendChild(img);
+          item.appendChild(name);
+          item.appendChild(role);
+          castStrip.appendChild(item);
+        });
+        info.appendChild(castStrip);
+      }
 
       if (firstEp) {
         const pb = el('button', {class:'play-btn-big', onclick: () => goWatch(slug, firstEp.slug, firstServer.server_name)});
