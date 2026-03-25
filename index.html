@@ -212,8 +212,8 @@ img{display:block;max-width:100%;}
 .card:hover{transform:scale(1.08);box-shadow:0 22px 48px rgba(0,0,0,.7);z-index:20;border-color:rgba(255,255,255,0.18)}
 .card.hover-ready{transform:scale(1.18);box-shadow:0 30px 64px rgba(0,0,0,.75);z-index:70}
 .card:active{transform:scale(0.98)}
-.card-thumb{position:relative;aspect-ratio:16/9;overflow:hidden;background:var(--bg3);border-radius:4px}
-.card-thumb img{width:100%;height:100%;object-fit:cover;transition:transform .3s,opacity .3s}
+.card-thumb{position:relative;aspect-ratio:var(--thumb-ratio, 16/9);overflow:hidden;background:var(--bg3);border-radius:4px;min-height:0}
+.card-thumb img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;transition:transform .3s,opacity .3s}
 .card-thumb img.loading{opacity:0}
 .card:hover .card-thumb img{transform:scale(1.1)}
 .card-badge{position:absolute;top:8px;left:8px;background:rgba(0,0,0,.74);color:#fff;font-size:.58rem;font-weight:700;padding:3px 7px;border-radius:3px;text-transform:uppercase;z-index:2;border:1px solid rgba(255,255,255,.18)}
@@ -221,7 +221,7 @@ img{display:block;max-width:100%;}
 .card-play i{font-size:2.2rem;color:#fff;filter:drop-shadow(0 2px 6px rgba(0,0,0,.5))}
 .card:hover .card-play{opacity:1}
 .card-info{padding:10px 10px 12px;flex:1;background:#141414;display:flex;flex-direction:column;justify-content:space-between;min-height:72px;border-top:1px solid rgba(255,255,255,.08)}
-.card-title{font-size:.82rem;font-weight:600;color:#fff;line-height:1.35;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;min-height:2.5em}
+.card-title{font-size:.82rem;font-weight:600;color:#fff;line-height:1.35;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;min-height:2.7em}
 .card-meta{font-size:.68rem;color:var(--muted);margin-top:6px;display:flex;gap:6px;align-items:center}
 .card-meta .dot{color:var(--border2)}
 .card-ep{font-size:.66rem;font-weight:700;color:#e5e5e5}
@@ -236,7 +236,7 @@ img{display:block;max-width:100%;}
 .tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
 .tag{padding:4px 10px;border-radius:4px;border:1px solid rgba(255,255,255,.2);font-size:.8rem;color:var(--text2)}
 .tag.green{border-color:#e5e5e5;color:#e5e5e5}
-.detail-desc{font-size:.95rem;line-height:1.7;color:var(--text2);margin-bottom:20px;max-width:700px}
+.detail-desc{font-size:.95rem;line-height:1.7;color:var(--text2);margin-bottom:20px;max-width:700px;word-break:break-word;white-space:pre-wrap;overflow:hidden}
 .meta-row{font-size:.85rem;color:var(--muted);margin-bottom:8px}
 .meta-row span{color:var(--text2);font-weight:500}
 .cast-strip{display:flex;gap:10px;overflow-x:auto;padding:8px 0 6px;margin:10px 0 8px}
@@ -244,7 +244,7 @@ img{display:block;max-width:100%;}
 .cast-item img{width:56px;height:56px;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,.18);display:block;margin:0 auto 6px}
 .cast-name{font-size:.72rem;color:#fff;line-height:1.2;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .cast-role{font-size:.64rem;color:var(--muted)}
-.play-btn-big{display:inline-flex;align-items:center;gap:10px;background:var(--red);color:#fff;padding:12px 30px;border-radius:var(--radius-lg);font-size:1.1rem;font-weight:700;cursor:pointer;border:none;margin-top:8px;transition:var(--trans);box-shadow:0 8px 24px rgba(255,0,85,0.4)
+.play-btn-big{display:inline-flex;align-items:center;gap:10px;background:var(--red);color:#fff;padding:12px 30px;border-radius:var(--radius-lg);font-size:1.1rem;font-weight:700;cursor:pointer;border:none;margin-top:8px;transition:var(--trans);box-shadow:0 8px 24px rgba(255,0,85,0.4)}
 .play-btn-big:hover{background:var(--red2);transform:scale(1.05);box-shadow:0 12px 30px rgba(255,0,85,0.6)}
 .play-btn-big:active{transform:scale(0.95)}
 
@@ -385,17 +385,13 @@ img{display:block;max-width:100%;}
 .watch-content-align{padding-left:6px;padding-right:6px;margin-top:0}
 .watch-info-title{font-size:1.7rem;font-weight:800;color:#fff;line-height:1.2;margin-bottom:8px}
 .watch-info-meta{display:flex;gap:10px;color:var(--muted);font-size:.92rem;margin-bottom:12px;flex-wrap:wrap;align-items:center}
-.watch-info-desc{color:var(--text2);line-height:1.65;font-size:.92rem;background:rgba(255,255,255,.02);padding:14px;border-radius:4px;border:1px solid rgba(255,255,255,.08)}
+.watch-info-desc{color:var(--text2);line-height:1.65;font-size:.92rem;background:rgba(255,255,255,.02);padding:14px;border-radius:4px;border:1px solid rgba(255,255,255,.08);word-break:break-word;white-space:pre-wrap;overflow:hidden}
 .watch-action-row{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 2px}
 .watch-action-btn{padding:7px 11px;border-radius:4px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:var(--text2);font-size:.8rem;cursor:pointer}
 .watch-action-btn:hover{color:#fff;border-color:rgba(255,255,255,.24);background:rgba(255,255,255,.12)}
 .lang-switch{display:flex;gap:6px;flex-wrap:wrap}
 .lang-btn{padding:6px 10px;border-radius:4px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#e5e5e5;font-size:.76rem;font-weight:700;cursor:pointer}
 .lang-btn.active{background:#e50914;border-color:#e50914;color:#fff}
-.ep-split-panel{display:none;position:absolute;top:74px;right:10px;bottom:14px;width:min(340px,38vw);z-index:35;background:rgba(18,18,18,.95);border:1px solid rgba(255,255,255,.12);border-radius:4px;padding:10px;overflow:auto;box-shadow:0 16px 40px rgba(0,0,0,.6)}
-.watch-page.split-ep .ep-split-panel{display:block}
-.watch-page.split-ep .player-wrap{width:min(1360px,98vw);padding-right:min(350px,40vw)}
-.watch-page.split-ep .controls{right:min(350px,40vw)}
 
 .watch-server-list{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
 .w-srv-btn{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:var(--text2);padding:7px 12px;border-radius:4px;cursor:pointer;font-size:.82rem;transition:all .2s;display:flex;align-items:center;gap:6px}
@@ -1290,7 +1286,7 @@ const App = (() => {
     const heroItems = [];
     for (const res of results) {
       if (res.status !== 'fulfilled') continue;
-      const items = normalizeItems(res.value, c.img);
+      const items = await normalizeItems(res.value, c.img);
       items.slice(0, 10).forEach(i => {
         if (!heroItems.find(x => x.slug === i.slug)) heroItems.push(i);
       });
@@ -1751,7 +1747,8 @@ const App = (() => {
         const data = await fetchJSON(c.search + encodeURIComponent(kw), { signal: req.signal });
         if (req.signal.aborted || currentSearchKeyword !== kw) return;
 
-        let items = applySearchFilters(normalizeItems(data, c.img), filters);
+        const normalized = await normalizeItems(data, c.img);
+        let items = applySearchFilters(normalized, filters);
 
         // AI-ish ranking cho truy vấn tự nhiên
         const ai = aiNormalizeKeyword(kw);
@@ -1763,7 +1760,7 @@ const App = (() => {
         if (!items.length) {
           grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><i class="fa-solid fa-magnifying-glass"></i><p>Không tìm thấy kết quả phù hợp.</p></div>';
         } else {
-          items.forEach(m => grid.appendChild(buildCard(m, 'aspect-ratio:2/3;max-width:100%')));
+          items.forEach(m => grid.appendChild(buildCard(m, '--thumb-ratio:2/3;max-width:100%')));
         }
       } catch (err) {
         if (req.signal.aborted) return;
@@ -1817,7 +1814,7 @@ const App = (() => {
     const grid = el('div', {class:'search-grid'});
     const favs = loadFavorites();
     if (!favs.length) grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><p>Bạn chưa thêm phim yêu thích.</p></div>';
-    else favs.forEach(x => grid.appendChild(buildCard(x, 'aspect-ratio:2/3;max-width:100%')));
+    else favs.forEach(x => grid.appendChild(buildCard(x, '--thumb-ratio:2/3;max-width:100%')));
     wrap.appendChild(grid);
     setMain(wrap);
     window.scrollTo(0,0);
@@ -1911,7 +1908,7 @@ const App = (() => {
       try {
         const url = `${baseUrl}?page=${page}&sort_field=modified.time&sort_type=desc`;
         const data = await fetchJSON(url);
-        const items = normalizeItems(data, c.img);
+        const items = await normalizeItems(data, c.img);
 
         // Extract pagination info from API response
         if (page === 1) {
@@ -2155,7 +2152,6 @@ const App = (() => {
         <span><i class="fa-solid fa-certificate"></i> ${m.lang || '13+'}</span>
       </div>
       <div class="watch-action-row">
-        <button class="watch-action-btn" id="splitEpBtn"><i class="fa-solid fa-table-columns"></i> Chia màn hình tập</button>
         <button class="watch-action-btn" id="jumpEpisodeBtn"><i class="fa-solid fa-list"></i> Danh sách tập</button>
       </div>
       <div class="lang-switch" id="langSwitch">
@@ -2186,11 +2182,6 @@ const App = (() => {
       const epWrap = el('div', {class:'watch-content-align watch-card', style:'margin-top:10px;padding-bottom:12px'});
       epWrap.innerHTML = '<div style="color:var(--text2);margin-bottom:12px;font-size:.9rem;font-weight:700;letter-spacing:.3px">TẬP PHIM</div>';
       const epGrid = el('div', {class:'watch-ep-grid'});
-      const epSplitPanel = el('div', {class:'ep-split-panel', id:'epSplitPanel'});
-      const epSplitGrid = el('div', {class:'watch-ep-grid', id:'epSplitGrid'});
-      epSplitPanel.appendChild(el('div', {style:'color:var(--text2);margin-bottom:10px;font-size:.86rem;font-weight:700;letter-spacing:.3px'}, 'CHỌN TẬP NHANH'));
-      epSplitPanel.appendChild(epSplitGrid);
-      page.appendChild(epSplitPanel);
 
       const epPreview = el('div', {class:'ep-preview', id:'epPreview'});
       epPreview.innerHTML = `
@@ -2225,7 +2216,6 @@ const App = (() => {
 
       activeServer.server_data.forEach(ep => {
         makeEpButton(ep, epGrid);
-        makeEpButton(ep, epSplitGrid);
       });
 
       epWrap.appendChild(epGrid);
@@ -2763,14 +2753,6 @@ const App = (() => {
       document.addEventListener('click', e => { if (qOpen && !e.target.closest('.qmenu-wrap')) { qOpen = false; qmenu.classList.remove('open'); } });
     } // End if (prevent crash if missing)
 
-
-    const splitEpBtn = qs('#splitEpBtn', page);
-    if (splitEpBtn) {
-      splitEpBtn.onclick = () => {
-        page.classList.toggle('split-ep');
-        splitEpBtn.classList.toggle('on', page.classList.contains('split-ep'));
-      };
-    }
 
     const jumpEpisodeBtn = qs('#jumpEpisodeBtn', page);
     if (jumpEpisodeBtn) {
