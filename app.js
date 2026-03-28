@@ -1535,9 +1535,12 @@ const App = (() => {
       const activeTab = document.querySelector('.mb-nav-item.active');
       const loc = activeTab && activeTab.dataset ? activeTab.dataset.tab : '';
       if (loc === 'search' || document.querySelector('.search-page')) {
-        const keyword = String(e.target.value || '').trim();
-        if ($('q')) $('q').value = keyword;
-        if ($('q-mob')) $('q-mob').value = keyword;
+        const rawValue = String(e.target.value || '');
+        const keyword = rawValue.trim();
+        // Sync only to the OTHER search input, never overwrite the active one
+        const isQ = (e.target.id === 'q');
+        if (!isQ && $('q')) $('q').value = rawValue;
+        if (isQ && $('q-mob')) $('q-mob').value = rawValue;
         currentSearchKeyword = keyword;
         if (window.__debouncedSearchRender) window.__debouncedSearchRender(keyword);
       }
