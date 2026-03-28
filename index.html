@@ -65,7 +65,7 @@ img{display:block;max-width:100%;}
 .logo span{color:#e50914;font-weight:900;text-transform:uppercase}
 
 /* Rophim-inspired search */
-.search-box{display:flex;align-items:center;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.14);border-radius:4px;padding:7px 10px;transition:box-shadow .2s,border-color .2s,transform .16s ease,background .2s;width:220px;min-width:180px;max-width:30vw;box-shadow:0 0 0 rgba(0,0,0,0);flex-shrink:0;position:relative;overflow:hidden}
+.search-box{display:flex;align-items:center;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.14);border-radius:4px;padding:7px 10px;transition:box-shadow .2s,border-color .2s,transform .16s ease,background .2s;width:220px;min-width:180px;max-width:30vw;box-shadow:0 0 0 rgba(0,0,0,0);flex-shrink:0;position:relative;overflow:visible}
 .search-box::after{content:'';position:absolute;inset:0;pointer-events:none;opacity:0;background:linear-gradient(120deg,transparent,rgba(255,255,255,.09),transparent);transform:translateX(-120%)}
 .search-box:focus-within{border-color:rgba(255,255,255,.4);box-shadow:0 0 0 1px rgba(255,255,255,.14),0 8px 20px rgba(0,0,0,.35);background:rgba(0,0,0,.62)}
 .search-box.press{transform:scale(.985)}
@@ -115,7 +115,7 @@ img{display:block;max-width:100%;}
 .mob-drawer.open .mob-drawer-inner{transform:none}
 .drawer-title{font-size:1.5rem;font-weight:900;color:#e50914;margin-bottom:12px;letter-spacing:.4px;text-transform:uppercase}
 .drawer-title span{color:#e50914;font-weight:900;text-transform:uppercase}
-.mob-search{display:flex;align-items:center;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:12px 14px;margin-bottom:12px;box-shadow:none}
+.mob-search{display:flex;align-items:center;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.1);border-radius:4px;padding:12px 14px;margin-bottom:12px;box-shadow:none;position:relative}
 .mob-search input{flex:1;font-size:1rem;color:var(--text);background:none}
 .mob-search button{color:var(--muted);cursor:pointer;font-size:1.1rem;transition:color .2s}
 .mob-search button:hover{color:#fff}
@@ -222,6 +222,7 @@ img{display:block;max-width:100%;}
 .card:hover .card-play{opacity:1}
 .card-info{padding:10px 10px 12px;flex:1;background:#141414;display:flex;flex-direction:column;justify-content:space-between;min-height:72px;border-top:1px solid rgba(255,255,255,.08)}
 .card-title{font-size:.82rem;font-weight:600;color:#fff;line-height:1.35;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;min-height:2.7em}
+mark.hl{background:rgba(229,9,20,.24);color:#fff;padding:0 2px;border-radius:3px}
 .card-meta{font-size:.68rem;color:var(--muted);margin-top:6px;display:flex;gap:6px;align-items:center}
 .card-meta .dot{color:var(--border2)}
 .card-ep{font-size:.66rem;font-weight:700;color:#e5e5e5}
@@ -250,16 +251,44 @@ img{display:block;max-width:100%;}
 
 /* SEARCH PAGE */
 .search-page{padding:80px 4vw 40px;animation:fadeUp .4s cubic-bezier(0.175, 0.885, 0.32, 1)}
-.search-page h2{font-size:1.2rem;color:var(--text);margin-bottom:20px;text-shadow:0 2px 10px rgba(0,0,0,0.5)}
+.search-hero{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+.search-hero h2{font-size:1.35rem;color:var(--text);text-shadow:0 2px 10px rgba(0,0,0,0.5)}
+.search-meta{font-size:.85rem;color:var(--muted)}
+.search-input-wrap{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:10px 12px;max-width:520px;width:min(100%,520px);box-shadow:0 10px 26px rgba(0,0,0,.35)}
+.search-input-wrap:focus-within{border-color:rgba(255,255,255,.28);background:rgba(255,255,255,.07)}
+.search-input{flex:1;background:none;border:none;color:#fff;font-size:.96rem}
+.search-input::placeholder{color:var(--muted)}
+.search-suggestions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.suggestion-item{padding:7px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);font-size:.78rem;color:var(--text2);cursor:pointer;transition:var(--trans)}
+.suggestion-item:hover{color:#fff;border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.12)}
 .search-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px}
+.search-grid .card{min-width:0;content-visibility:auto;contain-intrinsic-size:220px 340px}
+.search-state-hint{font-size:.8rem;color:var(--muted);margin:0 0 12px}
+.search-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px;flex-wrap:wrap}
+.search-toolbar-left,.search-toolbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.search-sort{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:6px 10px}
+.search-sort label{font-size:.76rem;color:var(--muted)}
+.search-sort select{background:transparent;color:#fff;font-size:.82rem;cursor:pointer}
+.search-sort option{background:#181818;color:#fff}
+.toolbar-btn{padding:7px 11px;border-radius:10px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.04);font-size:.78rem;color:#e8e8e8;cursor:pointer}
+.toolbar-btn.active{background:rgba(229,9,20,.18);border-color:rgba(229,9,20,.55);color:#fff}
 
 /* rophim chips */
-.filters-bar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 18px}
-.filter-chip{padding:7px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.04);font-size:.78rem;color:var(--text2);cursor:pointer}
-.filter-chip.active{background:rgba(229,9,20,.16);border-color:rgba(229,9,20,.5);color:#fff}
+.filters-bar{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 18px;position:sticky;top:calc(62px + var(--safe-top));z-index:12;background:rgba(20,20,20,.92);padding:8px;border:1px solid rgba(255,255,255,.08);border-radius:12px}
+.filter-chip{padding:7px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.04);font-size:.78rem;color:var(--text2);cursor:pointer;transition:var(--trans)}
+.filter-chip.active{background:rgba(229,9,20,.18);border-color:rgba(229,9,20,.5);color:#fff}
 .quick-actions{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 18px}
 .qa-btn{padding:9px 14px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);color:var(--text2);font-size:.85rem;cursor:pointer}
 .qa-btn:hover{color:#fff;border-color:rgba(255,255,255,.28)}
+.search-autocomplete{position:absolute;left:0;right:0;top:calc(100% + 6px);background:rgba(15,15,15,.98);border:1px solid rgba(255,255,255,.12);border-radius:8px;box-shadow:0 14px 28px rgba(0,0,0,.55);padding:6px;z-index:120;display:none;max-height:min(52vh,330px);overflow:auto}
+.search-autocomplete.open{display:block}
+.search-autocomplete-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 10px;border-radius:6px;font-size:.83rem;color:var(--text2);cursor:pointer;border:1px solid transparent}
+.search-autocomplete-item:hover,.search-autocomplete-item.active{background:rgba(255,255,255,.09);color:#fff;border-color:rgba(255,255,255,.15)}
+.search-autocomplete-meta{font-size:.7rem;color:var(--muted);white-space:nowrap}
+.search-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px;flex-wrap:wrap}
+.search-sort{display:flex;align-items:center;gap:8px}
+.search-sort label{font-size:.78rem;color:var(--muted)}
+.search-sort select{background:rgba(255,255,255,.06);color:#fff;border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:7px 10px;font-size:.8rem}
 
 /* WATCH PAGE */
 .watch-page{position:absolute;top:0;left:0;right:0;min-height:100vh;min-height:100dvh;z-index:999;background:#000;display:flex;flex-direction:column;overflow:hidden;isolation:isolate;animation:fadeUp .4s ease;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
@@ -449,6 +478,13 @@ img{display:block;max-width:100%;}
 /* LOADER */
 .loader{display:flex;justify-content:center;align-items:center;padding:80px 20px}
 .spin{width:44px;height:44px;border:3px solid rgba(229,9,20,.2);border-top-color:var(--red);border-radius:50%;animation:spin 1s linear infinite}
+.search-skeleton{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:16px;width:100%}
+.skeleton-card{border:1px solid rgba(255,255,255,.08);border-radius:6px;overflow:hidden;background:#151515}
+.skeleton-thumb{aspect-ratio:2/3;background:linear-gradient(90deg,#1f1f1f,#2a2a2a,#1f1f1f);background-size:180% 100%;animation:skeletonShimmer 1.2s linear infinite}
+.skeleton-info{padding:8px}
+.skeleton-line{height:10px;border-radius:999px;background:linear-gradient(90deg,#222,#2f2f2f,#222);background-size:180% 100%;animation:skeletonShimmer 1.2s linear infinite}
+.skeleton-line + .skeleton-line{margin-top:7px}
+.skeleton-line.short{width:62%}
 
 /* EMPTY */
 .empty{text-align:center;padding:80px 20px;color:var(--muted)}
@@ -457,6 +493,7 @@ img{display:block;max-width:100%;}
 
 /* ANIMATIONS */
 @keyframes spin{to{transform:rotate(360deg)}}
+@keyframes skeletonShimmer{0%{background-position:180% 0}100%{background-position:-180% 0}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
 @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(-10px) scale(.98)}to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}
 
@@ -550,6 +587,7 @@ img{display:block;max-width:100%;}
   .cb{font-size:.9rem}
   .time-txt{font-size:.66rem}
   .search-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .search-grid.compact{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
   .watch-srv{display:none}
   .watch-bg-img{filter: blur(7px) saturate(120%)}
   .watch-info-title{font-size:1.12rem}
@@ -572,6 +610,7 @@ img{display:block;max-width:100%;}
   .hero-title{font-size:1.35rem}
   .btn{padding:9px 12px;font-size:.8rem}
   .search-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .search-grid.compact{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
 }
 
 @media(max-width:900px){
@@ -767,8 +806,80 @@ function stripHtml(text='') {
   return String(text || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
 }
 
+function escapeHtml(text = '') {
+  return String(text || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function highlightText(text = '', keyword = '') {
+  const raw = String(text || '');
+  const kw = String(keyword || '').trim();
+  if (!kw) return escapeHtml(raw);
+  const safeKw = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const rg = new RegExp(`(${safeKw})`, 'ig');
+  return escapeHtml(raw).replace(rg, '<mark class="hl">$1</mark>');
+}
+
 function loader() {
   return el('div', {class:'loader'}, el('div', {class:'spin'}));
+}
+
+function buildSearchSkeleton(count = 12) {
+  const wrap = el('div', { class: 'search-skeleton' });
+  const total = Math.max(4, Math.min(30, Number(count) || 12));
+  for (let i = 0; i < total; i++) {
+    const card = el('div', { class: 'skeleton-card' });
+    card.appendChild(el('div', { class: 'skeleton-thumb' }));
+    const info = el('div', { class: 'skeleton-info' });
+    info.appendChild(el('div', { class: 'skeleton-line' }));
+    info.appendChild(el('div', { class: 'skeleton-line short' }));
+    card.appendChild(info);
+    wrap.appendChild(card);
+  }
+  return wrap;
+}
+
+function renderCardsProgressively(gridEl, items = [], pageSize = 24, buildCardFn = null) {
+  if (!gridEl) return;
+  gridEl.innerHTML = '';
+  if (!items.length) return;
+  if (typeof buildCardFn !== 'function') return;
+
+  const container = document.createDocumentFragment();
+  const first = items.slice(0, pageSize);
+  first.forEach(m => container.appendChild(buildCardFn(m)));
+  gridEl.appendChild(container);
+
+  if (items.length <= pageSize || !('IntersectionObserver' in window)) {
+    const rest = document.createDocumentFragment();
+    items.slice(pageSize).forEach(m => rest.appendChild(buildCardFn(m)));
+    gridEl.appendChild(rest);
+    return;
+  }
+
+  let cursor = pageSize;
+  const sentinel = el('div', { style: 'grid-column:1/-1;height:1px' });
+  gridEl.appendChild(sentinel);
+
+  const io = new IntersectionObserver((entries) => {
+    if (!entries.some(e => e.isIntersecting)) return;
+    const next = items.slice(cursor, cursor + pageSize);
+    if (!next.length) {
+      io.disconnect();
+      sentinel.remove();
+      return;
+    }
+    const frag = document.createDocumentFragment();
+    next.forEach(m => frag.appendChild(buildCardFn(m)));
+    gridEl.insertBefore(frag, sentinel);
+    cursor += pageSize;
+  }, { rootMargin: '280px 0px' });
+
+  io.observe(sentinel);
 }
 
 /* ---------- CONFIG ---------- */
@@ -813,6 +924,10 @@ const App = (() => {
   let searchAbort = null;
   let currentSearchKeyword = '';
   const detailPrefetch = new Set();
+  const searchResultCache = new Map();
+  const tmdbMetaCache = new Map();
+  const SEARCH_CACHE_TTL = 5 * 60 * 1000;
+  const SEARCH_CACHE_MAX = 24;
 
   function cfg() { return CFG[src]; }
 
@@ -822,6 +937,8 @@ const App = (() => {
   const FAVORITES_KEY = 'devthinh:favorites';
   const PREF_KEY = 'devthinh:preferences';
   const SEARCH_FILTERS_KEY = 'devthinh:searchFilters';
+  const SEARCH_RECENT_KEY = 'devthinh:searchRecentKeywords';
+  const SEARCH_COMPACT_KEY = 'devthinh:searchCompactMode';
   const PREF_SERVER_MODE_KEY = 'devthinh:serverMode';
   const QUALITY_LOCK_1080 = true;
   const PREF_SERVER_MEMORY_KEY = 'devthinh:serverMemory';
@@ -975,6 +1092,117 @@ const App = (() => {
     try { localStorage.setItem(SEARCH_FILTERS_KEY, JSON.stringify(next || {})); } catch (_) {}
   }
 
+  function loadSearchRecent() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(SEARCH_RECENT_KEY) || '[]');
+      return Array.isArray(raw) ? raw : [];
+    } catch (_) { return []; }
+  }
+
+  function pushSearchRecent(keyword = '') {
+    const key = String(keyword || '').trim();
+    if (!key) return;
+    const arr = loadSearchRecent();
+    const next = [key, ...arr.filter(x => String(x || '').toLowerCase() !== key.toLowerCase())].slice(0, 10);
+    try { localStorage.setItem(SEARCH_RECENT_KEY, JSON.stringify(next)); } catch (_) {}
+  }
+
+  function parseSearchSort() {
+    try {
+      const p = new URLSearchParams(window.location.search);
+      const v = p.get('sort') || 'relevance';
+      return ['relevance', 'latest', 'name-asc', 'name-desc'].includes(v) ? v : 'relevance';
+    } catch (_) {
+      return 'relevance';
+    }
+  }
+
+  function persistSearchSort(v = 'relevance') {
+    const val = ['relevance', 'latest', 'name-asc', 'name-desc'].includes(v) ? v : 'relevance';
+    try {
+      const u = new URL(window.location.href);
+      u.searchParams.set('sort', val);
+      history.replaceState({}, '', u.toString());
+    } catch (_) {}
+  }
+
+  function loadSearchCompactMode() {
+    try { return localStorage.getItem(SEARCH_COMPACT_KEY) === '1'; } catch (_) { return false; }
+  }
+
+  function saveSearchCompactMode(on = false) {
+    try { localStorage.setItem(SEARCH_COMPACT_KEY, on ? '1' : '0'); } catch (_) {}
+  }
+
+  function fuzzyScore(text = '', query = '') {
+    const t = String(text || '').toLowerCase();
+    const q = String(query || '').toLowerCase().trim();
+    if (!t || !q) return 0;
+    if (t.includes(q)) return 100 + Math.max(0, 20 - Math.abs(t.length - q.length));
+    let qi = 0;
+    let score = 0;
+    for (let i = 0; i < t.length && qi < q.length; i++) {
+      if (t[i] === q[qi]) {
+        score += 4;
+        qi++;
+      }
+    }
+    if (qi < q.length) return 0;
+    return score - Math.max(0, t.length - q.length) * 0.12;
+  }
+
+  function rankWithFuzzy(items = [], keyword = '') {
+    const kw = String(keyword || '').trim();
+    if (!kw) return items;
+    const scored = items.map(m => {
+      const a = `${m.name || ''}`;
+      const b = `${m.origin_name || ''}`;
+      const c = `${stripHtml(m.content || '')}`;
+      const score = Math.max(fuzzyScore(a, kw), fuzzyScore(b, kw) - 4, fuzzyScore(c, kw) - 8);
+      return { m, score };
+    });
+    const good = scored.filter(x => x.score > 0).sort((x, y) => y.score - x.score);
+    const bad = scored.filter(x => x.score <= 0);
+    return [...good.map(x => x.m), ...bad.map(x => x.m)];
+  }
+
+  function getSearchCacheEntry(key = '') {
+    if (!searchResultCache.has(key)) return null;
+    const entry = searchResultCache.get(key);
+    if (!entry || !Array.isArray(entry.items)) {
+      searchResultCache.delete(key);
+      return null;
+    }
+    if (Date.now() - Number(entry.ts || 0) > SEARCH_CACHE_TTL) {
+      searchResultCache.delete(key);
+      return null;
+    }
+    entry.ts = Date.now();
+    searchResultCache.set(key, entry);
+    return entry.items;
+  }
+
+  function setSearchCacheEntry(key = '', items = []) {
+    searchResultCache.set(key, { items, ts: Date.now() });
+    if (searchResultCache.size <= SEARCH_CACHE_MAX) return;
+    const oldestKey = searchResultCache.keys().next().value;
+    if (oldestKey) searchResultCache.delete(oldestKey);
+  }
+
+  function sortSearchItems(items = [], mode = 'relevance') {
+    const arr = [...items];
+    if (mode === 'latest') {
+      return arr.sort((a, b) => Number(b.year || 0) - Number(a.year || 0));
+    }
+    if (mode === 'name-asc') {
+      return arr.sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'vi'));
+    }
+    if (mode === 'name-desc') {
+      return arr.sort((a, b) => String(b.name || '').localeCompare(String(a.name || ''), 'vi'));
+    }
+    return arr;
+  }
+
   function loadSkipMarkers() {
     try { return JSON.parse(localStorage.getItem(SKIP_MARKER_KEY) || '{}') || {}; } catch (_) { return {}; }
   }
@@ -1058,18 +1286,22 @@ const App = (() => {
   async function fetchTmdbMeta(title = '', year = '') {
     const t = String(title || '').trim();
     if (!t) return null;
+    const key = `${t.toLowerCase()}::${String(year || '').trim()}`;
+    if (tmdbMetaCache.has(key)) return tmdbMetaCache.get(key);
     try {
       const qs = new URLSearchParams({ title: t });
       if (year) qs.set('year', String(year));
       const res = await fetch(`/api/tmdb-meta?${qs.toString()}`, { cache: 'force-cache' });
       if (!res.ok) {
-        console.warn('TMDB meta API failed:', res.status, t);
+        tmdbMetaCache.set(key, null);
         return null;
       }
       const data = await res.json();
-      return data && data.meta ? data.meta : null;
-    } catch (err) {
-      console.warn('TMDB meta error:', err && err.message ? err.message : err);
+      const meta = data && data.meta ? data.meta : null;
+      tmdbMetaCache.set(key, meta);
+      return meta;
+    } catch (_) {
+      tmdbMetaCache.set(key, null);
       return null;
     }
   }
@@ -1420,23 +1652,30 @@ const App = (() => {
     return wrapper;
   }
 
-  function buildCard(m, style='') {
+  function prefetchMovieDetailBySlug(slug = '') {
+    const s = String(slug || '').trim();
+    if (!s || detailPrefetch.has(s)) return;
+    detailPrefetch.add(s);
+    getMovieDetailWithFallback(s).then(({data}) => {
+      const episodes = data && data.episodes ? data.episodes : [];
+      const firstServer = Array.isArray(episodes) && episodes.length ? episodes[0] : null;
+      const firstEp = firstServer && firstServer.server_data && firstServer.server_data[0];
+      const preUrl = firstEp ? (firstEp.link_m3u8 || '') : '';
+      prefetchManifest(preUrl);
+    }).catch(()=>{});
+  }
+
+  function buildCard(m, style='', opts = {}) {
     const card = el('div', {class:'card', style, onclick: () => goDetail(m.slug)});
     let hoverTimer = null;
+
+    const prefetchDetail = () => prefetchMovieDetailBySlug(m && m.slug ? m.slug : '');
 
     card.addEventListener('mouseenter', () => {
       hoverTimer = setTimeout(() => {
         card.classList.add('hover-ready');
       }, 500);
-      if (!m || !m.slug || detailPrefetch.has(m.slug)) return;
-      detailPrefetch.add(m.slug);
-      getMovieDetailWithFallback(m.slug).then(({data}) => {
-        const episodes = data && data.episodes ? data.episodes : [];
-        const firstServer = Array.isArray(episodes) && episodes.length ? episodes[0] : null;
-        const firstEp = firstServer && firstServer.server_data && firstServer.server_data[0];
-        const preUrl = firstEp ? (firstEp.link_m3u8 || '') : '';
-        prefetchManifest(preUrl);
-      }).catch(()=>{});
+      prefetchDetail();
     });
     card.addEventListener('mouseleave', () => {
       if (hoverTimer) {
@@ -1445,6 +1684,10 @@ const App = (() => {
       }
       card.classList.remove('hover-ready');
     });
+    if (opts && opts.prefetchOnVisible) {
+      card.dataset.prefetchSlug = m.slug || '';
+    }
+
     // Thumbnail container
     const thumb = el('div', {class:'card-thumb'});
     const img = lazyImg(m._thumb || m._poster, '');
@@ -1471,7 +1714,8 @@ const App = (() => {
     // Info below thumbnail (always visible - Netflix)
     const info = el('div', {class:'card-info'});
     const title = el('div', {class:'card-title'});
-    title.textContent = m.name;
+    const displayName = opts && opts.highlightKeyword ? highlightText(m.name || '', opts.highlightKeyword) : escapeHtml(m.name || '');
+    title.innerHTML = displayName;
     const meta = el('div', {class:'card-meta'});
     const match = el('span');
     match.textContent = `${Math.max(80, (m.year || 88) % 100)}% match`;
@@ -1652,6 +1896,98 @@ const App = (() => {
     });
   }
 
+  function debounce(fn, delay = 300) {
+    let timer = null;
+    return (...args) => {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(() => fn(...args), delay);
+    };
+  }
+
+  function buildAutocompleteRoot(form) {
+    if (!form) return null;
+    let root = qs('.search-autocomplete', form);
+    if (!root) {
+      root = el('div', { class: 'search-autocomplete' });
+      form.appendChild(root);
+    }
+    return root;
+  }
+
+  function closeAutocomplete(form) {
+    const root = form ? qs('.search-autocomplete', form) : null;
+    if (!root) return;
+    root.classList.remove('open');
+    root.innerHTML = '';
+  }
+
+  function renderAutocomplete(form, input, list = []) {
+    const root = buildAutocompleteRoot(form);
+    if (!root) return;
+    if (!list.length) {
+      closeAutocomplete(form);
+      return;
+    }
+    root.innerHTML = '';
+    list.forEach((kw, idx) => {
+      const item = el('button', { class: `search-autocomplete-item${idx === 0 ? ' active' : ''}`, type: 'button' });
+      item.innerHTML = `<span>${kw}</span><span class="search-autocomplete-meta">Gần đây</span>`;
+      item.onclick = () => {
+        input.value = kw;
+        closeAutocomplete(form);
+        search({ preventDefault: () => {}, target: { querySelector: () => ({ value: kw }) } });
+      };
+      root.appendChild(item);
+    });
+    root.classList.add('open');
+  }
+
+  function bindSearchAutocomplete(formSelector, inputSelector) {
+    const form = document.querySelector(formSelector);
+    const input = document.querySelector(inputSelector);
+    if (!form || !input) return;
+
+    const update = debounce(() => {
+      const q = String(input.value || '').trim().toLowerCase();
+      if (!q) {
+        closeAutocomplete(form);
+        return;
+      }
+      const all = loadSearchRecent();
+      const matched = all.filter(k => String(k || '').toLowerCase().includes(q)).slice(0, 8);
+      renderAutocomplete(form, input, matched);
+    }, 120);
+
+    input.addEventListener('input', update);
+    input.addEventListener('focus', update);
+    input.addEventListener('keydown', (ev) => {
+      const root = qs('.search-autocomplete', form);
+      if (!root || !root.classList.contains('open')) return;
+      const items = Array.from(root.querySelectorAll('.search-autocomplete-item'));
+      if (!items.length) return;
+      const idx = Math.max(0, items.findIndex(x => x.classList.contains('active')));
+      if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') {
+        ev.preventDefault();
+        const next = ev.key === 'ArrowDown' ? Math.min(items.length - 1, idx + 1) : Math.max(0, idx - 1);
+        items.forEach(x => x.classList.remove('active'));
+        items[next].classList.add('active');
+        return;
+      }
+      if (ev.key === 'Enter') {
+        const active = items.find(x => x.classList.contains('active'));
+        if (active) {
+          ev.preventDefault();
+          active.click();
+        }
+      }
+      if (ev.key === 'Escape') closeAutocomplete(form);
+    });
+
+    document.addEventListener('click', (ev) => {
+      if (!form.contains(ev.target)) closeAutocomplete(form);
+    });
+  }
+
   function buildFilterBar(onChange) {
     const state = Object.assign({ type: 'all', category: 'all', quality: 'all', year: 'all' }, loadSearchFilters());
     const defs = [
@@ -1736,41 +2072,135 @@ const App = (() => {
 
     const req = abortRequest('search');
     currentSearchKeyword = kw;
+    pushSearchRecent(kw);
 
     const wrap = el('div', {class:'search-page'});
-    wrap.innerHTML = `<h2>Kết quả cho: <strong style="color:#fff">${kw}</strong></h2>`;
+    const hero = el('div', {class:'search-hero'});
+    hero.innerHTML = `<div><h2>Kết quả cho: <strong style="color:#fff">${kw}</strong></h2><div class="search-meta" id="searchMeta">Đang tải dữ liệu...</div></div>`;
+    wrap.appendChild(hero);
+
+    const suggestRow = el('div', {class:'search-suggestions'});
+    [kw, `${kw} vietsub`, `${kw} hd`, `${kw} mới`].forEach(s => {
+      const b = el('button', {class:'suggestion-item', type:'button'}, s);
+      b.onclick = () => search({ preventDefault: () => {}, target: { querySelector: () => ({ value: s }) } });
+      suggestRow.appendChild(b);
+    });
+    wrap.appendChild(suggestRow);
+
+    const stateHint = el('div', {class:'search-state-hint'}, 'Mẹo: kết hợp bộ lọc bên dưới để ra kết quả chính xác hơn.');
+    wrap.appendChild(stateHint);
+
+    const toolbar = el('div', {class:'search-toolbar'});
+    const toolbarLeft = el('div', {class:'search-toolbar-left'});
+    const toolbarRight = el('div', {class:'search-toolbar-right'});
+
+    const compactBtn = el('button', { class: `toolbar-btn${loadSearchCompactMode() ? ' active' : ''}`, type:'button' }, 'Compact');
+    compactBtn.onclick = () => {
+      const next = !compactBtn.classList.contains('active');
+      compactBtn.classList.toggle('active', next);
+      saveSearchCompactMode(next);
+      if (next) grid.classList.add('compact');
+      else grid.classList.remove('compact');
+    };
+
+    const sortWrap = el('div', {class:'search-sort'});
+    const sortLabel = el('label', {}, 'Sắp xếp');
+    const sortSelect = el('select', { 'aria-label': 'Sắp xếp kết quả' });
+    [
+      ['relevance', 'Liên quan nhất'],
+      ['latest', 'Năm mới nhất'],
+      ['name-asc', 'Tên A → Z'],
+      ['name-desc', 'Tên Z → A']
+    ].forEach(([v, t]) => {
+      const opt = document.createElement('option');
+      opt.value = v;
+      opt.textContent = t;
+      sortSelect.appendChild(opt);
+    });
+    sortSelect.value = parseSearchSort();
+    sortWrap.appendChild(sortLabel);
+    sortWrap.appendChild(sortSelect);
+
+    toolbarLeft.appendChild(compactBtn);
+    toolbarRight.appendChild(sortWrap);
+    toolbar.appendChild(toolbarLeft);
+    toolbar.appendChild(toolbarRight);
+    wrap.appendChild(toolbar);
+
     const grid = el('div', {class:'search-grid'});
+    if (loadSearchCompactMode()) grid.classList.add('compact');
+    const cacheKey = `${src}::${kw.toLowerCase()}`;
+    let baseNormalized = null;
+    let visiblePrefetchObserver = null;
 
-    async function renderSearchWithFilter(filters) {
+    const renderSearchWithFilter = async (filters) => {
       try {
-        const c = cfg();
-        const data = await fetchJSON(c.search + encodeURIComponent(kw), { signal: req.signal });
-        if (req.signal.aborted || currentSearchKeyword !== kw) return;
+        if (!baseNormalized) {
+          const hit = getSearchCacheEntry(cacheKey);
+          if (hit) {
+            baseNormalized = hit;
+          } else {
+            const c = cfg();
+            const data = await fetchJSON(c.search + encodeURIComponent(kw), { signal: req.signal });
+            if (req.signal.aborted || currentSearchKeyword !== kw) return;
+            baseNormalized = await normalizeItems(data, c.img);
+            setSearchCacheEntry(cacheKey, baseNormalized);
+          }
+        }
 
-        const normalized = await normalizeItems(data, c.img);
-        let items = applySearchFilters(normalized, filters);
+        let items = applySearchFilters(baseNormalized, filters);
 
-        // AI-ish ranking cho truy vấn tự nhiên
         const ai = aiNormalizeKeyword(kw);
         if (ai.hints.length) {
           items = [...items].sort((a, b) => aiScoreMovie(b, ai) - aiScoreMovie(a, ai));
         }
 
+        items = rankWithFuzzy(items, kw);
+        items = sortSearchItems(items, sortSelect.value || 'relevance');
+
+        const meta = qs('#searchMeta', wrap);
+        if (meta) meta.textContent = `${items.length} kết quả phù hợp`;
+
         grid.innerHTML = '';
         if (!items.length) {
-          grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><i class="fa-solid fa-magnifying-glass"></i><p>Không tìm thấy kết quả phù hợp.</p></div>';
+          grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><i class="fa-solid fa-magnifying-glass"></i><p>Không tìm thấy kết quả phù hợp cho <strong>${kw}</strong>.</p><p style="margin-top:6px">Thử từ khóa ngắn hơn hoặc đổi bộ lọc.</p></div>`;
         } else {
-          items.forEach(m => grid.appendChild(buildCard(m, '--thumb-ratio:2/3;max-width:100%')));
+          renderCardsProgressively(grid, items, 24, (m) => buildCard(m, '--thumb-ratio:2/3;max-width:100%', { highlightKeyword: kw, prefetchOnVisible: true }));
+
+          if (visiblePrefetchObserver) {
+            try { visiblePrefetchObserver.disconnect(); } catch (_) {}
+          }
+          if ('IntersectionObserver' in window) {
+            visiblePrefetchObserver = new IntersectionObserver((entries) => {
+              entries.forEach(en => {
+                if (!en.isIntersecting) return;
+                const slug = en.target && en.target.dataset ? en.target.dataset.prefetchSlug : '';
+                if (slug) prefetchMovieDetailBySlug(slug);
+                try { visiblePrefetchObserver.unobserve(en.target); } catch (_) {}
+              });
+            }, { rootMargin: '260px 0px' });
+
+            grid.querySelectorAll('[data-prefetch-slug]').forEach(node => visiblePrefetchObserver.observe(node));
+          }
         }
-      } catch (err) {
+      } catch (_) {
         if (req.signal.aborted) return;
         grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><p>Có lỗi xảy ra. Thử lại!</p></div>';
       }
-    }
+    };
 
-    wrap.appendChild(buildFilterBar((f)=>{ renderSearchWithFilter(f); }));
+    const debouncedRender = debounce(renderSearchWithFilter, 260);
+
+    wrap.appendChild(buildFilterBar((f)=>{ debouncedRender(f); }));
     wrap.appendChild(grid);
-    grid.appendChild(loader());
+    grid.appendChild(buildSearchSkeleton(12));
+    sortSelect.addEventListener('change', () => {
+      persistSearchSort(sortSelect.value || 'relevance');
+      grid.innerHTML = '';
+      grid.appendChild(buildSearchSkeleton(10));
+      debouncedRender(loadSearchFilters());
+    });
+
     setMain(wrap);
     window.scrollTo(0,0);
 
@@ -1780,17 +2210,40 @@ const App = (() => {
   function openSearchPage() {
     const wrap = el('div', {class:'search-page'});
     setActiveBottomTab('search');
-    wrap.innerHTML = `<h2>Tìm kiếm nhanh</h2>`;
-    const quick = el('div', {class:'quick-actions'});
-    ['phim bộ mới','anime','phim lẻ hay','hàn quốc','trung quốc'].forEach(k => {
-      const b = el('button', {class:'qa-btn', onclick:()=> search({preventDefault:()=>{}, target:{querySelector:()=>({value:k})}})}, k);
+
+    const hero = el('div', {class:'search-hero'});
+    hero.innerHTML = `<div><h2>Tìm kiếm nhanh</h2><div class="search-meta">Gõ từ khóa hoặc chọn gợi ý</div></div>`;
+    wrap.appendChild(hero);
+
+    const form = el('form', {class:'search-input-wrap', onsubmit:search});
+    form.innerHTML = `<input class="search-input" type="text" placeholder="Nhập tên phim, thể loại, quốc gia..." autocomplete="off"><button type="submit" class="top-icon-btn" aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i></button>`;
+    wrap.appendChild(form);
+
+    const quick = el('div', {class:'search-suggestions'});
+    ['phim bộ mới','anime','phim lẻ hay','hàn quốc','trung quốc','bom tấn 2026','phim chiếu rạp'].forEach(k => {
+      const b = el('button', {class:'suggestion-item', onclick:()=> search({preventDefault:()=>{}, target:{querySelector:()=>({value:k})}})}, k);
       quick.appendChild(b);
     });
     wrap.appendChild(quick);
-    const form = el('form', {class:'mob-search', onsubmit:search});
-    form.innerHTML = `<input type="text" placeholder="Nhập tên phim..." autocomplete="off"><button type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>`;
-    wrap.appendChild(form);
-    setMain(wrap);
+
+    const recent = loadSearchRecent();
+    if (recent.length) {
+      const recentLabel = el('div', {class:'search-state-hint'}, 'Tìm gần đây');
+      wrap.appendChild(recentLabel);
+      const recentRow = el('div', {class:'search-suggestions'});
+      recent.slice(0, 8).forEach(k => {
+        const b = el('button', {class:'suggestion-item', onclick:()=> search({preventDefault:()=>{}, target:{querySelector:()=>({value:k})}})}, k);
+        recentRow.appendChild(b);
+      });
+      wrap.appendChild(recentRow);
+    }
+
+    setMain(wrap, () => {
+      const input = qs('.search-input', wrap);
+      if (input) {
+        try { input.focus(); } catch (_) {}
+      }
+    });
     window.scrollTo(0,0);
   }
 
@@ -1854,6 +2307,8 @@ const App = (() => {
     wrap.appendChild(grid);
     const loadWrap = el('div', {style:'display:flex;justify-content:center;margin-top:30px;padding-bottom:40px'});
     wrap.appendChild(loadWrap);
+    const endSentinel = el('div', {style:'height:1px'});
+    wrap.appendChild(endSentinel);
 
     setMain(wrap);
     window.scrollTo(0, 0);
@@ -1926,8 +2381,7 @@ const App = (() => {
         items.forEach(m => grid.appendChild(buildCard(m)));
         loadedCount += items.length;
         page++;
-      } catch(err) {
-        console.error(err);
+      } catch(_) {
         loadWrap.innerHTML = '<p style="color:var(--muted)">Có lỗi xảy ra, vui lòng thử lại.</p>';
       }
 
@@ -1939,6 +2393,14 @@ const App = (() => {
     grid.appendChild(loader());
     await loadPage();
     await ensureMinRows(2);
+
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver((entries) => {
+        if (!entries.some(en => en.isIntersecting)) return;
+        if (!loading && page <= totalPages) loadPage();
+      }, { rootMargin: '260px 0px' });
+      io.observe(endSentinel);
+    }
   }
 
   /* ---------- WATCH ---------- */
@@ -2979,30 +3441,36 @@ const App = (() => {
 
             if (typeof Hls !== 'undefined' && Hls.isSupported()) {
               hls = new Hls({
-                maxBufferLength: 34,
-                maxMaxBufferLength: 70,
-                backBufferLength: 45,
-                maxBufferSize: 48 * 1000 * 1000,
-                maxBufferHole: 0.7,
+                enableWorker: true,
+                lowLatencyMode: false,
+                backBufferLength: 90,
+                maxBufferLength: 40,
+                maxMaxBufferLength: 80,
+                maxBufferSize: 60 * 1000 * 1000,
+                maxBufferHole: 0.5,
                 maxFragLookUpTolerance: 0.25,
-                nudgeOffset: 0.12,
-                nudgeMaxRetry: 10,
+                nudgeOffset: 0.1,
+                nudgeMaxRetry: 6,
                 startLevel: -1,
-                abrEwmaFastLive: 5,
-                abrEwmaSlowLive: 15,
-                abrBandWidthFactor: 0.9,
-                abrBandWidthUpFactor: 0.8,
+                testBandwidth: true,
+                abrEwmaFastLive: 3,
+                abrEwmaSlowLive: 9,
+                abrEwmaFastVoD: 3,
+                abrEwmaSlowVoD: 9,
+                abrBandWidthFactor: 0.85,
+                abrBandWidthUpFactor: 0.7,
                 capLevelToPlayerSize: true,
                 startFragPrefetch: true,
                 autoStartLoad: true,
-                enableWorker: true,
                 progressive: true,
-                lowLatencyMode: false,
-                testBandwidth: true,
                 manifestLoadingTimeOut: 15000,
+                manifestLoadingMaxRetry: 4,
+                levelLoadingTimeOut: 15000,
+                levelLoadingMaxRetry: 5,
                 fragLoadingTimeOut: 20000,
-                fragLoadingMaxRetry: 8,
-                levelLoadingMaxRetry: 6,
+                fragLoadingMaxRetry: 6,
+                fragLoadingRetryDelay: 800,
+                fragLoadingMaxRetryTimeout: 8000,
                 appendErrorMaxRetry: 8
               });
               liveHls = hls;
@@ -3151,8 +3619,7 @@ const App = (() => {
         App.goDetail(movieSlug);
       }, 300);
     };
-    } catch (e) {
-      console.error('[goWatch CRASHED]', e);
+    } catch (_) {
       alert('Đã xảy ra lỗi khi tải phim! Vui lòng F5 trang.');
     }
   }
@@ -3195,6 +3662,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
   bindSearchFx('.search-box');
   bindSearchFx('.mob-search');
+  App.bindSearchAutocomplete('.search-box', '#q');
+  App.bindSearchAutocomplete('.mob-search', '#q-mob');
 });
 </script>
 </body>
