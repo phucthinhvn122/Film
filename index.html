@@ -18,9 +18,10 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" as="style" crossorigin onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"></noscript>
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" as="style" crossorigin onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -76,9 +77,7 @@ img{display:block;max-width:100%;}
 .search-box button{color:var(--muted);cursor:pointer;font-size:1rem;transition:color .2s}
 .search-box button:hover{color:var(--accent)}
 
-.source-btn{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--surface);font-size:.85rem;cursor:pointer;white-space:nowrap;color:var(--text2)}
-.source-btn select{cursor:pointer;color:var(--accent);font-weight:700;font-size:.85rem;background:transparent}
-.source-btn option{background:var(--bg2);color:var(--text)}
+
 .nav-links{display:flex;gap:2px;margin-left:14px;min-width:0;flex-wrap:nowrap}
 .nav-links a{font-size:.78rem;font-weight:500;color:#e5e5e5;padding:6px 9px;border-radius:4px;transition:var(--trans);white-space:nowrap}
 .nav-links a:hover,.nav-links a.active{color:#fff;background:rgba(255,255,255,.1)}
@@ -95,8 +94,6 @@ img{display:block;max-width:100%;}
 .header-left{display:flex;align-items:center;flex:1;min-width:0;overflow:hidden}
 .icon-red{color:var(--red)}
 .icon-w20{width:20px;display:inline-block;text-align:center}
-.drawer-source-btn{border:none;padding:14px 16px;margin-top:auto;border-top:1px solid rgba(255,255,255,0.05);border-radius:0}
-.drawer-source-select{font-size:1rem;color:#fff}
 
 /* Hamburger Icon (Animated) */
 .hamburger{display:none;width:24px;height:18px;position:relative;cursor:pointer;z-index:501}
@@ -285,10 +282,7 @@ mark.hl{background:rgba(229,9,20,.24);color:#fff;padding:0 2px;border-radius:3px
 .search-autocomplete-item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 10px;border-radius:6px;font-size:.83rem;color:var(--text2);cursor:pointer;border:1px solid transparent}
 .search-autocomplete-item:hover,.search-autocomplete-item.active{background:rgba(255,255,255,.09);color:#fff;border-color:rgba(255,255,255,.15)}
 .search-autocomplete-meta{font-size:.7rem;color:var(--muted);white-space:nowrap}
-.search-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px;flex-wrap:wrap}
-.search-sort{display:flex;align-items:center;gap:8px}
-.search-sort label{font-size:.78rem;color:var(--muted)}
-.search-sort select{background:rgba(255,255,255,.06);color:#fff;border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:7px 10px;font-size:.8rem}
+
 
 /* WATCH PAGE */
 .watch-page{position:absolute;top:0;left:0;right:0;min-height:100vh;min-height:100dvh;z-index:999;background:#000;display:flex;flex-direction:column;overflow:hidden;isolation:isolate;animation:fadeUp .4s ease;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
@@ -914,6 +908,13 @@ const CFG = {
 
 /* ---------- APP STATE ---------- */
 const App = (() => {
+  function toast(text) {
+    const t = el('div', {
+      style:'position:fixed;top:86px;left:50%;transform:translateX(-50%);z-index:9999;background:rgba(18,18,18,.9);border:1px solid rgba(255,255,255,.12);-webkit-backdrop-filter:blur(16px) saturate(180%);backdrop-filter:blur(16px) saturate(180%);color:#fff;padding:10px 14px;border-radius:14px;font-weight:700;box-shadow:0 18px 40px rgba(0,0,0,.55);opacity:0;animation:toastIn .22s ease forwards'
+    }, text);
+    document.body.appendChild(t);
+    setTimeout(()=>{ try{t.remove();}catch(_){ if(t.parentNode) t.parentNode.removeChild(t);} }, 2500);
+  }
   let src = 'nguonphim';
   const cache = new Map();
   let movieData = null; // current movie for watch
@@ -2763,7 +2764,7 @@ const App = (() => {
           const { data, sourceKey } = await getMovieDetailWithFallback(movieSlug, { force: true });
           movieData = { movie: data.movie || data.item, episodes: data.episodes || [], sourceKey };
         } catch (_) {
-          alert('Không thể mở phim từ lịch sử. Vui lòng thử lại.');
+          toast('Không thể mở phim từ lịch sử. Vui lòng thử lại.');
           return;
         }
       }
@@ -2807,13 +2808,7 @@ const App = (() => {
 
       const page = el('div', {class:'watch-page', style:'display:flex;flex-direction:column;opacity:1!important;visibility:visible!important'});
 
-      function toast(text) {
-        const t = el('div', {
-          style:'position:absolute;top:86px;left:50%;transform:translateX(-50%);z-index:5000;background:rgba(18,18,18,.9);border:1px solid rgba(255,255,255,.12);-webkit-backdrop-filter:blur(16px) saturate(180%);backdrop-filter:blur(16px) saturate(180%);color:#fff;padding:10px 14px;border-radius:14px;font-weight:700;box-shadow:0 18px 40px rgba(0,0,0,.55);opacity:0;animation:toastIn .22s ease forwards'
-        }, text);
-        page.appendChild(t);
-        setTimeout(()=>{ try{t.remove();}catch(_){ if(t.parentNode) t.parentNode.removeChild(t);} }, 1700);
-      }
+
 
       // Episode-based animated background (liquid glass style)
       const bgPosterUrl = safeImg(
@@ -3965,7 +3960,7 @@ const App = (() => {
       }, 300);
     };
     } catch (_) {
-      alert('Đã xảy ra lỗi khi tải phim! Vui lòng F5 trang.');
+      toast('Đã xảy ra lỗi khi tải phim! Vui lòng F5 trang.');
     }
   }
 
