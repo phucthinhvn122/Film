@@ -1693,7 +1693,39 @@ const App = (() => {
         onMore: rowDefs[i].key !== 'latest' ? () => browseCategory(rowDefs[i].key) : null
       }));
     }
-    if (!heroSet) heroEl.remove();
+    if (!heroSet) {
+      const fallbackPool = [];
+      const favsLocal = loadFavorites();
+      const historyLocal = loadHistory();
+
+      favsLocal.slice(0, 4).forEach(x => fallbackPool.push(x));
+      historyLocal.slice(0, 4).forEach(x => {
+        fallbackPool.push({
+          name: x.movieName || 'Đề xuất hôm nay',
+          origin_name: x.epName ? `Tiếp tục • ${x.epName}` : '',
+          year: '',
+          quality: 'HD',
+          lang: 'Vietsub',
+          content: 'Khám phá thêm phim nổi bật và tiếp tục nội dung bạn đang xem.',
+          _thumb: x.poster || '',
+          _poster: x.poster || '',
+          slug: x.movieSlug || ''
+        });
+      });
+
+      const fallbackHero = fallbackPool.find(x => x && (x._poster || x._thumb || x.name)) || {
+        name: 'StreamFlix',
+        origin_name: 'Kho phim trực tuyến',
+        year: '2026',
+        quality: 'FHD',
+        lang: 'Vietsub',
+        content: 'Đang tạm thời tải dữ liệu từ máy chủ. Bạn vẫn có thể xem lịch sử và danh sách yêu thích.',
+        _thumb: '',
+        _poster: '',
+        slug: ''
+      };
+      renderHero(heroBody, fallbackHero);
+    }
 
     if (allRows.length) {
       const mixed = el('div', {class:'section-block'});
