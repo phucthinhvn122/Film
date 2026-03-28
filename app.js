@@ -819,6 +819,11 @@ const App = (() => {
     const m = $('main');
     const token = ++setMainToken;
     const isWatchNode = !!(node && node.classList && node.classList.contains('watch-page'));
+    // Always cleanup watch-page handlers (keydown, fullscreen, etc.) before mounting a new page
+    if (liveWatchCleanup) {
+      try { liveWatchCleanup(); } catch (_) {}
+      liveWatchCleanup = null;
+    }
     if (m.hasChildNodes()) {
       m.classList.add('page-exit');
       setTimeout(() => {
