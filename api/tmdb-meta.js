@@ -86,7 +86,7 @@ export default async function handler(req, res) {
   const now = Date.now();
   const hit = cache.get(key);
   if (hit && now < hit.expireAt) {
-    res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
+    res.setHeader('Cache-Control', 'public, s-maxage=21600, stale-while-revalidate=604800');
     return res.status(200).json({ source: 'cache', meta: hit.meta });
   }
 
@@ -108,7 +108,7 @@ export default async function handler(req, res) {
       expireAt: now + 1000 * 60 * 60 * 6
     });
 
-    res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
+    res.setHeader('Cache-Control', 'public, s-maxage=21600, stale-while-revalidate=604800');
     return res.status(200).json({ source: 'tmdb', meta: best });
   } catch (error) {
     return res.status(502).json({ error: 'Failed to fetch TMDB metadata' });

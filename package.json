@@ -1,19 +1,6 @@
 {
   "name": "bio-website",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
-  "description": "Netflix-inspired streaming UI app + image proxy server",
-  "main": "server.js",
-  "engines": {
-    "node": ">=20"
-  },
-  "scripts": {
-    "start": "node server.js",
-    "start:prod": "NODE_ENV=production node server.js"
-  },
-  "dependencies": {
-    "dotenv": "^17.3.1",
-    "express": "^5.1.0",
-    "puppeteer": "^24.40.0"
-  }
+  "description": "ThinhFilm - Netflix-inspired streaming UI (Vercel static + serverless)"
 }

@@ -121,7 +121,7 @@ export default async function handler(req, res) {
     }
 
     // Passthrough tối ưu: hint cho Vercel Edge cache theo biến thể w/q
-    const cacheControl = upstream.headers.get('cache-control') || 'public, max-age=86400, stale-while-revalidate=604800';
+    const cacheControl = 'public, s-maxage=604800, max-age=86400, stale-while-revalidate=2592000';
     res.setHeader('Content-Type', ct);
     res.setHeader('Cache-Control', cacheControl);
     res.setHeader('Vary', 'Accept');
