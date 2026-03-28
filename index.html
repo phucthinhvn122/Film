@@ -927,6 +927,7 @@ const App = (() => {
   let currentSearchKeyword = '';
   const detailPrefetch = new Set();
   const searchResultCache = new Map();
+  const localMoviesCache = new Map();
   const tmdbMetaCache = new Map();
   const SEARCH_CACHE_TTL = 5 * 60 * 1000;
   const SEARCH_CACHE_MAX = 24;
@@ -1451,7 +1452,7 @@ const App = (() => {
       const _search_cats = Array.isArray(m.category) ? m.category.map(c => String(c && (c.slug || c.name) || '').toLowerCase()) : [];
       const tmdbPoster = meta && meta.poster ? safeImg(meta.poster, '') : '';
       const tmdbBackdrop = meta && meta.backdrop ? safeImg(meta.backdrop, '') : '';
-      return {
+      const obj = {
         ...m,
         _thumb: tmdbBackdrop || safeImg(m.thumb_url, cdnImg),
         _poster: tmdbPoster || safeImg(m.poster_url || m.thumb_url, cdnImg),
@@ -1459,6 +1460,8 @@ const App = (() => {
         _search_txt,
         _search_cats
       };
+      if (obj.slug) localMoviesCache.set(obj.slug, obj);
+      return obj;
     };
 
     if (!withMeta) {
@@ -2222,7 +2225,19 @@ const App = (() => {
       renderAutocomplete(form, input, matched);
     }, 120);
 
-    input.addEventListener('input', update);
+    input.addEventListener('input', (e) => {
+      update();
+      const mainWrap = qs('main') || document.body;
+      const activeTab = document.querySelector('.mb-nav-item.active');
+      const loc = activeTab && activeTab.dataset ? activeTab.dataset.tab : '';
+      if (loc === 'search' || document.querySelector('.search-page')) {
+        const keyword = String(e.target.value || '').trim();
+        if ($('q')) $('q').value = keyword;
+        if ($('q-mob')) $('q-mob').value = keyword;
+        currentSearchKeyword = keyword;
+        if (window.__debouncedSearchRender) window.__debouncedSearchRender(keyword);
+      }
+    });
     input.addEventListener('focus', update);
     input.addEventListener('keydown', (ev) => {
       const root = qs('.search-autocomplete', form);
@@ -2443,6 +2458,18 @@ const App = (() => {
             }
           } else {
             if (preferCacheOnly) return;
+            const fallbackGrid = el('div', {class: 'search-grid'});
+            const localArs = Array.from(localMoviesCache.values());
+            if (localArs.length) {
+              const kwT = kw.toLowerCase().trim();
+              const lf = localArs.filter(m => {
+                return (m.name||'').toLowerCase().includes(kwT) || (m.origin_name||'').toLowerCase().includes(kwT);
+              });
+              if (lf.length) {
+                grid.innerHTML = '';
+                renderCardsProgressively(grid, lf.slice(0, 16), 16, (m) => buildCard(m, '--thumb-ratio:2/3;max-width:100%', { highlightKeyword: kw }));
+              }
+            }
             const data = await fetchJSON(buildSearchUrl(kw), { signal: req.signal });
             if (req.signal.aborted || currentSearchKeyword !== kw) return;
             baseNormalized = await normalizeItems(data, c.img, { withMeta: false });
@@ -2506,6 +2533,13 @@ const App = (() => {
     };
 
     const debouncedRender = debounce(renderSearchWithFilter, 260);
+    window.__debouncedSearchRender = (newKw) => {
+      if (newKw !== undefined) {
+         const heroStr = document.querySelector('.search-hero h2 strong');
+         if (heroStr) heroStr.textContent = newKw;
+      }
+      debouncedRender(loadSearchFilters());
+    };
 
     wrap.appendChild(buildFilterBar((f)=>{ debouncedRender(f); }));
     wrap.appendChild(grid);
@@ -2520,7 +2554,7 @@ const App = (() => {
     setMain(wrap);
     window.scrollTo(0,0);
 
-    await renderSearchWithFilter(loadSearchFilters(), { cacheOnly: true });
+    await renderSearchWithFilter(loadSearchFilters());
   }
 
   function openSearchPage() {
