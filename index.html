@@ -1262,6 +1262,24 @@ const App = (() => {
     if (oldestKey) searchResultCache.delete(oldestKey);
   }
 
+  async function prewarmRecentSearchCache(limit = 3) {
+    try {
+      const keywords = loadSearchRecent().slice(0, Math.max(1, Math.min(8, Number(limit) || 3)));
+      if (!keywords.length) return;
+      const c = cfg();
+
+      await Promise.allSettled(keywords.map(async (kw) => {
+        const key = `${src}::${String(kw || '').trim().toLowerCase()}`;
+        if (!kw || getSearchCacheEntry(key)) return;
+        const data = await fetchJSON(buildSearchUrl(kw));
+        const items = await normalizeItems(data, c.img, { withMeta: false });
+        setSearchCacheEntry(key, items);
+      }));
+    } catch (_) {
+      // noop
+    }
+  }
+
   function sortSearchItems(items = [], mode = 'relevance') {
     const arr = [...items];
     if (mode === 'latest') {
@@ -1436,9 +1454,19 @@ const App = (() => {
     }
   }
 
-  async function normalizeItems(data, fallbackImg) {
+  async function normalizeItems(data, fallbackImg, opts = {}) {
     const items = data.items || (data.data && data.data.items) || [];
     const cdnImg = data.pathImage || (data.data && data.data.APP_DOMAIN_CDN_IMAGE) || fallbackImg;
+    const withMeta = !!opts.withMeta;
+
+    if (!withMeta) {
+      return items.map((m) => ({
+        ...m,
+        _thumb: safeImg(m.thumb_url, cdnImg),
+        _poster: safeImg(m.poster_url || m.thumb_url, cdnImg),
+        _tmdb: null
+      }));
+    }
 
     const metas = await Promise.all(items.map(m => fetchTmdbMeta(m.name || m.origin_name || '', m.year || '')));
 
@@ -2377,16 +2405,29 @@ const App = (() => {
     let baseNormalized = null;
     let visiblePrefetchObserver = null;
 
-    const renderSearchWithFilter = async (filters) => {
+    const renderSearchWithFilter = async (filters, opts = {}) => {
+      const preferCacheOnly = !!opts.cacheOnly;
       try {
         if (!baseNormalized) {
           const hit = getSearchCacheEntry(cacheKey);
           if (hit) {
             baseNormalized = hit;
+            if (!preferCacheOnly) {
+              fetchJSON(buildSearchUrl(kw), { signal: req.signal })
+                .then(data => normalizeItems(data, c.img, { withMeta: false }))
+                .then(fresh => {
+                  if (req.signal.aborted || currentSearchKeyword !== kw) return;
+                  baseNormalized = fresh;
+                  setSearchCacheEntry(cacheKey, fresh);
+                  renderSearchWithFilter(loadSearchFilters(), { cacheOnly: true });
+                })
+                .catch(() => {});
+            }
           } else {
+            if (preferCacheOnly) return;
             const data = await fetchJSON(buildSearchUrl(kw), { signal: req.signal });
             if (req.signal.aborted || currentSearchKeyword !== kw) return;
-            baseNormalized = await normalizeItems(data, c.img);
+            baseNormalized = await normalizeItems(data, c.img, { withMeta: false });
             setSearchCacheEntry(cacheKey, baseNormalized);
           }
         }
@@ -2448,7 +2489,7 @@ const App = (() => {
     setMain(wrap);
     window.scrollTo(0,0);
 
-    await renderSearchWithFilter(loadSearchFilters());
+    await renderSearchWithFilter(loadSearchFilters(), { cacheOnly: true });
   }
 
   function openSearchPage() {
@@ -3900,6 +3941,7 @@ const App = (() => {
   function init() {
     scrollBehavior();
     debouncedResizeLayout();
+    prewarmRecentSearchCache(4);
 
     const p = loadPrefs();
     if (typeof p.lastTab === 'string') setActiveBottomTab(p.lastTab);
@@ -3922,7 +3964,7 @@ const App = (() => {
     if (Number(st.scrollY || 0) > 0) setTimeout(() => window.scrollTo(0, Number(st.scrollY || 0)), 220);
   }
 
-  return { goHome, goDetail, goWatch, search, browseCategory, setSource, toggleDrawer, openSearchPage, openHistoryPage, openFavoritesPage, init };
+  return { goHome, goDetail, goWatch, search, browseCategory, setSource, toggleDrawer, openSearchPage, openHistoryPage, openFavoritesPage, bindSearchAutocomplete, init };
 })();
 
 window.addEventListener('DOMContentLoaded', () => {
