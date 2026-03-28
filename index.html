@@ -939,6 +939,9 @@ const App = (() => {
   const SEARCH_FILTERS_KEY = 'devthinh:searchFilters';
   const SEARCH_RECENT_KEY = 'devthinh:searchRecentKeywords';
   const SEARCH_COMPACT_KEY = 'devthinh:searchCompactMode';
+  const SEARCH_ANALYTICS_KEY = 'devthinh:searchAnalytics';
+  const PINNED_FILTERS_KEY = 'devthinh:pinnedSearchFilters';
+  const SESSION_STATE_KEY = 'devthinh:sessionState';
   const PREF_SERVER_MODE_KEY = 'devthinh:serverMode';
   const QUALITY_LOCK_1080 = true;
   const PREF_SERVER_MEMORY_KEY = 'devthinh:serverMemory';
@@ -1132,6 +1135,75 @@ const App = (() => {
 
   function saveSearchCompactMode(on = false) {
     try { localStorage.setItem(SEARCH_COMPACT_KEY, on ? '1' : '0'); } catch (_) {}
+  }
+
+  function loadSearchAnalytics() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(SEARCH_ANALYTICS_KEY) || '{}') || {};
+      return typeof raw === 'object' ? raw : {};
+    } catch (_) { return {}; }
+  }
+
+  function saveSearchAnalytics(data = {}) {
+    try { localStorage.setItem(SEARCH_ANALYTICS_KEY, JSON.stringify(data || {})); } catch (_) {}
+  }
+
+  function trackSearchAnalytics(keyword = '', resultCount = 0) {
+    const key = String(keyword || '').trim().toLowerCase();
+    if (!key) return;
+    const a = loadSearchAnalytics();
+    const now = Date.now();
+    if (!a[key]) a[key] = { count: 0, zeroCount: 0, lastAt: 0 };
+    a[key].count += 1;
+    if (Number(resultCount || 0) <= 0) a[key].zeroCount += 1;
+    a[key].lastAt = now;
+    const entries = Object.entries(a).sort((x, y) => Number(y[1].lastAt || 0) - Number(x[1].lastAt || 0)).slice(0, 120);
+    saveSearchAnalytics(Object.fromEntries(entries));
+  }
+
+  function topSearchKeywords(limit = 6) {
+    const a = loadSearchAnalytics();
+    return Object.entries(a)
+      .sort((x, y) => (Number(y[1].count || 0) - Number(x[1].count || 0)) || (Number(y[1].lastAt || 0) - Number(x[1].lastAt || 0)))
+      .slice(0, limit)
+      .map(x => x[0]);
+  }
+
+  function loadPinnedFilters() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(PINNED_FILTERS_KEY) || '[]');
+      return Array.isArray(raw) ? raw : [];
+    } catch (_) { return []; }
+  }
+
+  function savePinnedFilters(list = []) {
+    try { localStorage.setItem(PINNED_FILTERS_KEY, JSON.stringify(Array.isArray(list) ? list.slice(0, 12) : [])); } catch (_) {}
+  }
+
+  function saveSessionState(partial = {}) {
+    try {
+      const prev = JSON.parse(localStorage.getItem(SESSION_STATE_KEY) || '{}') || {};
+      const next = Object.assign({}, prev, partial, { ts: Date.now() });
+      localStorage.setItem(SESSION_STATE_KEY, JSON.stringify(next));
+    } catch (_) {}
+  }
+
+  function loadSessionState() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(SESSION_STATE_KEY) || '{}') || {};
+      return typeof raw === 'object' ? raw : {};
+    } catch (_) { return {}; }
+  }
+
+  function debouncedResizeLayout() {
+    let t = null;
+    window.addEventListener('resize', () => {
+      if (t) clearTimeout(t);
+      t = setTimeout(() => {
+        const compactOn = loadSearchCompactMode();
+        document.querySelectorAll('.search-grid').forEach(g => g.classList.toggle('compact', compactOn));
+      }, 160);
+    }, { passive: true });
   }
 
   function fuzzyScore(text = '', query = '') {
@@ -1421,6 +1493,7 @@ const App = (() => {
   function setActiveBottomTab(tab) {
     document.querySelectorAll('.mb-nav-item').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
     savePref('lastTab', tab);
+    saveSessionState({ lastTab: tab });
   }
 
   /* ---------- HOME ---------- */
@@ -1481,6 +1554,8 @@ const App = (() => {
 
     const historyItems = loadHistory();
     if (historyItems && historyItems.length) {
+      const cw = buildContinueWatchingRail(historyItems);
+      if (cw) rowsEl.appendChild(cw);
       rowsEl.appendChild(buildHistoryRow(historyItems));
     }
 
@@ -1666,7 +1741,13 @@ const App = (() => {
   }
 
   function buildCard(m, style='', opts = {}) {
-    const card = el('div', {class:'card', style, onclick: () => goDetail(m.slug)});
+    const card = el('div', {class:'card', style, onclick: () => {
+      if (m && m._cw && m._cw.movieSlug && m._cw.epSlug) {
+        goWatch(m._cw.movieSlug, m._cw.epSlug, m._cw.srvName || '');
+        return;
+      }
+      goDetail(m.slug);
+    }});
     let hoverTimer = null;
 
     const prefetchDetail = () => prefetchMovieDetailBySlug(m && m.slug ? m.slug : '');
@@ -1791,6 +1872,24 @@ const App = (() => {
     items.forEach(h => row.appendChild(buildHistoryCard(h)));
     wrapper.appendChild(row);
     return wrapper;
+  }
+
+  function buildContinueWatchingRail(items = []) {
+    const sorted = [...items]
+      .sort((a, b) => (Number(b.updatedAt || 0) - Number(a.updatedAt || 0)) || (Number(b.progressSeconds || 0) - Number(a.progressSeconds || 0)));
+    if (!sorted.length) return null;
+    return buildRow('▶️ Xem tiếp cho bạn', sorted.slice(0, 16).map(x => ({
+      slug: x.movieSlug,
+      name: x.movieName || 'Đang xem',
+      year: '',
+      quality: x.epName ? `Tập ${x.epName}` : 'Tiếp tục',
+      _thumb: x.poster || '',
+      _poster: x.poster || '',
+      _cw: x
+    })), {
+      sub: 'Quay lại đúng tập bạn đang dở',
+      onMore: () => openHistoryPage()
+    });
   }
 
   /* ---------- DETAIL ---------- */
@@ -2000,6 +2099,30 @@ const App = (() => {
 
     function paint() {
       bar.innerHTML = '';
+
+      const pinToggle = el('button', { class:'filter-chip', type:'button' }, '📌 Ghim bộ lọc hiện tại');
+      pinToggle.onclick = () => {
+        const pins = loadPinnedFilters();
+        const key = JSON.stringify(state);
+        if (!pins.find(x => JSON.stringify(x.filters || {}) === key)) {
+          pins.unshift({ name: `${state.category || 'all'} • ${state.year || 'all'}`, filters: Object.assign({}, state), ts: Date.now() });
+          savePinnedFilters(pins);
+        }
+      };
+      bar.appendChild(pinToggle);
+
+      const pins = loadPinnedFilters();
+      pins.slice(0, 5).forEach((p, i) => {
+        const b = el('button',{class:'filter-chip', type:'button'}, `⭐ ${p.name || ('Pin ' + (i + 1))}`);
+        b.onclick = () => {
+          Object.assign(state, p.filters || {});
+          saveSearchFilters(state);
+          paint();
+          onChange(state);
+        };
+        bar.appendChild(b);
+      });
+
       defs.forEach(d => {
         d.vals.forEach(([v,label]) => {
           const b = el('button',{class:`filter-chip${state[d.k]===v?' active':''}`}, label);
@@ -2069,6 +2192,7 @@ const App = (() => {
     if ($('q')) $('q').value = kw;
     if ($('q-mob')) $('q-mob').value = kw;
     if (!kw) return;
+    saveSessionState({ lastTab: 'search', lastKeyword: kw });
 
     const req = abortRequest('search');
     currentSearchKeyword = kw;
@@ -2160,6 +2284,7 @@ const App = (() => {
 
         const meta = qs('#searchMeta', wrap);
         if (meta) meta.textContent = `${items.length} kết quả phù hợp`;
+        trackSearchAnalytics(kw, items.length);
 
         grid.innerHTML = '';
         if (!items.length) {
@@ -2225,6 +2350,18 @@ const App = (() => {
       quick.appendChild(b);
     });
     wrap.appendChild(quick);
+
+    const topKeywords = topSearchKeywords(6);
+    if (topKeywords.length) {
+      const label = el('div', {class:'search-state-hint'}, 'Từ khóa hot gần đây');
+      wrap.appendChild(label);
+      const hotRow = el('div', {class:'search-suggestions'});
+      topKeywords.forEach(k => {
+        const b = el('button', {class:'suggestion-item', onclick:()=> search({preventDefault:()=>{}, target:{querySelector:()=>({value:k})}})}, k);
+        hotRow.appendChild(b);
+      });
+      wrap.appendChild(hotRow);
+    }
 
     const recent = loadSearchRecent();
     if (recent.length) {
@@ -3627,10 +3764,27 @@ const App = (() => {
   // Init
   function init() {
     scrollBehavior();
-    // persist basic user preference example
+    debouncedResizeLayout();
+
     const p = loadPrefs();
     if (typeof p.lastTab === 'string') setActiveBottomTab(p.lastTab);
+
+    const st = loadSessionState();
+    if (st && st.lastTab === 'search') {
+      openSearchPage();
+      if (st.lastKeyword && $('q')) $('q').value = st.lastKeyword;
+      if (st.lastKeyword && $('q-mob')) $('q-mob').value = st.lastKeyword;
+      if (st.lastKeyword) {
+        setTimeout(() => {
+          search({ preventDefault: () => {}, target: { querySelector: () => ({ value: st.lastKeyword }) } });
+          if (Number(st.scrollY || 0) > 0) setTimeout(() => window.scrollTo(0, Number(st.scrollY || 0)), 220);
+        }, 60);
+      }
+      return;
+    }
+
     goHome();
+    if (Number(st.scrollY || 0) > 0) setTimeout(() => window.scrollTo(0, Number(st.scrollY || 0)), 220);
   }
 
   return { goHome, goDetail, goWatch, search, browseCategory, setSource, toggleDrawer, openSearchPage, openHistoryPage, openFavoritesPage, init };
@@ -3638,6 +3792,21 @@ const App = (() => {
 
 window.addEventListener('DOMContentLoaded', () => {
   App.init();
+
+  window.addEventListener('scroll', () => {
+    try {
+      const active = document.querySelector('.mb-nav-item.active');
+      const tab = active && active.dataset ? active.dataset.tab : 'home';
+      const qInput = document.querySelector('#q');
+      const kw = qInput ? String(qInput.value || '').trim() : '';
+      localStorage.setItem('devthinh:sessionState', JSON.stringify({
+        lastTab: tab,
+        lastKeyword: kw,
+        scrollY: Math.max(0, Math.round(window.scrollY || 0)),
+        ts: Date.now()
+      }));
+    } catch (_) {}
+  }, { passive: true });
 
   const bindSearchFx = (selector) => {
     const form = document.querySelector(selector);
