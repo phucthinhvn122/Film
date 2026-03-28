@@ -534,6 +534,7 @@ mark.hl{background:rgba(229,9,20,.24);color:#fff;padding:0 2px;border-radius:3px
   #header{height:calc(62px + var(--safe-top));padding:calc(var(--safe-top) + 2px) calc(14px + var(--safe-right)) 0 calc(14px + var(--safe-left))}
   #main{margin-top:calc(62px + var(--safe-top))}
   .logo{font-size:1.32rem}
+  .top-icon-btn{width:36px;height:36px;border-radius:8px}
   .card{min-width:118px;transition:none}
   .card:hover{transform:none;box-shadow:none}
   .hero{height:60vh;min-height:330px;border-radius:0 0 14px 14px;box-shadow:none}
@@ -545,18 +546,22 @@ mark.hl{background:rgba(229,9,20,.24);color:#fff;padding:0 2px;border-radius:3px
   .section-block{padding:12px;border-radius:8px}
   .section-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 
-  .movie-row{padding:4px 0 12px}
-  .row-head{padding:0 16px}
+  .movie-row{padding:4px 0 12px;scroll-snap-type:x proximity}
+  .row-head{padding:0 16px;align-items:flex-start;flex-wrap:wrap}
   .row-sub{font-size:.74rem}
+  .section-more{min-height:36px}
   .detail-wrap{flex-direction:column;gap:24px;padding:20px}
   .detail-poster{width:180px;min-width:0;margin:0 auto}
   .watch-info-section{padding:18px 14px 44px;grid-template-columns:1fr;gap:14px}
   .watch-card{padding:12px;border-radius:2px}
   .watch-info-title{font-size:1.34rem}
   .watch-info-meta{font-size:.8rem;gap:6px}
-  .watch-action-btn{font-size:.74rem;padding:7px 9px}
+  .watch-action-btn{font-size:.74rem;padding:8px 10px;min-height:36px}
   .watch-content-align{padding-left:0}
   .search-page,.detail-page{padding-left:16px;padding-right:16px}
+  .search-toolbar{align-items:stretch}
+  .search-toolbar-left,.search-toolbar-right{width:100%}
+  .search-sort{width:100%;justify-content:space-between}
   .ep-overlay{width:100%;border-left:none;border-top:1px solid rgba(255,255,255,.08)}
   .ep-grid{grid-template-columns:repeat(6,1fr)}
 }
@@ -565,6 +570,9 @@ mark.hl{background:rgba(229,9,20,.24);color:#fff;padding:0 2px;border-radius:3px
 @media(max-width:540px){
   :root{--card-w:48%}
   .mob-drawer-inner{width:min(88vw,320px);padding:74px 16px 16px;-webkit-backdrop-filter:none;backdrop-filter:none}
+  #header{gap:8px}
+  .header-right{gap:6px}
+  .profile-avatar{display:none}
   .hero{height:54vh;min-height:290px}
   .hero-title{font-size:1.6rem}
   .hero-sub{font-size:.82rem;-webkit-line-clamp:2;line-clamp:2}
@@ -572,12 +580,12 @@ mark.hl{background:rgba(229,9,20,.24);color:#fff;padding:0 2px;border-radius:3px
   .hero-meta{margin-bottom:10px}
   .hero-chip{font-size:.64rem;padding:3px 8px}
   .hero-btns{gap:8px}
-  .btn{padding:9px 13px;font-size:.82rem}
+  .btn{padding:10px 13px;font-size:.82rem;min-height:38px}
   .home-sections{padding:8px 12px 6px}
   .section-title{font-size:.92rem}
   .section-sub{font-size:.72rem}
   .section-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
-  .category-chip{padding:7px 10px;font-size:.74rem}
+  .category-chip{padding:8px 11px;font-size:.74rem;min-height:36px}
   .card{min-width:0;box-shadow:none}
   .card-info{padding:8px 9px 9px}
   .card-title{font-size:.78rem}
@@ -586,6 +594,11 @@ mark.hl{background:rgba(229,9,20,.24);color:#fff;padding:0 2px;border-radius:3px
   .ctrl-left,.ctrl-right{gap:8px}
   .cb{font-size:.9rem}
   .time-txt{font-size:.66rem}
+  .search-input-wrap{padding:11px 12px;border-radius:10px}
+  .search-suggestions{gap:7px}
+  .suggestion-item{padding:8px 11px;min-height:34px;font-size:.76rem}
+  .filters-bar{top:calc(58px + var(--safe-top));padding:7px;gap:6px}
+  .filter-chip{padding:8px 11px;font-size:.76rem;min-height:34px}
   .search-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
   .search-grid.compact{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
   .watch-srv{display:none}
@@ -594,8 +607,8 @@ mark.hl{background:rgba(229,9,20,.24);color:#fff;padding:0 2px;border-radius:3px
   .watch-info-meta{font-size:.74rem;gap:5px}
   .watch-info-desc{padding:9px;font-size:.8rem;line-height:1.5}
   .watch-ep-grid{grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:7px}
-  .ep-num{padding:7px 5px;border-radius:4px;font-size:.74rem;min-height:36px}
-  .watch-action-btn{font-size:.68rem;padding:6px 7px}
+  .ep-num{padding:8px 5px;border-radius:4px;font-size:.74rem;min-height:38px}
+  .watch-action-btn{font-size:.7rem;padding:7px 8px}
 }
 
 /* Mobile bottom nav + feature UI */
@@ -611,6 +624,7 @@ mark.hl{background:rgba(229,9,20,.24);color:#fff;padding:0 2px;border-radius:3px
   .btn{padding:9px 12px;font-size:.8rem}
   .search-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .search-grid.compact{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+  .search-sort label{display:none}
 }
 
 @media(max-width:900px){
@@ -882,38 +896,25 @@ function renderCardsProgressively(gridEl, items = [], pageSize = 24, buildCardFn
   io.observe(sentinel);
 }
 
-/* ---------- CONFIG ---------- */
 const CFG = {
-  ophim: {
-    name: 'OPhim',
-    list: 'https://ophim1.com/danh-sach/phim-moi-cap-nhat?page=',
-    detail: 'https://ophim1.com/phim/',
-    search: 'https://ophim1.com/v1/api/tim-kiem?keyword=',
+  nguonphim: {
+    name: 'NguonPhim',
+    list: 'https://phim.nguonc.com/api/films/phim-moi-cap-nhat?page=',
+    detail: 'https://phim.nguonc.com/api/film/',
+    search: 'https://phim.nguonc.com/api/films/search?keyword=',
     cats: {
-      'phim-bo': 'https://ophim1.com/v1/api/danh-sach/phim-bo',
-      'phim-le': 'https://ophim1.com/v1/api/danh-sach/phim-le',
-      'hoat-hinh': 'https://ophim1.com/v1/api/danh-sach/hoat-hinh',
+      'phim-bo': 'https://phim.nguonc.com/api/films/danh-sach/phim-bo?page=1',
+      'phim-le': 'https://phim.nguonc.com/api/films/danh-sach/phim-le?page=1',
+      'hoat-hinh': 'https://phim.nguonc.com/api/films/danh-sach/hoat-hinh?page=1',
+      'tv-shows': 'https://phim.nguonc.com/api/films/danh-sach/tv-shows?page=1'
     },
-    img: 'https://img.ophim1.com/uploads/movies/'
-  },
-  kkphim: {
-    name: 'KKPhim',
-    list: 'https://phimapi.com/danh-sach/phim-moi-cap-nhat?page=',
-    detail: 'https://phimapi.com/phim/',
-    search: 'https://phimapi.com/v1/api/tim-kiem?keyword=',
-    cats: {
-      'phim-bo': 'https://phimapi.com/v1/api/danh-sach/phim-bo',
-      'phim-le': 'https://phimapi.com/v1/api/danh-sach/phim-le',
-      'hoat-hinh': 'https://phimapi.com/v1/api/danh-sach/hoat-hinh',
-      'tv-shows': 'https://phimapi.com/v1/api/danh-sach/tv-shows',
-    },
-    img: 'https://phimapi.com/uploads/movies/'
+    img: ''
   }
 };
 
 /* ---------- APP STATE ---------- */
 const App = (() => {
-  let src = 'kkphim';
+  let src = 'nguonphim';
   const cache = new Map();
   let movieData = null; // current movie for watch
   let liveWatchCleanup = null; // cleanup handlers when switching episodes
@@ -1319,19 +1320,11 @@ const App = (() => {
   }
 
   async function fetchJSONWithSourceFallback(buildUrlBySource, opts = {}) {
-    const sourceOrder = [src, ...Object.keys(CFG).filter(k => k !== src)];
-    let lastErr = null;
-    for (const sourceKey of sourceOrder) {
-      try {
-        const url = buildUrlBySource(sourceKey);
-        if (!url) continue;
-        const data = await fetchJSON(url, opts);
-        return { data, sourceKey };
-      } catch (e) {
-        lastErr = e;
-      }
-    }
-    throw lastErr || new Error('No source available');
+    const sourceKey = src;
+    const url = buildUrlBySource(sourceKey);
+    if (!url) throw new Error('No source available');
+    const data = await fetchJSON(url, opts);
+    return { data, sourceKey };
   }
 
   function prefetchManifest(url='') {
@@ -1341,6 +1334,71 @@ const App = (() => {
     fetch(u, { method:'GET', mode:'cors', credentials:'omit', cache:'force-cache' }).catch(() => {
       // noop
     });
+  }
+
+  function createHlsConfig() {
+    const conn = (navigator && navigator.connection) ? navigator.connection : null;
+    const netType = String((conn && conn.effectiveType) || '').toLowerCase();
+    const saveData = !!(conn && conn.saveData);
+    const isWeakNet = saveData || netType.includes('2g') || netType.includes('3g');
+
+    return {
+      enableWorker: true,
+      lowLatencyMode: false,
+      backBufferLength: isWeakNet ? 60 : 90,
+      maxBufferLength: isWeakNet ? 28 : 40,
+      maxMaxBufferLength: isWeakNet ? 56 : 80,
+      maxBufferSize: (isWeakNet ? 42 : 60) * 1000 * 1000,
+      maxBufferHole: 0.5,
+      maxFragLookUpTolerance: 0.25,
+      nudgeOffset: 0.1,
+      nudgeMaxRetry: 6,
+      startLevel: -1,
+      testBandwidth: true,
+      abrEwmaFastLive: isWeakNet ? 2 : 3,
+      abrEwmaSlowLive: isWeakNet ? 6 : 9,
+      abrEwmaFastVoD: isWeakNet ? 2 : 3,
+      abrEwmaSlowVoD: isWeakNet ? 6 : 9,
+      abrBandWidthFactor: isWeakNet ? 0.78 : 0.85,
+      abrBandWidthUpFactor: isWeakNet ? 0.58 : 0.7,
+      capLevelToPlayerSize: true,
+      startFragPrefetch: true,
+      autoStartLoad: true,
+      progressive: true,
+      manifestLoadingTimeOut: 15000,
+      manifestLoadingMaxRetry: 4,
+      levelLoadingTimeOut: 15000,
+      levelLoadingMaxRetry: 5,
+      fragLoadingTimeOut: 20000,
+      fragLoadingMaxRetry: 6,
+      fragLoadingRetryDelay: 800,
+      fragLoadingMaxRetryTimeout: 8000,
+      appendErrorMaxRetry: 8
+    };
+  }
+
+  function resolveActiveServerContext(episodes = [], movieSlug = '', requestedServer = '', requestedEpSlug = '') {
+    const rememberedServer = getRememberedServer(movieSlug);
+    const selectedServer = pickPreferredServer(episodes, requestedServer, loadServerMode(), rememberedServer) || episodes[0] || null;
+    const selectedServerName = selectedServer && selectedServer.server_name ? selectedServer.server_name : (requestedServer || '');
+    const epList = (selectedServer && Array.isArray(selectedServer.server_data)) ? selectedServer.server_data : [];
+    let selectedEp = epList.find(e => e && e.slug === requestedEpSlug) || null;
+    if (!selectedEp && epList.length) selectedEp = epList[0];
+    return {
+      server: selectedServer,
+      serverName: selectedServerName,
+      epList,
+      ep: selectedEp,
+      epSlug: selectedEp && selectedEp.slug ? selectedEp.slug : (requestedEpSlug || '')
+    };
+  }
+
+  function buildSearchUrl(keyword = '') {
+    const c = cfg();
+    const kw = encodeURIComponent(String(keyword || '').trim());
+    const base = `${c.search}${kw}`;
+    if (src === 'nguonphim') return `${base}&limit=10`;
+    return base;
   }
 
 
@@ -1380,7 +1438,7 @@ const App = (() => {
 
   async function normalizeItems(data, fallbackImg) {
     const items = data.items || (data.data && data.data.items) || [];
-    const cdnImg = (data.data && data.data.APP_DOMAIN_CDN_IMAGE) || fallbackImg;
+    const cdnImg = data.pathImage || (data.data && data.data.APP_DOMAIN_CDN_IMAGE) || fallbackImg;
 
     const metas = await Promise.all(items.map(m => fetchTmdbMeta(m.name || m.origin_name || '', m.year || '')));
 
@@ -1390,8 +1448,8 @@ const App = (() => {
       const tmdbBackdrop = meta && meta.backdrop ? safeImg(meta.backdrop, '') : '';
       return {
         ...m,
-        _thumb: tmdbPoster || safeImg(m.thumb_url, cdnImg),
-        _poster: tmdbBackdrop || safeImg(m.poster_url || m.thumb_url, cdnImg),
+        _thumb: tmdbBackdrop || safeImg(m.thumb_url, cdnImg),
+        _poster: tmdbPoster || safeImg(m.poster_url || m.thumb_url, cdnImg),
         _tmdb: meta || null
       };
     });
@@ -1480,6 +1538,29 @@ const App = (() => {
 
   async function getMovieDetailWithFallback(slug, opts = {}) {
     const { data, sourceKey } = await fetchJSONWithSourceFallback((s) => CFG[s] && CFG[s].detail ? (CFG[s].detail + slug) : '', opts);
+    if (data && data.movie && Array.isArray(data.movie.episodes)) {
+      const eps = data.movie.episodes.map(s => ({
+        server_name: s.server_name,
+        server_data: (s.items || s.server_data || []).map(ep => ({
+          name: ep.name,
+          slug: ep.slug,
+          link_m3u8: '', // Force iframe default
+          link_embed: ep.embed || ep.link_embed || ''
+        }))
+      }));
+      
+      const m3u8Eps = data.movie.episodes.map(s => ({
+        server_name: s.server_name + ' (Trình phát Tùy chỉnh)',
+        server_data: (s.items || s.server_data || []).map(ep => ({
+          name: ep.name,
+          slug: ep.slug,
+          link_m3u8: ep.m3u8 || ep.link_m3u8 || '',
+          link_embed: ep.embed || ep.link_embed || ''
+        }))
+      }));
+      
+      data.episodes = [...eps, ...m3u8Eps];
+    }
     return { data, sourceKey };
   }
 
@@ -1513,9 +1594,10 @@ const App = (() => {
     setMain(wrap);
 
     const c = cfg();
+    const effectiveCats = (c && c.cats && Object.keys(c.cats).length) ? c.cats : {};
     const rowDefs = [
       {key:'latest', title:'🔥 Mới Cập Nhật', sub:'Phim vừa thêm trong ngày', url: c.list+'1'},
-      ...Object.entries(c.cats).map(([id, url]) => ({
+      ...Object.entries(effectiveCats).map(([id, url]) => ({
         key:id,
         title: id === 'phim-bo' ? '📺 Phim Bộ Đề Cử' : id === 'phim-le' ? '🎬 Phim Lẻ Đặc Sắc' : id === 'hoat-hinh' ? '🎌 Anime / Hoạt Hình' : '📡 TV Shows',
         sub: id === 'phim-bo' ? 'Theo dõi theo tập mới nhất' : id === 'phim-le' ? 'Xem trọn bộ nhanh gọn' : id === 'hoat-hinh' ? 'Nhiều anime hot cập nhật' : 'Các chương trình truyền hình',
@@ -1545,18 +1627,24 @@ const App = (() => {
       ['hoat-hinh','Anime'],
       ['tv-shows','TV Show']
     ].forEach(([id,label]) => {
-      if (!c.cats[id]) return;
-      const b = el('button', {class:'category-chip', onclick:()=>browseCategory(id)}, label);
+      const b = el('button', {
+        class:'category-chip',
+        onclick:()=> {
+          if (effectiveCats[id]) return browseCategory(id);
+          search({ preventDefault: () => {}, target: { querySelector: () => ({ value: label }) } });
+        }
+      }, label);
       chips.appendChild(b);
     });
     cats.appendChild(chips);
     homeSections.appendChild(cats);
 
     const historyItems = loadHistory();
+    let continueWatchingRow = null;
+    let historyRow = null;
     if (historyItems && historyItems.length) {
-      const cw = buildContinueWatchingRail(historyItems);
-      if (cw) rowsEl.appendChild(cw);
-      rowsEl.appendChild(buildHistoryRow(historyItems));
+      continueWatchingRow = buildContinueWatchingRail(historyItems);
+      historyRow = buildHistoryRow(historyItems);
     }
 
     let heroSet = false;
@@ -1589,6 +1677,9 @@ const App = (() => {
       mixed.appendChild(mixedGrid);
       homeSections.appendChild(mixed);
     }
+
+    if (continueWatchingRow) rowsEl.appendChild(continueWatchingRow);
+    if (historyRow) rowsEl.appendChild(historyRow);
 
     const heroItems = [];
     for (const res of results) {
@@ -1924,6 +2015,34 @@ const App = (() => {
       layout.appendChild(img);
 
       const info = el('div', {class:'detail-info'});
+      
+      let catArr = [];
+      if (m.category) {
+        if (Array.isArray(m.category)) catArr = m.category.map(g => g.name || g);
+        else if (typeof m.category === 'object') {
+          catArr = Object.values(m.category).flatMap(x => (x.list||[]).map(i => i.name));
+        }
+      }
+      const showCats = (m._tmdb && m._tmdb.genres && m._tmdb.genres.length) ? m._tmdb.genres : catArr;
+
+      let actorsStr = 'N/A';
+      if (m._tmdb && m._tmdb.cast && m._tmdb.cast.length) {
+        actorsStr = m._tmdb.cast.map(x => x.name).slice(0,5).join(', ');
+      } else if (Array.isArray(m.actor)) {
+        actorsStr = m.actor.slice(0,5).join(', ');
+      } else if (typeof m.casts === 'string' && m.casts) {
+        actorsStr = m.casts;
+      } else if (typeof m.actor === 'string' && m.actor) {
+        actorsStr = m.actor;
+      }
+
+      let dirStr = 'N/A';
+      if (Array.isArray(m.director)) {
+        dirStr = m.director.join(', ');
+      } else if (typeof m.director === 'string' && m.director) {
+        dirStr = m.director;
+      }
+
       info.innerHTML = `
         <h1>${m.name}</h1>
         <div class="detail-origin">${m.origin_name || (m._tmdb && m._tmdb.title) || ''}</div>
@@ -1933,11 +2052,11 @@ const App = (() => {
           <span class="tag">${m.quality || 'FHD'}</span>
           ${(m._tmdb && m._tmdb.imdb) ? `<span class="tag">IMDb ${m._tmdb.imdb}</span>` : ''}
           ${(m._tmdb && m._tmdb.runtime) ? `<span class="tag">${m._tmdb.runtime} phút</span>` : ''}
-          ${((m._tmdb && m._tmdb.genres && m._tmdb.genres.length) ? m._tmdb.genres : (m.category||[]).map(g => g.name || g)).slice(0,4).map(g=>`<span class="tag">${g}</span>`).join('')}
+          ${showCats.slice(0,4).map(g=>`<span class="tag">${g}</span>`).join('')}
         </div>
         <p class="detail-desc">${m.content ? m.content.replace(/<[^>]+>/g,'') : ((m._tmdb && m._tmdb.overview) || 'Không có mô tả.')}</p>
-        <div class="meta-row">Diễn viên: <span>${(m._tmdb && m._tmdb.cast && m._tmdb.cast.length ? m._tmdb.cast.map(x => x.name).slice(0,5) : (m.actor||[]).slice(0,5)).join(', ') || 'N/A'}</span></div>
-        <div class="meta-row">Đạo diễn: <span>${(m.director||[]).join(', ') || 'N/A'}</span></div>`;
+        <div class="meta-row">Diễn viên: <span>${actorsStr}</span></div>
+        <div class="meta-row">Đạo diễn: <span>${dirStr}</span></div>`;
 
       if (m._tmdb && Array.isArray(m._tmdb.cast) && m._tmdb.cast.length) {
         const castStrip = el('div', {class:'cast-strip'});
@@ -2253,6 +2372,7 @@ const App = (() => {
 
     const grid = el('div', {class:'search-grid'});
     if (loadSearchCompactMode()) grid.classList.add('compact');
+    const c = cfg();
     const cacheKey = `${src}::${kw.toLowerCase()}`;
     let baseNormalized = null;
     let visiblePrefetchObserver = null;
@@ -2264,8 +2384,7 @@ const App = (() => {
           if (hit) {
             baseNormalized = hit;
           } else {
-            const c = cfg();
-            const data = await fetchJSON(c.search + encodeURIComponent(kw), { signal: req.signal });
+            const data = await fetchJSON(buildSearchUrl(kw), { signal: req.signal });
             if (req.signal.aborted || currentSearchKeyword !== kw) return;
             baseNormalized = await normalizeItems(data, c.img);
             setSearchCacheEntry(cacheKey, baseNormalized);
@@ -2420,7 +2539,8 @@ const App = (() => {
 
   async function browseCategory(id) {
     const c = cfg();
-    const baseUrl = c.cats[id];
+    const catMap = (c && c.cats) ? c.cats : {};
+    const baseUrl = catMap[id];
     if (!baseUrl) return;
     const info = catTitles[id] || {label: id, icon:'🎞️'};
 
@@ -2587,16 +2707,19 @@ const App = (() => {
       const c = CFG[movieData.sourceKey] || cfg();
       const { movie: m, episodes } = movieData;
 
-      const rememberedServer = getRememberedServer(movieSlug);
-      const activeServer = pickPreferredServer(episodes, srvName, loadServerMode(), rememberedServer) || episodes[0];
-      const activeEp = activeServer && activeServer.server_data.find(e => e.slug === epSlug);
+      const serverCtx = resolveActiveServerContext(episodes, movieSlug, srvName, epSlug);
+      const activeServer = serverCtx.server;
+      const activeEp = serverCtx.ep;
+      const resolvedEpSlug = serverCtx.epSlug;
 
       const playUrl = activeEp ? (activeEp.link_m3u8 || activeEp.link_embed) : null;
       const playType = activeEp && activeEp.link_m3u8 ? 'm3u8' : 'iframe';
+      const currentSrvName = serverCtx.serverName || srvName || '';
+      const currentEpSlug = resolvedEpSlug || epSlug || '';
 
       if (activeServer && activeServer.server_name) rememberServer(movieSlug, activeServer.server_name);
-      const epList = (activeServer && activeServer.server_data) ? activeServer.server_data : [];
-      const epIndex = epList.findIndex(e => e && e.slug === epSlug);
+      const epList = serverCtx.epList;
+      const epIndex = epList.findIndex(e => e && e.slug === currentEpSlug);
       const prevEp = epIndex > 0 ? epList[epIndex - 1] : null;
       const nextEp = (epIndex >= 0 && epIndex < epList.length - 1) ? epList[epIndex + 1] : null;
 
@@ -2605,7 +2728,7 @@ const App = (() => {
       try { const v = localStorage.getItem(autoNextKey); if (v !== null) autoNext = v; } catch (_) {}
       autoNext = autoNext === 'true';
 
-      const progressKey = `devthinh:progress:${movieSlug}:${epSlug}:${srvName}`;
+      const progressKey = `devthinh:progress:${movieSlug}:${currentEpSlug}:${currentSrvName}`;
       let savedTime = 0;
       try { savedTime = Number(localStorage.getItem(progressKey)) || 0; } catch (_) {}
 
@@ -2637,10 +2760,10 @@ const App = (() => {
       try {
         saveHistoryEntry({
           movieSlug,
-          epSlug,
-          srvName,
+          epSlug: currentEpSlug,
+          srvName: currentSrvName,
           movieName: m && m.name ? m.name : '',
-          epName: (activeEp && activeEp.name) ? activeEp.name : epSlug,
+          epName: (activeEp && activeEp.name) ? activeEp.name : currentEpSlug,
           poster: bgPosterUrl,
           progressSeconds: 0
         });
@@ -2681,7 +2804,7 @@ const App = (() => {
     const playerMeta = el('div', {class:'player-meta-overlay'});
     playerMeta.innerHTML = `
       <div class="player-meta-title">${m.name || 'Đang phát'}</div>
-      <div class="player-meta-ep">${activeEp?.name ? `Tập ${activeEp.name}` : (epSlug || 'Tập hiện tại')}</div>
+      <div class="player-meta-ep">${activeEp?.name ? `Tập ${activeEp.name}` : (currentEpSlug || 'Tập hiện tại')}</div>
       <div class="player-meta-row">
         <span class="player-meta-chip age">${m.lang || 'Vietsub'}</span>
         <span class="player-meta-chip">${m.quality || 'FHD'}</span>
@@ -2768,7 +2891,7 @@ const App = (() => {
       srvWrap.innerHTML = '<div style="color:var(--text2);margin-bottom:10px;font-size:.88rem;font-weight:700;letter-spacing:.3px">MÁY CHỦ PHÁT</div>';
       const srvList = el('div', {class:'watch-server-list'});
       episodes.forEach(s => {
-        const b = el('button', {class:`w-srv-btn${s.server_name===srvName?' active':''}`, onclick:()=> goWatch(movieSlug, s.server_data[0]?.slug||epSlug, s.server_name)});
+        const b = el('button', {class:`w-srv-btn${s.server_name===currentSrvName?' active':''}`, onclick:()=> goWatch(movieSlug, s.server_data[0]?.slug||currentEpSlug, s.server_name)});
         b.innerHTML = `<i class="fa-solid fa-server"></i> ${s.server_name}`;
         srvList.appendChild(b);
       });
@@ -2794,7 +2917,7 @@ const App = (() => {
       const supportsHover = !!(window.matchMedia && window.matchMedia('(hover:hover)').matches);
 
       const makeEpButton = (ep, targetGrid) => {
-        const b = el('button', {class:`ep-num${ep.slug===epSlug?' active':''}`, onclick:()=>goWatch(movieSlug, ep.slug, srvName)});
+        const b = el('button', {class:`ep-num${ep.slug===currentEpSlug?' active':''}`, onclick:()=>goWatch(movieSlug, ep.slug, currentSrvName)});
         b.textContent = ep.name;
         targetGrid.appendChild(b);
 
@@ -2821,14 +2944,14 @@ const App = (() => {
       mainCol.appendChild(epWrap);
 
       const navRow = el('div', {class:'watch-content-align', style:'display:flex;gap:10px;flex-wrap:wrap;margin-top:14px'});
-      const prevBtn = el('button', {class:'w-srv-btn', onclick:()=> prevEp && goWatch(movieSlug, prevEp.slug, srvName)});
+      const prevBtn = el('button', {class:'w-srv-btn', onclick:()=> prevEp && goWatch(movieSlug, prevEp.slug, currentSrvName)});
       prevBtn.innerHTML = '<i class="fa-solid fa-arrow-left"></i> Tập trước';
       if (!prevEp) {
         prevBtn.disabled = true;
         prevBtn.style.opacity = '0.45';
         prevBtn.style.pointerEvents = 'none';
       }
-      const nextBtn = el('button', {class:'w-srv-btn', onclick:()=> nextEp && goWatch(movieSlug, nextEp.slug, srvName)});
+      const nextBtn = el('button', {class:'w-srv-btn', onclick:()=> nextEp && goWatch(movieSlug, nextEp.slug, currentSrvName)});
       nextBtn.innerHTML = 'Tập tiếp <i class="fa-solid fa-arrow-right"></i>';
       if (!nextEp) {
         nextBtn.disabled = true;
@@ -2865,6 +2988,21 @@ const App = (() => {
     let stallCount = 0;
     let lastStallAt = 0;
     let qualityProfile = loadQualityProfile();
+    const VIDEO_QUALITY_KEY = 'devthinh:videoQualityMode';
+    function loadQualityMode() {
+      try {
+        const v = localStorage.getItem(VIDEO_QUALITY_KEY) || 'auto';
+        return ['auto', 'best', 'data-saver'].includes(v) ? v : 'auto';
+      } catch (_) {
+        return 'auto';
+      }
+    }
+    function saveQualityMode(v = 'auto') {
+      const mode = ['auto', 'best', 'data-saver'].includes(v) ? v : 'auto';
+      try { localStorage.setItem(VIDEO_QUALITY_KEY, mode); } catch (_) {}
+      return mode;
+    }
+    let qualityMode = loadQualityMode();
 
     let lastSaveAt = 0;
     let lastHistoryAt = 0;
@@ -2885,10 +3023,10 @@ const App = (() => {
         try {
           saveHistoryEntry({
             movieSlug,
-            epSlug,
-            srvName,
+            epSlug: currentEpSlug,
+            srvName: currentSrvName,
             movieName: m && m.name ? m.name : '',
-            epName: (activeEp && activeEp.name) ? activeEp.name : epSlug,
+            epName: (activeEp && activeEp.name) ? activeEp.name : currentEpSlug,
             poster: bgPosterUrl,
             progressSeconds: Math.floor(t)
           });
@@ -3204,7 +3342,7 @@ const App = (() => {
       }
       if (e.key === 'g' || e.key === 'G') {
         // g -> next episode
-        if (nextEp) goWatch(movieSlug, nextEp.slug, srvName);
+        if (nextEp) goWatch(movieSlug, nextEp.slug, currentSrvName);
       }
     }
     document.addEventListener('keydown', onKeyDown);
@@ -3244,7 +3382,7 @@ const App = (() => {
             });
           } catch (_) {}
           if (!autoNext) return;
-          setTimeout(() => goWatch(movieSlug, nextEp.slug, srvName), 500);
+          setTimeout(() => goWatch(movieSlug, nextEp.slug, currentSrvName), 500);
         });
       }
     }
@@ -3377,7 +3515,7 @@ const App = (() => {
           return keys.some(k => name.includes(k));
         });
         if (found && found.server_data && found.server_data.length) {
-          goWatch(movieSlug, found.server_data[0].slug || epSlug, found.server_name);
+          goWatch(movieSlug, found.server_data[0].slug || currentEpSlug, found.server_name);
         } else {
           toast('Không có nguồn cho chế độ này');
         }
@@ -3459,7 +3597,17 @@ const App = (() => {
 
     function getProfileCapIndex(levels=[]) {
       if (!Array.isArray(levels) || !levels.length) return -1;
+      if (QUALITY_LOCK_1080) return get1080LockIndex(levels);
 
+      if (qualityMode === 'best') return getBestLevelIndex(levels);
+      if (qualityMode === 'data-saver') return get720LockIndex(levels);
+
+      const conn = (navigator && navigator.connection) ? navigator.connection : null;
+      const netType = String((conn && conn.effectiveType) || '').toLowerCase();
+      const saveData = !!(conn && conn.saveData);
+      const isWeakNet = saveData || netType.includes('2g') || netType.includes('3g');
+
+      if (isWeakNet) return get720LockIndex(levels);
       return get1080LockIndex(levels);
     }
 
@@ -3491,7 +3639,7 @@ const App = (() => {
 
     function applyPreferredQuality(levels=[]) {
       if (!hls || !Array.isArray(levels) || !levels.length) return -1;
-      const capIdx = QUALITY_LOCK_1080 ? get1080LockIndex(levels) : getProfileCapIndex(levels);
+      const capIdx = getProfileCapIndex(levels);
       hls.autoLevelCapping = capIdx;
       hls.currentLevel = -1;
       hls.loadLevel = -1;
@@ -3518,7 +3666,7 @@ const App = (() => {
 
       const activeIndex = getActiveQualityIndex(levels, autoSelectLevel);
       const activeLevel = activeIndex >= 0 ? levels[activeIndex] : null;
-      const modeLabel = qualityManual ? 'MANUAL' : 'AUTO';
+      const modeLabel = qualityManual ? 'MANUAL' : (QUALITY_LOCK_1080 ? 'LOCK 1080' : 'AUTO');
       const activeLabel = activeLevel
         ? `${activeLevel.height || '?'}p · ${formatBitrate(activeLevel.bitrate)}`
         : 'Adaptive';
@@ -3528,6 +3676,25 @@ const App = (() => {
       qmenu.appendChild(head);
 
       const sorted = levels.map((l,i)=>({...l,i})).sort((a,b)=>(b.height||b.bitrate)-(a.height||a.bitrate));
+      const modeWrap = el('div', {style:'display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:8px 10px 4px'});
+      ['auto','best','data-saver'].forEach(mode => {
+        const label = mode === 'auto' ? 'Auto' : (mode === 'best' ? 'Nét nhất' : 'Tiết kiệm');
+        const mb = el('button', { class:`qbtn${qualityMode === mode ? ' active' : ''}`, type:'button' });
+        mb.innerHTML = `<span>${label}</span><span class="qbtn-meta">Mode</span>`;
+        mb.onclick = (e) => {
+          e.stopPropagation();
+          qualityMode = saveQualityMode(mode);
+          if (!qualityManual && hls && hls.levels && hls.levels.length) {
+            const selected = applyPreferredQuality(hls.levels || []);
+            buildQMenu(hls.levels || [], selected);
+          } else {
+            buildQMenu(levels, autoSelectLevel);
+          }
+        };
+        modeWrap.appendChild(mb);
+      });
+      qmenu.appendChild(modeWrap);
+
       const auto = el('button', {class:'qbtn', 'data-lvl':'-1', onclick: e=>selectQ(e,-1,auto)});
       auto.innerHTML = `<span>Tự động</span><span class="qbtn-meta">ABR</span>`;
       if (!qualityManual) auto.classList.add('active');
@@ -3577,39 +3744,7 @@ const App = (() => {
             }
 
             if (typeof Hls !== 'undefined' && Hls.isSupported()) {
-              hls = new Hls({
-                enableWorker: true,
-                lowLatencyMode: false,
-                backBufferLength: 90,
-                maxBufferLength: 40,
-                maxMaxBufferLength: 80,
-                maxBufferSize: 60 * 1000 * 1000,
-                maxBufferHole: 0.5,
-                maxFragLookUpTolerance: 0.25,
-                nudgeOffset: 0.1,
-                nudgeMaxRetry: 6,
-                startLevel: -1,
-                testBandwidth: true,
-                abrEwmaFastLive: 3,
-                abrEwmaSlowLive: 9,
-                abrEwmaFastVoD: 3,
-                abrEwmaSlowVoD: 9,
-                abrBandWidthFactor: 0.85,
-                abrBandWidthUpFactor: 0.7,
-                capLevelToPlayerSize: true,
-                startFragPrefetch: true,
-                autoStartLoad: true,
-                progressive: true,
-                manifestLoadingTimeOut: 15000,
-                manifestLoadingMaxRetry: 4,
-                levelLoadingTimeOut: 15000,
-                levelLoadingMaxRetry: 5,
-                fragLoadingTimeOut: 20000,
-                fragLoadingMaxRetry: 6,
-                fragLoadingRetryDelay: 800,
-                fragLoadingMaxRetryTimeout: 8000,
-                appendErrorMaxRetry: 8
-              });
+              hls = new Hls(createHlsConfig());
               liveHls = hls;
               hls.loadSource(playUrl);
               hls.attachMedia(vid);
