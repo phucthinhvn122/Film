@@ -2,9 +2,26 @@ const ALLOWED_PROTOCOLS = new Set(['http:', 'https:']);
 const RATE_WINDOW_MS = 60_000;
 const RATE_MAX = 80;
 
-// In-memory limiter cho serverless warm instance (best-effort)
-const hitStore = globalThis.__imgProxyRateStore || new Map();
-globalThis.__imgProxyRateStore = hitStore;
+// NOTE:
+// - This limiter is in-memory only (best-effort for warm instances).
+// - On cold start, counters reset.
+// - CDN-level abuse protection should still be configured at platform level.
+const hitStore = globalThis.__thinfilmImgProxyRateStore || new Map();
+globalThis.__thinfilmImgProxyRateStore = hitStore;
+
+function ok(res, buffer, headers = {}) {
+  Object.entries(headers).forEach(([key, value]) => res.setHeader(key, value));
+  return res.status(200).send(buffer);
+}
+
+function fail(res, status, code, error, details) {
+  return res.status(status).json({
+    ok: false,
+    code,
+    error,
+    details: details || null
+  });
+}
 
 function getClientIp(req) {
   const xf = req.headers['x-forwarded-for'];
@@ -15,6 +32,7 @@ function getClientIp(req) {
 function checkRateLimit(key) {
   const now = Date.now();
   const current = hitStore.get(key);
+
   if (!current || now > current.resetAt) {
     const next = { count: 1, resetAt: now + RATE_WINDOW_MS };
     hitStore.set(key, next);
@@ -22,29 +40,33 @@ function checkRateLimit(key) {
   }
 
   current.count += 1;
-  const ok = current.count <= RATE_MAX;
-  return { ok, remaining: Math.max(0, RATE_MAX - current.count), resetAt: current.resetAt };
+  return {
+    ok: current.count <= RATE_MAX,
+    remaining: Math.max(0, RATE_MAX - current.count),
+    resetAt: current.resetAt
+  };
 }
 
 function isAllowedImageHost(hostname = '') {
-  // Chặn localhost/private network để tránh SSRF cơ bản
-  const h = String(hostname || '').toLowerCase();
-  if (!h) return false;
-  if (h === 'localhost' || h.endsWith('.local')) return false;
-  if (/^\d+\.\d+\.\d+\.\d+$/.test(h)) {
-    if (h.startsWith('10.') || h.startsWith('127.') || h.startsWith('192.168.')) return false;
-    const second = Number(h.split('.')[1] || 0);
-    if (h.startsWith('172.') && second >= 16 && second <= 31) return false;
+  const host = String(hostname || '').toLowerCase();
+  if (!host) return false;
+  if (host === 'localhost' || host.endsWith('.local')) return false;
+
+  if (/^\d+\.\d+\.\d+\.\d+$/.test(host)) {
+    if (host.startsWith('10.') || host.startsWith('127.') || host.startsWith('192.168.')) return false;
+    const second = Number(host.split('.')[1] || 0);
+    if (host.startsWith('172.') && second >= 16 && second <= 31) return false;
   }
+
   return true;
 }
 
-function parseAndValidateTarget(rawUrl) {
+function parseTargetUrl(rawUrl) {
   try {
-    const u = new URL(String(rawUrl || '').trim());
-    if (!ALLOWED_PROTOCOLS.has(u.protocol)) return null;
-    if (!isAllowedImageHost(u.hostname)) return null;
-    return u;
+    const url = new URL(String(rawUrl || '').trim());
+    if (!ALLOWED_PROTOCOLS.has(url.protocol)) return null;
+    if (!isAllowedImageHost(url.hostname)) return null;
+    return url;
   } catch (_) {
     return null;
   }
@@ -55,7 +77,7 @@ function checkHotlink(req) {
   const origin = String(req.headers.origin || '');
   const host = String(req.headers.host || '');
 
-  // Cho phép khi không có referer/origin (một số browser/app privacy mode)
+  // Allow requests that intentionally hide referer/origin (privacy mode / app webview).
   if (!referer && !origin) return true;
 
   try {
@@ -76,26 +98,28 @@ function checkHotlink(req) {
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
+    return fail(res, 405, 'METHOD_NOT_ALLOWED', 'Method not allowed');
   }
 
   const ip = getClientIp(req);
-  const rl = checkRateLimit(ip);
+  const rate = checkRateLimit(ip);
   res.setHeader('X-RateLimit-Limit', String(RATE_MAX));
-  res.setHeader('X-RateLimit-Remaining', String(rl.remaining));
-  res.setHeader('X-RateLimit-Reset', String(Math.floor(rl.resetAt / 1000)));
+  res.setHeader('X-RateLimit-Remaining', String(rate.remaining));
+  res.setHeader('X-RateLimit-Reset', String(Math.floor(rate.resetAt / 1000)));
 
-  if (!rl.ok) {
-    return res.status(429).json({ error: 'Too many requests' });
+  if (!rate.ok) {
+    console.warn('[img-proxy] Rate limit exceeded', { ip });
+    return fail(res, 429, 'RATE_LIMIT', 'Too many requests');
   }
 
   if (!checkHotlink(req)) {
-    return res.status(403).json({ error: 'Hotlink blocked' });
+    console.warn('[img-proxy] Hotlink blocked', { ip, referer: req.headers.referer, origin: req.headers.origin });
+    return fail(res, 403, 'HOTLINK_BLOCKED', 'Hotlink blocked');
   }
 
-  const target = parseAndValidateTarget(req.query.url);
+  const target = parseTargetUrl(req.query.url);
   if (!target) {
-    return res.status(400).json({ error: 'Invalid image url' });
+    return fail(res, 400, 'INVALID_URL', 'Invalid image url');
   }
 
   const width = Math.max(0, Math.min(1800, Number(req.query.w || 0) || 0));
@@ -106,32 +130,43 @@ export default async function handler(req, res) {
       method: 'GET',
       redirect: 'follow',
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'User-Agent': 'ThinFilm-ImageProxy/2.0',
         Accept: 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8'
       }
     });
 
     if (!upstream.ok) {
-      return res.status(upstream.status).json({ error: `Upstream status ${upstream.status}` });
+      console.warn('[img-proxy] Upstream image request failed', {
+        target: target.toString(),
+        status: upstream.status
+      });
+      return fail(res, upstream.status, 'UPSTREAM_ERROR', `Upstream status ${upstream.status}`);
     }
 
-    const ct = upstream.headers.get('content-type') || 'image/jpeg';
-    if (!ct.startsWith('image/')) {
-      return res.status(415).json({ error: 'Upstream is not an image' });
+    const contentType = upstream.headers.get('content-type') || '';
+    if (!contentType.startsWith('image/')) {
+      console.warn('[img-proxy] Upstream response is not image', {
+        target: target.toString(),
+        contentType
+      });
+      return fail(res, 415, 'UNSUPPORTED_MEDIA', 'Upstream is not an image');
     }
 
-    // Passthrough tối ưu: hint cho Vercel Edge cache theo biến thể w/q
-    const cacheControl = 'public, s-maxage=604800, max-age=86400, stale-while-revalidate=2592000';
-    res.setHeader('Content-Type', ct);
-    res.setHeader('Cache-Control', cacheControl);
-    res.setHeader('Vary', 'Accept');
-    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-    if (width > 0) res.setHeader('X-Image-Width-Hint', String(width));
-    if (quality > 0) res.setHeader('X-Image-Quality-Hint', String(quality));
+    const buffer = Buffer.from(await upstream.arrayBuffer());
 
-    const arr = await upstream.arrayBuffer();
-    return res.status(200).send(Buffer.from(arr));
-  } catch (_) {
-    return res.status(502).json({ error: 'Failed to fetch upstream image' });
+    return ok(res, buffer, {
+      'Content-Type': contentType,
+      'Cache-Control': 'public, s-maxage=604800, max-age=86400, stale-while-revalidate=2592000',
+      Vary: 'Accept',
+      'Cross-Origin-Resource-Policy': 'cross-origin',
+      'X-Image-Width-Hint': String(width),
+      'X-Image-Quality-Hint': String(quality)
+    });
+  } catch (error) {
+    console.error('[img-proxy] Unexpected failure', {
+      target: target.toString(),
+      message: error?.message || String(error)
+    });
+    return fail(res, 502, 'NETWORK_ERROR', 'Failed to fetch upstream image');
   }
 }

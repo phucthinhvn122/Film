@@ -1,6 +1,10 @@
-{
-  "name": "bio-website",
+﻿{
+  "name": "thinfilm",
   "version": "2.0.0",
   "private": true,
-  "description": "ThinhFilm - Netflix-inspired streaming UI (Vercel static + serverless)"
+  "description": "ThinFilm - Nền tảng xem phim trực tuyến (Vercel static + serverless)",
+  "scripts": {
+    "start": "npx serve .",
+    "check:js": "node --check js/app.js && node --check js/api.js && node --check js/player.js && node --check js/search.js"
+  }
 }

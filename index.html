@@ -1,81 +1,103 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="description" content="StreamFlix - Xem phim HD miễn phí, cập nhật nhanh nhất">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="StreamFlix">
-<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
-<link rel="manifest" href="/manifest.json">
-<title>StreamFlix</title>
-<link rel="dns-prefetch" href="//fonts.googleapis.com">
-<link rel="dns-prefetch" href="//fonts.gstatic.com">
-<link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
-<link rel="dns-prefetch" href="//cdn.jsdelivr.net">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-<link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" as="style" crossorigin onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"></noscript>
-<link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" as="style" crossorigin onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
-<link rel="stylesheet" href="/style.css?v=3">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="ThinFilm - Nền tảng xem phim trực tuyến, cập nhật nhanh và giao diện gọn gàng.">
+  <meta name="theme-color" content="#141414">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ThinFilm">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <title>ThinFilm | Xem phim trực tuyến</title>
+
+  <link rel="dns-prefetch" href="//fonts.googleapis.com">
+  <link rel="dns-prefetch" href="//fonts.gstatic.com">
+  <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="/style.css?v=6">
 </head>
 <body>
+  <header id="header">
+    <div class="header-left">
+      <button class="logo" type="button" data-action="home" aria-label="Về trang chủ ThinFilm">Thin<span>Film</span></button>
+      <nav class="nav-links" aria-label="Điều hướng chính">
+        <a href="#" id="nav-home" class="active" data-action="home">Trang chủ</a>
+        <a href="#" id="nav-series" data-action="category" data-category="phim-bo">Phim bộ</a>
+        <a href="#" id="nav-movie" data-action="category" data-category="phim-le">Phim lẻ</a>
+        <a href="#" id="nav-search" data-action="search">Khám phá</a>
+      </nav>
+    </div>
 
-<header id="header">
-  <div class="header-left">
-    <div class="logo" onclick="App.goHome()">NET<span>FLIX</span></div>
-    <nav class="nav-links" aria-label="Điều hướng chính">
-      <a href="#" id="nav-home" class="active" onclick="App.goHome();return false">Trang chủ</a>
-      <a href="#" onclick="App.browseCategory('phim-bo');return false">Phim T.hình</a>
-      <a href="#" onclick="App.browseCategory('phim-le');return false">Phim</a>
-      <a href="#" onclick="App.openSearchPage();return false">Mới &amp; Phổ biến</a>
-    </nav>
-  </div>
-  <div class="header-right">
-    <button class="top-icon-btn" type="button" title="Tìm kiếm" aria-label="Tìm kiếm" onclick="App.openSearchPage()"><i class="fa-solid fa-magnifying-glass"></i></button>
-    <button class="top-icon-btn" type="button" title="Thông báo" aria-label="Thông báo"><i class="fa-regular fa-bell"></i></button>
-    <img class="profile-avatar" src="https://i.pravatar.cc/64?img=12" alt="Hồ sơ" loading="lazy">
-    <form class="search-box" onsubmit="App.search(event)">
-      <input id="q" type="text" placeholder="Tìm phim..." autocomplete="off">
-      <button type="submit" title="Tìm kiếm" aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i><span class="sr-only">Tìm kiếm</span></button>
-    </form>
-    <div class="hamburger" id="hamburger" onclick="App.toggleDrawer()">
-      <span></span>
-      <span></span>
-      <span></span>
+    <div class="header-right">
+      <button class="top-icon-btn" type="button" title="Tìm kiếm" aria-label="Tìm kiếm" data-action="search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+      </button>
+      <button class="top-icon-btn" type="button" title="Thông báo" aria-label="Thông báo" data-action="notifications">
+        <i class="fa-regular fa-bell"></i>
+      </button>
+      <img class="profile-avatar" src="https://i.pravatar.cc/64?img=12" alt="Hồ sơ người dùng" loading="lazy" data-action="profile">
+
+      <form class="search-box" data-action="search-form" role="search" aria-label="Tìm phim trên ThinFilm">
+        <input id="q" type="text" placeholder="Tìm phim..." autocomplete="off" aria-label="Nhập từ khóa tìm kiếm">
+        <button type="submit" title="Tìm kiếm" aria-label="Thực hiện tìm kiếm">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <span class="sr-only">Tìm kiếm</span>
+        </button>
+      </form>
+
+      <button class="hamburger" id="hamburger" type="button" data-action="drawer-toggle" aria-label="Mở menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <div class="mob-drawer" id="drawer" data-action="drawer-backdrop" aria-hidden="true">
+    <div class="mob-drawer-inner" data-action="drawer-inner" role="dialog" aria-label="Menu di động">
+      <div class="drawer-title">Thin<span>Film</span></div>
+      <form class="mob-search" data-action="mobile-search-form" role="search" aria-label="Tìm phim trên menu di động">
+        <input id="q-mob" type="text" placeholder="Tìm phim..." autocomplete="off" aria-label="Nhập từ khóa tìm kiếm">
+        <button type="submit" title="Tìm kiếm" aria-label="Thực hiện tìm kiếm">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <span class="sr-only">Tìm kiếm</span>
+        </button>
+      </form>
+      <a href="#" data-action="home"><i class="fa-solid fa-house icon-w20"></i>Trang chủ</a>
+      <a href="#" data-action="category" data-category="phim-bo"><i class="fa-solid fa-tv icon-w20"></i>Phim bộ</a>
+      <a href="#" data-action="category" data-category="phim-le"><i class="fa-solid fa-film icon-w20"></i>Phim lẻ</a>
+      <a href="#" data-action="search"><i class="fa-solid fa-fire icon-w20"></i>Khám phá</a>
     </div>
   </div>
-</header>
 
-<div class="mob-drawer" id="drawer" onclick="App.toggleDrawer(false)">
-  <div class="mob-drawer-inner" onclick="event.stopPropagation()">
-    <div class="drawer-title">NET<span>FLIX</span></div>
-    <form class="mob-search" onsubmit="App.search(event);App.toggleDrawer(false)">
-      <input id="q-mob" type="text" placeholder="Tìm phim..." autocomplete="off">
-      <button type="submit" title="Tìm kiếm" aria-label="Tìm kiếm"><i class="fa-solid fa-magnifying-glass"></i><span class="sr-only">Tìm kiếm</span></button>
-    </form>
-    <a href="#" onclick="App.goHome();App.toggleDrawer(false);return false"><i class="fa-solid fa-house icon-w20"></i> Trang chủ</a>
-    <a href="#" onclick="App.browseCategory('phim-bo');App.toggleDrawer(false);return false"><i class="fa-solid fa-tv icon-w20"></i> Phim T.hình</a>
-    <a href="#" onclick="App.browseCategory('phim-le');App.toggleDrawer(false);return false"><i class="fa-solid fa-film icon-w20"></i> Phim</a>
-    <a href="#" onclick="App.openSearchPage();App.toggleDrawer(false);return false"><i class="fa-solid fa-fire icon-w20"></i> Mới &amp; Phổ biến</a>
+  <main id="main" aria-live="polite"></main>
 
-  </div>
-</div>
+  <nav class="mobile-bottom-nav" aria-label="Điều hướng nhanh">
+    <button type="button" class="mb-nav-item active" data-tab="home" data-action="home" aria-label="Trang chủ">
+      <i class="fa-solid fa-house"></i>
+      <span>Trang chủ</span>
+    </button>
+    <button type="button" class="mb-nav-item" data-tab="search" data-action="search" aria-label="Tìm kiếm">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <span>Tìm kiếm</span>
+    </button>
+    <button type="button" class="mb-nav-item" data-tab="history" data-action="history" aria-label="Lịch sử">
+      <i class="fa-solid fa-clock-rotate-left"></i>
+      <span>Lịch sử</span>
+    </button>
+    <button type="button" class="mb-nav-item" data-tab="favorites" data-action="favorites" aria-label="Yêu thích">
+      <i class="fa-solid fa-heart"></i>
+      <span>Yêu thích</span>
+    </button>
+  </nav>
 
-<main id="main"></main>
-
-<nav class="mobile-bottom-nav" aria-label="Điều hướng nhanh">
-  <button type="button" class="mb-nav-item active" data-tab="home" onclick="App.goHome()"><i class="fa-solid fa-house"></i><span>Home</span></button>
-  <button type="button" class="mb-nav-item" data-tab="search" onclick="App.openSearchPage()"><i class="fa-solid fa-magnifying-glass"></i><span>Tìm</span></button>
-  <button type="button" class="mb-nav-item" data-tab="history" onclick="App.openHistoryPage()"><i class="fa-solid fa-clock-rotate-left"></i><span>Lịch sử</span></button>
-  <button type="button" class="mb-nav-item" data-tab="favorites" onclick="App.openFavoritesPage()"><i class="fa-solid fa-heart"></i><span>Yêu thích</span></button>
-</nav>
-
-<script src="/app.js?v=2"></script>
+  <script type="module" src="/js/app.js"></script>
 </body>
 </html>
