@@ -1,6 +1,7 @@
-﻿import { ROUTES, UI_TEXT } from './config.js';
+import { ROUTES, UI_TEXT } from './config.js';
 import { createElement, createMovieCard, createEmptyState } from './dom.js';
 import { HistoryStorage } from './storage.js';
+import { BasePage, router } from './router.js';
 
 function mapHistoryToMovie(entry) {
   return {
@@ -25,7 +26,7 @@ export async function renderHistoryPage(ctx) {
   const clearBtn = createElement('button', {
     type: 'button',
     className: 'toolbar-btn',
-    text: 'XÃ³a toÃ n bá»™ lá»‹ch sá»­'
+    text: 'X�a to�n b? l?ch s?'
   });
   clearBtn.addEventListener('click', () => {
     HistoryStorage.clear();
@@ -38,15 +39,11 @@ export async function renderHistoryPage(ctx) {
   const history = HistoryStorage.list();
 
   if (!history.length) {
-    grid.appendChild(createEmptyState('Báº¡n chÆ°a cÃ³ lá»‹ch sá»­ xem phim.'));
+    grid.appendChild(createEmptyState('B?n chua c� l?ch s? xem phim.'));
   } else {
     history.forEach((item) => {
       const card = createMovieCard(mapHistoryToMovie(item), {
-        onOpen: () => ctx.navigate(ROUTES.WATCH, {
-          slug: item.movieSlug,
-          ep: item.epSlug,
-          server: item.serverName
-        })
+        onOpen: () => ctx.navigate(ROUTES.DETAIL, { slug: item.movieSlug })
       });
       grid.appendChild(card);
     });
@@ -56,3 +53,25 @@ export async function renderHistoryPage(ctx) {
   return { node: page, title: UI_TEXT.history };
 }
 
+export class HistoryPage extends BasePage {
+  constructor() {
+    super(ROUTES.HISTORY);
+  }
+
+  async render() {
+    const result = await renderHistoryPage({
+      navigate: (route, params = {}, options = {}) => {
+        const replace = Boolean(options && options.replace);
+        return router.navigate(route, params, replace);
+      }
+    });
+
+    if (result?.title) this.setTitle(result.title);
+    return result?.node || createElement('section');
+  }
+
+  onMounted() {
+    this.updateActiveTab('history');
+    window.scrollTo(0, 0);
+  }
+}

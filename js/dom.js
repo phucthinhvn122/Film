@@ -20,6 +20,12 @@ export function createElement(tag, attrs = {}, children = []) {
   for (const [key, value] of Object.entries(attrs || {})) {
     if (value === null || value === undefined) continue;
 
+    if (key.startsWith('on') && typeof value === 'function') {
+      const eventName = key.slice(2).toLowerCase();
+      node.addEventListener(eventName, value);
+      continue;
+    }
+
     if (key === 'className') {
       node.className = value;
       continue;
@@ -230,14 +236,25 @@ let transitionToken = 0;
 
 export function setMainContent(node, onMounted) {
   const main = $(SELECTORS.main);
-  if (!main || !node) return;
+  if (!main) return;
+
+  const isValidNode = typeof Node !== 'undefined' ? node instanceof Node : Boolean(node && typeof node === 'object');
+  const safeNode = isValidNode
+    ? node
+    : createElement('div', { className: 'error-page' }, [
+        createElement('div', { className: 'error-content' }, [
+          createElement('i', { class: 'fa-solid fa-triangle-exclamation', 'aria-hidden': 'true' }),
+          createElement('h2', { text: 'Đã xảy ra lỗi hiển thị' }),
+          createElement('p', { text: 'Nội dung trang không hợp lệ. Vui lòng tải lại.' })
+        ])
+      ]);
 
   const token = ++transitionToken;
-  const isWatchPage = node.classList?.contains('watch-page') || false;
+  const isWatchPage = safeNode.classList?.contains('watch-page') || false;
 
   const mountNow = () => {
     clearNode(main);
-    main.appendChild(node);
+    main.appendChild(safeNode);
     document.body.classList.toggle('watch-mode', isWatchPage);
     onMounted?.();
   };
@@ -265,5 +282,90 @@ export function setMainContent(node, onMounted) {
 
 export function updateDocumentTitle(pageTitle, appName = 'ThinFilm') {
   document.title = pageTitle ? `${pageTitle} | ${appName}` : appName;
+}
+
+export function setMain(node, onMounted) {
+  setMainContent(node, onMounted);
+}
+
+export function el(tag, attrs = {}, children = []) {
+  return createElement(tag, attrs, children);
+}
+
+export function loader(message = 'Đang tải...') {
+  return createLoaderState(message);
+}
+
+export function buildSearchSkeleton(count = 10) {
+  return createSkeletonGrid(count);
+}
+
+export function renderCardsProgressively(container, items = [], pageSize = 24, renderCard) {
+  if (!container || typeof renderCard !== 'function') return;
+  const list = Array.isArray(items) ? items : [];
+  const step = Math.max(1, Number(pageSize) || 24);
+  let index = 0;
+
+  const push = () => {
+    if (index >= list.length) return;
+    const frag = document.createDocumentFragment();
+    const end = Math.min(list.length, index + step);
+
+    for (let i = index; i < end; i += 1) {
+      const node = renderCard(list[i], i);
+      if (node instanceof Node) frag.appendChild(node);
+    }
+
+    container.appendChild(frag);
+    index = end;
+
+    if (index < list.length) {
+      if (typeof requestAnimationFrame === 'function') requestAnimationFrame(push);
+      else setTimeout(push, 0);
+    }
+  };
+
+  push();
+}
+
+export function toast(message, durationMs = 2500) {
+  const node = createElement('div', {
+    className: 'toast',
+    text: String(message || '')
+  });
+
+  Object.assign(node.style, {
+    position: 'fixed',
+    top: '86px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    zIndex: '9999',
+    background: 'rgba(18,18,18,.92)',
+    color: '#fff',
+    border: '1px solid rgba(255,255,255,.16)',
+    borderRadius: '12px',
+    padding: '10px 14px',
+    fontWeight: '700',
+    boxShadow: '0 18px 40px rgba(0,0,0,.55)'
+  });
+
+  document.body.appendChild(node);
+  setTimeout(() => {
+    try {
+      node.remove();
+    } catch (_) {
+      // ignore
+    }
+  }, Math.max(600, Number(durationMs) || 2500));
+}
+
+export function highlightText(text = '', keyword = '') {
+  const source = String(text || '');
+  const q = String(keyword || '').trim();
+  if (!q) return escapeHtml(source);
+
+  const pattern = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(${pattern})`, 'ig');
+  return escapeHtml(source).replace(regex, '<mark>$1</mark>');
 }
 

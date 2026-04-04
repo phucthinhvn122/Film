@@ -1,6 +1,7 @@
-﻿import { ROUTES, UI_TEXT } from './config.js';
+import { ROUTES, UI_TEXT } from './config.js';
 import { createElement, createMovieCard, createEmptyState } from './dom.js';
 import { FavoritesStorage } from './storage.js';
+import { BasePage, router } from './router.js';
 
 export async function renderFavoritesPage(ctx) {
   const page = createElement('section', { className: 'search-page' });
@@ -13,7 +14,7 @@ export async function renderFavoritesPage(ctx) {
   const favorites = FavoritesStorage.list();
 
   if (!favorites.length) {
-    grid.appendChild(createEmptyState('Báº¡n chÆ°a thÃªm phim nÃ o vÃ o danh sÃ¡ch yÃªu thÃ­ch.'));
+    grid.appendChild(createEmptyState('B?n chua th�m phim n�o v�o danh s�ch y�u th�ch.'));
   } else {
     favorites.forEach((item) => {
       const card = createMovieCard({
@@ -43,3 +44,25 @@ export async function renderFavoritesPage(ctx) {
   };
 }
 
+export class FavoritesPage extends BasePage {
+  constructor() {
+    super(ROUTES.FAVORITES);
+  }
+
+  async render() {
+    const result = await renderFavoritesPage({
+      navigate: (route, params = {}, options = {}) => {
+        const replace = Boolean(options && options.replace);
+        return router.navigate(route, params, replace);
+      }
+    });
+
+    if (result?.title) this.setTitle(result.title);
+    return result?.node || createElement('section');
+  }
+
+  onMounted() {
+    this.updateActiveTab('favorites');
+    window.scrollTo(0, 0);
+  }
+}

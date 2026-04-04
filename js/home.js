@@ -1,11 +1,13 @@
-﻿import { CATEGORY_LABELS, DEFAULT_PAGE_SIZE, ROUTES, UI_TEXT } from './config.js';
+import { CATEGORY_LABELS, DEFAULT_PAGE_SIZE, ROUTES, UI_TEXT } from './config.js';
 import { requestManager, fetchHomeLatest, fetchCategory } from './api.js';
+import { BasePage, router } from './router.js';
 import {
   createElement,
   createMovieCard,
   createErrorState,
   createLoaderState,
-  createEmptyState
+  createEmptyState,
+  toast
 } from './dom.js';
 import { ContinueWatchingStorage, HistoryStorage, FavoritesStorage } from './storage.js';
 
@@ -43,11 +45,11 @@ function createHero(movie, onOpen) {
     createElement('h1', { className: 'hero-title', text: movie?.name || 'ThinFilm' }),
     createElement('p', {
       className: 'hero-sub',
-      text: movie?.originName || movie?.episodeCurrent || 'Kho phim cáº­p nháº­t liÃªn tá»¥c'
+      text: movie?.originName || movie?.episodeCurrent || 'Kho phim cập nhật liên tục'
     }),
     createElement('p', {
       className: 'hero-desc',
-      text: movie?.content || 'KhÃ¡m phÃ¡ cÃ¡c bá»™ phim má»›i vÃ  danh sÃ¡ch ná»™i dung ná»•i báº­t.'
+      text: movie?.content || 'Khám phá các bộ phim mới và danh sách nội dung nổi bật.'
     })
   ]);
 
@@ -68,7 +70,7 @@ function createHero(movie, onOpen) {
     className: 'btn btn-gray'
   }, [
     createElement('i', { class: 'fa-solid fa-circle-info', 'aria-hidden': 'true' }),
-    createElement('span', { text: 'Chi tiáº¿t' })
+    createElement('span', { text: 'Chi tiết' })
   ]);
   detailBtn.addEventListener('click', () => {
     if (movie?.slug) onOpen(movie.slug);
@@ -94,7 +96,7 @@ function fillCards(grid, movies, ctx) {
       onOpen: (pickedMovie) => ctx.navigate(ROUTES.DETAIL, { slug: pickedMovie.slug }),
       onFavoriteToggle: () => {
         const added = FavoritesStorage.toggle(movie);
-        ctx.toast(added ? 'ÄÃ£ thÃªm vÃ o yÃªu thÃ­ch' : 'ÄÃ£ bá» khá»i yÃªu thÃ­ch');
+        ctx.toast(added ? 'Đã thêm vào yêu thích' : 'Đã bỏ khỏi yêu thích');
         card.querySelector('.fav-btn')?.classList.toggle('on', added);
       }
     });
@@ -106,7 +108,7 @@ function renderContinueRow(ctx) {
   const items = ContinueWatchingStorage.list();
   if (!items.length) return null;
 
-  const section = createRowSection(UI_TEXT.continueWatching, 'Tiáº¿p tá»¥c tá»« thá»i Ä‘iá»ƒm báº¡n Ä‘ang xem gáº§n nháº¥t');
+  const section = createRowSection(UI_TEXT.continueWatching, 'Tiếp tục từ thời điểm bạn đang xem gần nhất');
   const row = createElement('div', { className: 'movie-row movie-row-history' });
 
   items.forEach((item) => {
@@ -136,8 +138,8 @@ function renderHistoryRow(ctx) {
   const items = HistoryStorage.list().slice(0, 12);
   if (!items.length) return null;
 
-  const section = createRowSection(UI_TEXT.history, 'Lá»‹ch sá»­ xem gáº§n Ä‘Ã¢y', {
-    actionLabel: 'XÃ³a lá»‹ch sá»­',
+  const section = createRowSection(UI_TEXT.history, 'Lịch sử xem gần đây', {
+    actionLabel: 'Xóa lịch sử',
     onAction: () => {
       HistoryStorage.clear();
       ctx.navigate(ROUTES.HOME, {}, { replace: true });
@@ -205,11 +207,11 @@ export async function renderHomePage(ctx) {
     if (historyRow) sectionsWrap.appendChild(historyRow);
 
     const map = [
-      { result: latestResult, key: 'latest', subtitle: 'CÃ¡c tá»±a phim vá»«a Ä‘Æ°á»£c cáº­p nháº­t' },
-      { result: seriesResult, key: 'phim-bo', subtitle: 'Theo dÃµi táº­p má»›i nháº¥t má»—i ngÃ y' },
-      { result: movieResult, key: 'phim-le', subtitle: 'Phim láº» háº¥p dáº«n chá»n lá»c' },
-      { result: animeResult, key: 'hoat-hinh', subtitle: 'Kho anime vÃ  hoáº¡t hÃ¬nh ná»•i báº­t' },
-      { result: tvResult, key: 'tv-shows', subtitle: 'ChÆ°Æ¡ng trÃ¬nh truyá»n hÃ¬nh thá»‹nh hÃ nh' }
+      { result: latestResult, key: 'latest', subtitle: 'Các tựa phim vừa được cập nhật' },
+      { result: seriesResult, key: 'phim-bo', subtitle: 'Theo dõi tập mới nhất mỗi ngày' },
+      { result: movieResult, key: 'phim-le', subtitle: 'Phim lẻ hấp dẫn chọn lọc' },
+      { result: animeResult, key: 'hoat-hinh', subtitle: 'Kho anime và hoạt hình nổi bật' },
+      { result: tvResult, key: 'tv-shows', subtitle: 'Chương trình truyền hình thịnh hành' }
     ];
 
     map.forEach((item) => {
@@ -218,7 +220,7 @@ export async function renderHomePage(ctx) {
         item.subtitle,
         item.key !== 'latest'
           ? {
-              actionLabel: 'Xem táº¥t cáº£',
+              actionLabel: 'Xem tất cả',
               onAction: () => ctx.navigate(ROUTES.SEARCH, { q: `category:${item.key}` })
             }
           : undefined
@@ -229,7 +231,7 @@ export async function renderHomePage(ctx) {
       if (item.result.status === 'fulfilled') {
         fillCards(grid, item.result.value.items, ctx);
       } else {
-        grid.appendChild(createErrorState('KhÃ´ng thá»ƒ táº£i danh sÃ¡ch nÃ y. Báº¡n cÃ³ thá»ƒ thá»­ láº¡i sau.'));
+        grid.appendChild(createErrorState('Không thể tải danh sách này. Bạn có thể thử lại sau.'));
       }
 
       sectionsWrap.appendChild(section);
@@ -238,19 +240,57 @@ export async function renderHomePage(ctx) {
     return {
       node,
       cleanup: () => requestManager.cancel('home'),
-      title: 'Trang chá»§'
+      title: 'Trang chủ'
     };
   } catch (error) {
     rowsContainer.innerHTML = '';
     rowsContainer.appendChild(createErrorState(UI_TEXT.networkError, [
-      { label: 'Thá»­ láº¡i', onClick: () => ctx.navigate(ROUTES.HOME, {}, { replace: true }) }
+      { label: 'Thử lại', onClick: () => ctx.navigate(ROUTES.HOME, {}, { replace: true }) }
     ]));
 
     return {
       node,
       cleanup: () => requestManager.cancel('home'),
-      title: 'Trang chá»§'
+      title: 'Trang chủ'
     };
+  }
+}
+
+export class HomePage extends BasePage {
+  constructor() {
+    super(ROUTES.HOME);
+  }
+
+  async render() {
+    try {
+      const result = await renderHomePage({
+        navigate: (route, params = {}, options = {}) => {
+          const replace = Boolean(options && options.replace);
+          return router.navigate(route, params, replace);
+        },
+        toast: (message) => toast(message)
+      });
+
+      this.cleanup = typeof result?.cleanup === 'function' ? result.cleanup : null;
+      if (result?.title) this.setTitle(result.title);
+
+      return result?.node || createElement('div');
+    } catch (error) {
+      console.error('HomePage render failed:', error);
+      return createElement('section', { className: 'search-page' }, [
+        createErrorState(UI_TEXT.networkError, [
+          {
+            label: 'Thử lại',
+            onClick: () => router.navigate(ROUTES.HOME, {}, true)
+          }
+        ])
+      ]);
+    }
+  }
+
+  onMounted() {
+    this.updateActiveTab('home');
+    window.scrollTo(0, 0);
   }
 }
 

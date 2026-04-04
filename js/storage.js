@@ -209,6 +209,27 @@ export const SearchStorage = {
 };
 
 export const SessionStorage = {
+  save(value = {}) {
+    const route = value && typeof value === 'object'
+      ? {
+          name: String(value.lastPage || value.name || '').trim() || 'home',
+          params: value.lastParams && typeof value.lastParams === 'object' ? value.lastParams : (value.params || {}),
+          scrollY: Math.max(0, Number(value.scrollY) || 0)
+        }
+      : { name: 'home', params: {}, scrollY: 0 };
+    this.saveRoute(route);
+  },
+
+  load() {
+    const route = this.loadRoute();
+    if (!route) return null;
+    return {
+      lastPage: route.name,
+      lastParams: route.params || {},
+      scrollY: Math.max(0, Number(route.scrollY) || 0)
+    };
+  },
+
   saveRoute(route) {
     if (!route || typeof route !== 'object') return;
     safeWriteJSON(STORAGE_KEYS.SESSION_ROUTE, {
@@ -249,6 +270,10 @@ export const ServerMemoryStorage = {
 };
 
 export const StorageUtils = {
+  migrate() {
+    // Reserved for future storage schema upgrades.
+  },
+
   savePlaybackSnapshot({
     movieSlug,
     epSlug,

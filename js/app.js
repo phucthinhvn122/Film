@@ -10,6 +10,8 @@ import { router, pageRegistry, NavigationHelpers } from './router.js';
 import { HomePage } from './home.js';
 import { SearchPage } from './search.js';
 import { DetailPage } from './detail.js';
+import { HistoryPage } from './history.js';
+import { FavoritesPage } from './favorites.js';
 import { initUI, destroyUI } from './ui.js';
 import { requestManager } from './api.js';
 
@@ -97,11 +99,8 @@ class App {
       pageRegistry.register('home', HomePage);
       pageRegistry.register('search', SearchPage);
       pageRegistry.register('detail', DetailPage);
-      
-      // TODO: Register other pages when implemented
-      // pageRegistry.register('watch', WatchPage);
-      // pageRegistry.register('history', HistoryPage);
-      // pageRegistry.register('favorites', FavoritesPage);
+      pageRegistry.register('history', HistoryPage);
+      pageRegistry.register('favorites', FavoritesPage);
       
       // Set default and not found pages
       router.setDefaultPage('home');
@@ -116,7 +115,12 @@ class App {
   initUIComponents() {
     try {
       // Initialize all UI components
-      initUI();
+      initUI({
+        goHome: () => this.goHome(),
+        goSearch: (query = '') => this.goSearch(query),
+        goHistory: () => this.goHistory(),
+        goFavorites: () => this.goFavorites()
+      });
       
       // Setup global UI event listeners
       this.setupGlobalUIEvents();

@@ -1,463 +1,250 @@
-Ôªø/**
- * Detail page module
- * Handles movie detail view with metadata, episodes, and related content
- */
-
 import { BasePage } from './router.js';
-import { movieSourceClient, DataNormalizer, requestManager } from './api.js';
-import { el, loader, renderCardsProgressively, toast } from './dom.js';
+import { ROUTES, UI_TEXT } from './config.js';
+import { fetchMovieDetail, fetchTmdbMeta, requestManager } from './api.js';
+import {
+  createElement,
+  createErrorState,
+  createLoaderState,
+  toast
+} from './dom.js';
 import { FavoritesStorage, HistoryStorage } from './storage.js';
-import { UI_TEXT } from './config.js';
 
-/**
- * Detail page class
- */
+function safeOpen(url = '') {
+  const target = String(url || '').trim();
+  if (!target) return false;
+  window.open(target, '_blank', 'noopener,noreferrer');
+  return true;
+}
+
 export class DetailPage extends BasePage {
   constructor() {
-    super('detail');
+    super(ROUTES.DETAIL);
     this.abortController = null;
-    this.movieSlug = null;
-    this.movieData = null;
-    this.isFavorite = false;
+    this.movieSlug = '';
   }
 
   async render(params = {}) {
-    this.movieSlug = params.slug;
+    this.movieSlug = String(params.slug || '').trim();
+
+    const page = createElement('section', { className: 'detail-page' });
     if (!this.movieSlug) {
-      throw new Error('Movie slug is required');
+      page.appendChild(createErrorState('Thi?u m„ phim.'));
+      return page;
     }
 
-    this.abortController = requestManager.createController('detail');
-
-    const wrap = el('div', { class: 'detail-page' });
-    
-    // Loading state
-    wrap.appendChild(loader());
+    page.appendChild(createLoaderState(UI_TEXT.loading));
+    this.abortController = requestManager.next('detail');
 
     try {
-      await this.loadMovieDetail(wrap);
-    } catch (error) {
-      console.error('Failed to load movie detail:', error);
-      this.showError(wrap, error);
-    }
+      const detail = await fetchMovieDetail(this.movieSlug, { signal: this.abortController.signal });
+      if (this.abortController.signal.aborted) return page;
 
-    return wrap;
+      const movie = detail?.movie;
+      if (!movie?.slug) {
+        page.innerHTML = '';
+        page.appendChild(createErrorState('KhÙng tÏm th?y thÙng tin phim.'));
+        return page;
+      }
+
+      let tmdb = null;
+      try {
+        tmdb = await fetchTmdbMeta(movie.name || movie.originName || '', movie.year, {
+          signal: this.abortController.signal
+        });
+      } catch (_) {
+        tmdb = null;
+      }
+
+      page.innerHTML = '';
+      page.appendChild(this.createHero(movie, tmdb));
+      page.appendChild(this.createEpisodes(detail?.episodes || [], movie));
+      page.appendChild(this.createDescription(movie, tmdb));
+
+      this.setTitle(movie.name || 'Chi ti?t phim');
+      return page;
+    } catch (_) {
+      page.innerHTML = '';
+      page.appendChild(createErrorState(UI_TEXT.networkError, [
+        {
+          label: UI_TEXT.retry,
+          onClick: () => window.location.reload()
+        }
+      ]));
+      return page;
+    }
   }
 
-  async loadMovieDetail(container) {
-    // Fetch movie detail
-    const data = await movieSourceClient.fetchDetail(this.movieSlug, true);
-    if (!data || !data.movie) {
-      throw new Error('Movie not found');
+  createHero(movie, tmdb) {
+    const isFavorite = FavoritesStorage.isFavorite(movie.slug);
+
+    const hero = createElement('section', {
+      className: 'detail-hero',
+      style: movie.poster ? { backgroundImage: `url('${movie.poster}')` } : {}
+    });
+
+    const overlay = createElement('div', { className: 'detail-hero-overlay' });
+    const body = createElement('div', { className: 'detail-hero-content' });
+
+    const posterWrap = createElement('div', { className: 'detail-poster-container' }, [
+      createElement('div', { className: 'detail-poster' }, [
+        createElement('img', {
+          src: movie.poster || movie.thumb,
+          alt: movie.name || 'Poster phim',
+          loading: 'lazy'
+        })
+      ])
+    ]);
+
+    const info = createElement('div', { className: 'detail-hero-info' });
+    info.appendChild(createElement('h1', { className: 'detail-title', text: movie.name || 'KhÙng rı tÍn' }));
+
+    if (movie.originName && movie.originName !== movie.name) {
+      info.appendChild(createElement('div', {
+        className: 'detail-original-title',
+        text: movie.originName
+      }));
     }
 
-    this.movieData = DataNormalizer.normalizeMovie(data.movie, data.pathImage || '');
-    this.isFavorite = FavoritesStorage.isFavorite(this.movieSlug);
+    const metaRow = createElement('div', { className: 'detail-meta' });
+    const tags = [movie.year, movie.quality || movie.episodeCurrent || '', movie.time || ''].filter(Boolean);
+    tags.forEach((tag, index) => {
+      if (index > 0) metaRow.appendChild(createElement('span', { className: 'detail-separator', text: 'ï' }));
+      metaRow.appendChild(createElement('span', { text: String(tag) }));
+    });
+    info.appendChild(metaRow);
 
-    // Clear loader and render content
-    container.innerHTML = '';
-    
-    // Backdrop hero section
-    const hero = this.createHeroSection();
-    container.appendChild(hero);
-
-    // Content section
-    const content = this.createContentSection();
-    container.appendChild(content);
-
-    // Related movies
-    const related = this.createRelatedSection();
-    container.appendChild(related);
-
-    // Set title
-    this.setTitle(this.movieData.name || 'Kh√¥ng c√≥ t√™n');
-  }
-
-  createHeroSection() {
-    const hero = el('div', { class: 'detail-hero' });
-    
-    // Backdrop
-    const backdrop = el('div', { class: 'detail-backdrop' });
-    const backdropImg = document.createElement('img');
-    backdropImg.src = this.movieData._poster || this.movieData._thumb;
-    backdropImg.alt = '';
-    backdropImg.onerror = () => {
-      backdropImg.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><rect fill="%23000"/><text x="50%25" y="50%25" fill="%23555" font-size="24" text-anchor="middle" dominant-baseline="middle">No Backdrop</text></svg>';
-    };
-    backdrop.appendChild(backdropImg);
-    hero.appendChild(backdrop);
-
-    // Gradient overlay
-    const overlay = el('div', { class: 'detail-hero-overlay' });
-    hero.appendChild(overlay);
-
-    // Content
-    const heroContent = el('div', { class: 'detail-hero-content' });
-    
-    // Poster
-    const posterContainer = el('div', { class: 'detail-poster-container' });
-    const poster = el('div', { class: 'detail-poster' });
-    const posterImg = document.createElement('img');
-    posterImg.src = this.movieData._poster || this.movieData._thumb;
-    posterImg.alt = this.movieData.name || '';
-    posterImg.loading = 'eager';
-    posterImg.onerror = () => {
-      posterImg.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600"><rect fill="%23222"/><text x="50%25" y="50%25" fill="%23555" font-size="16" text-anchor="middle" dominant-baseline="middle">No Poster</text></svg>';
-    };
-    poster.appendChild(posterImg);
-    posterContainer.appendChild(poster);
-    heroContent.appendChild(posterContainer);
-
-    // Info
-    const info = el('div', { class: 'detail-hero-info' });
-    
-    // Title
-    const title = el('h1', { class: 'detail-title' }, this.movieData.name || 'Kh√¥ng c√≥ t√™n');
-    info.appendChild(title);
-
-    // Original title
-    if (this.movieData.origin_name && this.movieData.origin_name !== this.movieData.name) {
-      const origTitle = el('div', { class: 'detail-original-title' }, this.movieData.origin_name);
-      info.appendChild(origTitle);
-    }
-
-    // Meta info
-    const meta = el('div', { class: 'detail-meta' });
-    
-    if (this.movieData.year) {
-      meta.appendChild(el('span', { class: 'detail-year' }, String(this.movieData.year)));
-    }
-    
-    if (this.movieData.quality || this.movieData.episode_current) {
-      if (this.movieData.year) {
-        meta.appendChild(el('span', { class: 'detail-separator' }, '‚Ä¢'));
-      }
-      meta.appendChild(el('span', { class: 'detail-quality' }, this.movieData.quality || this.movieData.episode_current || 'HD'));
-    }
-    
-    if (this.movieData.time) {
-      if (this.movieData.year || this.movieData.quality) {
-        meta.appendChild(el('span', { class: 'detail-separator' }, '‚Ä¢'));
-      }
-      meta.appendChild(el('span', { class: 'detail-duration' }, this.movieData.time));
-    }
-    
-    info.appendChild(meta);
-
-    // Categories
-    if (Array.isArray(this.movieData.category) && this.movieData.category.length > 0) {
-      const categories = el('div', { class: 'detail-categories' });
-      this.movieData.category.slice(0, 5).forEach(cat => {
-        const category = el('span', { class: 'detail-category' }, cat.name || cat.slug || '');
-        categories.appendChild(category);
+    if (Array.isArray(movie.categories) && movie.categories.length > 0) {
+      const categories = createElement('div', { className: 'detail-categories' });
+      movie.categories.slice(0, 5).forEach((cat) => {
+        categories.appendChild(createElement('span', {
+          className: 'detail-category',
+          text: cat.name || cat.slug || ''
+        }));
       });
       info.appendChild(categories);
     }
 
-    // Actions
-    const actions = el('div', { class: 'detail-actions' });
-    
-    // Watch button
-    const watchBtn = el('button', { 
-      class: 'btn btn-primary btn-large',
-      onclick: () => this.handleWatchClick()
-    }, 'Xem phim');
-    actions.appendChild(watchBtn);
+    const actions = createElement('div', { className: 'detail-actions' });
 
-    // Favorite button
-    const favBtn = el('button', {
-      class: `btn btn-outline btn-large ${this.isFavorite ? 'favorited' : ''}`,
-      onclick: () => this.handleFavoriteClick()
+    const favoriteBtn = createElement('button', {
+      type: 'button',
+      className: `btn btn-outline btn-large ${isFavorite ? 'favorited' : ''}`,
+      text: isFavorite ? '–„ thÌch' : 'ThÍm yÍu thÌch'
     });
-    favBtn.innerHTML = `<i class="fa-solid fa-heart"></i> ${this.isFavorite ? 'ƒê√£ th√≠ch' : 'Th√≠ch'}`;
-    actions.appendChild(favBtn);
 
-    // Share button
-    const shareBtn = el('button', {
-      class: 'btn btn-outline btn-large',
-      onclick: () => this.handleShareClick()
-    }, '<i class="fa-solid fa-share"></i> Chia s·∫ª');
-    actions.appendChild(shareBtn);
+    favoriteBtn.addEventListener('click', () => {
+      const added = FavoritesStorage.toggle(movie);
+      favoriteBtn.classList.toggle('favorited', added);
+      favoriteBtn.textContent = added ? '–„ thÌch' : 'ThÍm yÍu thÌch';
+      toast(added ? '–„ thÍm v‡o yÍu thÌch' : '–„ b? kh?i yÍu thÌch');
+    });
 
+    actions.appendChild(favoriteBtn);
     info.appendChild(actions);
-    heroContent.appendChild(info);
-    hero.appendChild(heroContent);
+
+    if (tmdb?.overview && tmdb.overview !== movie.content) {
+      info.appendChild(createElement('p', {
+        className: 'hero-desc',
+        text: tmdb.overview
+      }));
+    }
+
+    body.appendChild(posterWrap);
+    body.appendChild(info);
+    hero.appendChild(overlay);
+    hero.appendChild(body);
 
     return hero;
   }
 
-  createContentSection() {
-    const content = el('div', { class: 'detail-content' });
-    
-    // Description
-    if (this.movieData.content) {
-      const descSection = el('div', { class: 'detail-section' });
-      const descTitle = el('h2', { class: 'detail-section-title' }, 'N·ªôi dung');
-      descSection.appendChild(descTitle);
-      
-      const desc = el('div', { class: 'detail-description' });
-      desc.innerHTML = this.movieData.content.replace(/\n/g, '<br>');
-      descSection.appendChild(desc);
-      
-      content.appendChild(descSection);
+  createEpisodes(episodes = [], movie) {
+    const section = createElement('section', { className: 'detail-content detail-section' });
+    section.appendChild(createElement('h2', { className: 'detail-section-title', text: 'Danh s·ch t?p' }));
+
+    if (!Array.isArray(episodes) || episodes.length === 0) {
+      section.appendChild(createElement('p', {
+        className: 'detail-description',
+        text: 'Phim n‡y chua cÛ t?p ph·t sÛng.'
+      }));
+      return section;
     }
 
-    // Episodes
-    if (this.movieData.episodes && this.movieData.episodes.length > 0) {
-      const episodesSection = el('div', { class: 'detail-section' });
-      const episodesTitle = el('h2', { class: 'detail-section-title' }, 'Danh s√°ch t·∫≠p');
-      episodesSection.appendChild(episodesTitle);
-      
-      const episodesContainer = el('div', { class: 'detail-episodes' });
-      
-      this.movieData.episodes.forEach((server, serverIndex) => {
-        const serverBlock = el('div', { class: 'episode-server' });
-        
-        const serverName = el('h3', { class: 'episode-server-name' }, server.server_name || `Server ${serverIndex + 1}`);
-        serverBlock.appendChild(serverName);
-        
-        const episodeList = el('div', { class: 'episode-list' });
-        
-        if (Array.isArray(server.items)) {
-          server.items.forEach((episode, epIndex) => {
-            const episodeBtn = el('button', {
-              class: 'episode-btn',
-              onclick: () => this.handleEpisodeClick(server.server_name, episode.slug, episode.name)
-            }, episode.name || `T·∫≠p ${epIndex + 1}`);
-            episodeList.appendChild(episodeBtn);
+    const container = createElement('div', { className: 'detail-episodes' });
+
+    episodes.forEach((server) => {
+      const block = createElement('div', { className: 'episode-server' });
+      block.appendChild(createElement('h3', {
+        className: 'episode-server-name',
+        text: server?.name || 'Server'
+      }));
+
+      const list = createElement('div', { className: 'episode-list' });
+      const items = Array.isArray(server?.items) ? server.items : [];
+
+      items.forEach((episode, index) => {
+        const btn = createElement('button', {
+          type: 'button',
+          className: 'episode-btn',
+          text: episode?.name || `T?p ${index + 1}`
+        });
+
+        btn.addEventListener('click', () => {
+          HistoryStorage.upsert({
+            movieSlug: movie.slug,
+            epSlug: episode?.slug || `tap-${index + 1}`,
+            serverName: server?.name || 'Server',
+            movieName: movie.name,
+            episodeName: episode?.name || `T?p ${index + 1}`,
+            poster: movie.poster || movie.thumb,
+            progressSeconds: 0,
+            durationSeconds: 0
           });
-        }
-        
-        serverBlock.appendChild(episodeList);
-        episodesContainer.appendChild(serverBlock);
+
+          const opened = safeOpen(episode?.linkM3u8 || episode?.linkEmbed || '');
+          if (!opened) {
+            toast('T?p n‡y chua cÛ link ph·t.');
+          }
+        });
+
+        list.appendChild(btn);
       });
-      
-      episodesSection.appendChild(episodesContainer);
-      content.appendChild(episodesSection);
-    }
 
-    // Cast and crew (if available from TMDB)
-    if (this.movieData._tmdb && this.movieData._tmdb.cast && this.movieData._tmdb.cast.length > 0) {
-      const castSection = el('div', { class: 'detail-section' });
-      const castTitle = el('h2', { class: 'detail-section-title' }, 'Di·ªÖn vi√™n');
-      castSection.appendChild(castTitle);
-      
-      const castList = el('div', { class: 'detail-cast' });
-      
-      this.movieData._tmdb.cast.slice(0, 8).forEach(actor => {
-        const actorCard = el('div', { class: 'cast-card' });
-        
-        const actorImg = document.createElement('img');
-        actorImg.src = actor.avatar || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="150"><rect fill="%23222"/><text x="50%25" y="50%25" fill="%23555" font-size="12" text-anchor="middle" dominant-baseline="middle">No Photo</text></svg>';
-        actorImg.alt = actor.name || '';
-        actorImg.loading = 'lazy';
-        
-        const actorInfo = el('div', { class: 'cast-info' });
-        const actorName = el('div', { class: 'cast-name' }, actor.name || '');
-        const actorChar = el('div', { class: 'cast-character' }, actor.character || '');
-        
-        actorInfo.appendChild(actorName);
-        actorInfo.appendChild(actorChar);
-        
-        actorCard.appendChild(actorImg);
-        actorCard.appendChild(actorInfo);
-        castList.appendChild(actorCard);
-      });
-      
-      castSection.appendChild(castList);
-      content.appendChild(castSection);
-    }
-
-    return content;
-  }
-
-  createRelatedSection() {
-    const related = el('div', { class: 'detail-related' });
-    
-    const title = el('h2', { class: 'detail-section-title' }, 'Phim li√™n quan');
-    related.appendChild(title);
-    
-    const grid = el('div', { class: 'section-grid' });
-    related.appendChild(grid);
-
-    // Load related movies based on categories
-    this.loadRelatedMovies(grid);
-
-    return related;
-  }
-
-  async loadRelatedMovies(grid) {
-    try {
-      // Get first category for related movies
-      const firstCategory = this.movieData.category?.[0]?.slug;
-      if (!firstCategory) {
-        grid.innerHTML = '<div class="empty">Kh√¥ng c√≥ phim li√™n quan</div>';
-        return;
-      }
-
-      // Fetch category movies
-      const data = await movieSourceClient.fetchCategory(firstCategory, true);
-      const items = DataNormalizer.normalizeItems(data);
-      
-      // Filter out current movie and limit to 12
-      const related = items.filter(m => m.slug !== this.movieSlug).slice(0, 12);
-      
-      if (related.length > 0) {
-        renderCardsProgressively(grid, related, 12, (movie) => this.createMovieCard(movie));
-      } else {
-        grid.innerHTML = '<div class="empty">Kh√¥ng c√≥ phim li√™n quan</div>';
-      }
-    } catch (error) {
-      console.error('Failed to load related movies:', error);
-      grid.innerHTML = '<div class="empty">Kh√¥ng th·ªÉ t·∫£i phim li√™n quan</div>';
-    }
-  }
-
-  createMovieCard(movie) {
-    const card = el('div', { class: 'card' });
-    card.onclick = () => this.handleMovieClick(movie.slug);
-
-    const thumb = el('div', { class: 'card-thumb' });
-    const img = document.createElement('img');
-    img.src = movie._thumb;
-    img.alt = movie.name || '';
-    img.loading = 'lazy';
-    img.onerror = () => {
-      img.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300"><rect fill="%23222"/><text x="50%25" y="50%25" fill="%23555" font-size="14" text-anchor="middle" dominant-baseline="middle">No Image</text></svg>';
-    };
-    thumb.appendChild(img);
-
-    const info = el('div', { class: 'card-info' });
-    
-    const title = el('div', { class: 'card-title' });
-    title.textContent = movie.name || 'Kh√¥ng c√≥ t√™n';
-    info.appendChild(title);
-
-    const meta = el('div', { class: 'card-meta' });
-    
-    if (movie.year) {
-      meta.appendChild(el('span', {}, String(movie.year)));
-    }
-    
-    if (movie.quality || movie.episode_current) {
-      if (movie.year) {
-        meta.appendChild(el('span', { class: 'dot' }, '‚Ä¢'));
-      }
-      meta.appendChild(el('span', {}, movie.quality || movie.episode_current || 'HD'));
-    }
-    
-    info.appendChild(meta);
-
-    card.appendChild(thumb);
-    card.appendChild(info);
-
-    return card;
-  }
-
-  handleWatchClick() {
-    // Find first episode
-    const firstServer = this.movieData.episodes?.[0];
-    const firstEpisode = firstServer?.items?.[0];
-    
-    if (firstEpisode) {
-      this.handleEpisodeClick(firstServer.server_name, firstEpisode.slug, firstEpisode.name);
-    } else {
-      toast('Kh√¥ng c√≥ t·∫≠p n√†o ƒë·ªÉ xem');
-    }
-  }
-
-  handleEpisodeClick(serverName, epSlug, epName) {
-    // Save to history
-    HistoryStorage.saveEntry({
-      movieSlug: this.movieSlug,
-      epSlug: epSlug,
-      srvName: serverName,
-      movieName: this.movieData.name,
-      epName: epName,
-      poster: this.movieData._poster || this.movieData._thumb,
-      progressSeconds: 0
+      block.appendChild(list);
+      container.appendChild(block);
     });
 
-    // Navigate to watch page
-    import('./router.js').then(({ NavigationHelpers }) => {
-      NavigationHelpers.goWatch(this.movieSlug, epSlug);
-    });
+    section.appendChild(container);
+    return section;
   }
 
-  handleFavoriteClick() {
-    this.isFavorite = FavoritesStorage.toggle(this.movieData);
-    
-    // Update button
-    const favBtn = document.querySelector('.detail-actions .btn-outline');
-    if (favBtn) {
-      favBtn.classList.toggle('favorited', this.isFavorite);
-      favBtn.innerHTML = `<i class="fa-solid fa-heart"></i> ${this.isFavorite ? 'ƒê√£ th√≠ch' : 'Th√≠ch'}`;
-    }
+  createDescription(movie, tmdb) {
+    const section = createElement('section', { className: 'detail-content detail-section' });
+    section.appendChild(createElement('h2', { className: 'detail-section-title', text: 'N?i dung' }));
 
-    toast(this.isFavorite ? 'ƒê√£ th√™m v√†o y√™u th√≠ch' : 'ƒê√£ x√≥a kh·ªèi y√™u th√≠ch');
+    section.appendChild(createElement('div', {
+      className: 'detail-description',
+      text: movie.content || tmdb?.overview || '–ang c?p nh?t n?i dung.'
+    }));
+
+    return section;
   }
 
-  handleShareClick() {
-    const url = window.location.href;
-    
-    if (navigator.share) {
-      navigator.share({
-        title: this.movieData.name,
-        text: `${this.movieData.name} - ${this.movieData.content?.substring(0, 100)}...`,
-        url: url
-      }).catch(() => {
-        // Fallback to copying URL
-        this.copyToClipboard(url);
-      });
-    } else {
-      this.copyToClipboard(url);
-    }
-  }
-
-  copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
-      toast('ƒê√£ sao ch√©p li√™n k·∫øt');
-    }).catch(() => {
-      toast('Kh√¥ng th·ªÉ sao ch√©p li√™n k·∫øt');
-    });
-  }
-
-  handleMovieClick(slug) {
-    import('./router.js').then(({ NavigationHelpers }) => {
-      NavigationHelpers.goDetail(slug);
-    });
-  }
-
-  showError(container, error) {
-    container.innerHTML = `
-      <div class="error-page">
-        <div class="error-content">
-          <i class="fa-solid fa-film"></i>
-          <h2>Phim kh√¥ng t·ªìn t·∫°i</h2>
-          <p>${error.message || 'Kh√¥ng th·ªÉ t√¨m th·∫•y phim n√†y'}</p>
-          <button onclick="location.href='/'" class="btn btn-primary">V·ªÅ trang ch·ªß</button>
-        </div>
-      </div>
-    `;
-  }
-
-  onMounted(params) {
+  onMounted() {
     this.updateActiveTab('home');
-    
-    // Scroll to top
     window.scrollTo(0, 0);
   }
 
   async unmount() {
-    // Cancel ongoing requests
     if (this.abortController) {
-      this.abortController.abort();
+      try {
+        this.abortController.abort();
+      } catch (_) {
+        // ignore
+      }
     }
 
-    // Call parent unmount
-    super.unmount();
+    await super.unmount();
   }
 }
 
 export default DetailPage;
-

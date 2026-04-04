@@ -90,6 +90,9 @@ export class BasePage {
       if (!content) {
         throw new Error(`Page ${this.name} returned empty content`);
       }
+      if (typeof Node !== 'undefined' && !(content instanceof Node)) {
+        throw new Error(`Page ${this.name} returned invalid content`);
+      }
 
       // Set main content
       setMain(content, () => {
@@ -275,7 +278,7 @@ export class Router {
   }
 
   buildURL(pageName, params) {
-    const baseURL = window.location.origin + window.location.pathname;
+    const baseURL = `${window.location.origin}/`;
     
     switch (pageName) {
       case PAGES.HOME:

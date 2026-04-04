@@ -71,6 +71,13 @@ export const SEARCH_CONFIG = {
   MIN_LENGTH: 2
 };
 
+export const UI_CONFIG = {
+  PAGE_TRANSITION: 220,
+  SKELETON_COUNT: 12,
+  RENDER_PAGE_SIZE: 24,
+  DEBOUNCE_DELAY: SEARCH_CONFIG.DEBOUNCE_MS
+};
+
 export const PLAYER_CONFIG = {
   PROGRESS_SAVE_INTERVAL_MS: 3000,
   SEEK_STEP_SECONDS: 10
@@ -81,6 +88,7 @@ export const UI_TEXT = {
   loadingMeta: 'Đang tải metadata phim...',
   noData: 'Không có dữ liệu để hiển thị.',
   networkError: 'Không thể kết nối máy chủ. Vui lòng thử lại.',
+  ERROR: 'Đã có lỗi xảy ra.',
   retry: 'Thử lại',
   favorites: 'Yêu thích',
   history: 'Lịch sử',

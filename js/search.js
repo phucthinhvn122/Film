@@ -1,350 +1,196 @@
-/**
- * Search page module
- * Handles search functionality with debouncing, caching, and proper state management
- */
-
-import { UI_CONFIG, UI_TEXT } from './config.js';
-import { movieSourceClient, DataNormalizer, requestManager } from './api.js';
-import { el, loader, buildSearchSkeleton, renderCardsProgressively, toast, highlightText } from './dom.js';
+import { BasePage, router } from './router.js';
+import { ROUTES, SEARCH_CONFIG, UI_TEXT } from './config.js';
+import { searchMovies, requestManager } from './api.js';
 import { SearchStorage } from './storage.js';
+import {
+  createElement,
+  createEmptyState,
+  createErrorState,
+  createMovieCard,
+  createSkeletonGrid
+} from './dom.js';
+import { syncSearchInputValue } from './ui.js';
 
-/**
- * Search page class
- */
-export class SearchPage {
+function normalizeQuery(value = '') {
+  return String(value || '').trim();
+}
+
+function categoryLabel(query = '') {
+  const raw = String(query || '').trim();
+  if (!raw.toLowerCase().startsWith('category:')) return '';
+  const key = raw.split(':')[1] || '';
+
+  switch (key) {
+    case 'phim-bo':
+      return 'Phim b?';
+    case 'phim-le':
+      return 'Phim l?';
+    case 'hoat-hinh':
+      return 'Ho?t h�nh';
+    case 'tv-shows':
+      return 'TV Shows';
+    default:
+      return key;
+  }
+}
+
+export class SearchPage extends BasePage {
   constructor() {
+    super(ROUTES.SEARCH);
     this.abortController = null;
-    this.debounceTimer = null;
     this.currentQuery = '';
-    this.searchState = 'idle';
-    this.searchResults = [];
   }
 
   async render(params = {}) {
-    const query = params.q || '';
+    const query = normalizeQuery(params.q);
     this.currentQuery = query;
 
-    const wrap = el('div', { class: 'search-page' });
-    
-    // Search hero section
-    const heroEl = this.createSearchHero(query);
-    wrap.appendChild(heroEl);
+    const page = createElement('section', { className: 'search-page' });
 
-    // Content area
-    const contentEl = el('div', { class: 'search-content' });
-    wrap.appendChild(contentEl);
+    const hero = createElement('div', { className: 'search-hero' }, [
+      createElement('h2', { className: 'search-title', text: query ? 'K?t qu? t�m ki?m' : UI_TEXT.search }),
+      createElement('p', {
+        className: 'search-subtitle',
+        text: query
+          ? (categoryLabel(query) ? `Danh m?c: ${categoryLabel(query)}` : `T? kh�a: "${query}"`)
+          : 'Nh?p t? kh�a d? t�m phim'
+      })
+    ]);
 
-    // Show initial state
-    if (query) {
-      await this.performSearch(query, contentEl);
-    } else {
-      this.showInitialState(contentEl);
+    const content = createElement('div', { className: 'search-content' });
+
+    page.appendChild(hero);
+    page.appendChild(content);
+
+    if (!query) {
+      content.appendChild(this.createSearchForm());
+      content.appendChild(this.createRecentSection());
+      return page;
     }
 
-    return wrap;
+    await this.renderResults(query, content);
+    return page;
   }
 
-  createSearchHero(query) {
-    const heroEl = el('div', { class: 'search-hero' });
-    
-    const heroBody = el('div', { class: 'hero-body' });
-    
-    const title = el('h2', { class: 'search-title' });
-    title.textContent = query ? `Kết quả tìm kiếm: "${query}"` : 'Tìm kiếm phim';
-    heroBody.appendChild(title);
-
-    if (query) {
-      const subtitle = el('p', { class: 'search-subtitle' });
-      subtitle.textContent = 'Đang tìm kiếm...';
-      heroBody.appendChild(subtitle);
-    }
-
-    heroEl.appendChild(heroBody);
-    return heroEl;
-  }
-
-  showInitialState(contentEl) {
-    this.searchState = 'idle';
-    
-    const initialState = el('div', { class: 'search-initial' });
-    
-    // Search form
-    const form = el('form', { class: 'search-form' });
-    form.onsubmit = (e) => {
-      e.preventDefault();
-      const input = form.querySelector('input');
-      if (input.value.trim()) {
-        this.handleSearch(input.value.trim());
-      }
-    };
-
-    const input = el('input', {
+  createSearchForm() {
+    const wrap = createElement('div', { className: 'search-toolbar' });
+    const form = createElement('form', { className: 'search-form' });
+    const input = createElement('input', {
       type: 'text',
-      placeholder: 'Nhập tên phim, diễn viên, hoặc từ khóa...',
       value: this.currentQuery,
+      placeholder: 'Nh?p t�n phim...',
       autocomplete: 'off'
     });
 
-    const button = el('button', { type: 'submit' }, 'Tìm kiếm');
+    const button = createElement('button', {
+      type: 'submit',
+      className: 'toolbar-btn',
+      text: 'T�m ki?m'
+    });
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const keyword = normalizeQuery(input.value);
+      if (keyword.length > 0 && keyword.length < SEARCH_CONFIG.MIN_LENGTH) {
+        input.focus();
+        return;
+      }
+      router.navigate(ROUTES.SEARCH, { q: keyword });
+    });
+
     form.appendChild(input);
     form.appendChild(button);
-    initialState.appendChild(form);
-
-    // Recent searches
-    const recentSection = this.createRecentSearchesSection();
-    initialState.appendChild(recentSection);
-
-    // Popular searches
-    const popularSection = this.createPopularSearchesSection();
-    initialState.appendChild(popularSection);
-
-    contentEl.appendChild(initialState);
-
-    // Focus input
-    setTimeout(() => input.focus(), 100);
+    wrap.appendChild(form);
+    return wrap;
   }
 
-  createRecentSearchesSection() {
-    const recentKeywords = SearchStorage.recent.load();
-    
-    if (!recentKeywords.length) {
-      return el('div');
-    }
+  createRecentSection() {
+    const recent = SearchStorage.recent();
+    if (!recent.length) return createElement('div');
 
-    const section = el('div', { class: 'search-section' });
-    
-    const header = el('div', { class: 'search-section-header' });
-    header.innerHTML = `
-      <h3>Tìm kiếm gần đây</h3>
-      <button class="clear-btn" onclick="this.closest('.search-section').remove()">Xóa</button>
-    `;
-    section.appendChild(header);
+    const section = createElement('section', { className: 'search-section' });
+    section.appendChild(createElement('h3', { text: 'T�m ki?m g?n d�y' }));
 
-    const list = el('div', { class: 'search-keywords' });
-    
-    recentKeywords.forEach(keyword => {
-      const item = el('button', {
-        class: 'search-keyword',
-        onclick: () => this.handleSearch(keyword)
-      }, keyword);
-      list.appendChild(item);
+    const row = createElement('div', { className: 'search-keywords' });
+    recent.forEach((keyword) => {
+      const chip = createElement('button', {
+        type: 'button',
+        className: 'search-keyword',
+        text: keyword
+      });
+      chip.addEventListener('click', () => {
+        router.navigate(ROUTES.SEARCH, { q: keyword });
+      });
+      row.appendChild(chip);
     });
 
-    section.appendChild(list);
+    section.appendChild(row);
     return section;
   }
 
-  createPopularSearchesSection() {
-    const topKeywords = SearchStorage.analytics.getTopKeywords(8);
-    
-    if (!topKeywords.length) {
-      return el('div');
-    }
+  async renderResults(query, content) {
+    content.innerHTML = '';
+    content.appendChild(createSkeletonGrid(12));
 
-    const section = el('div', { class: 'search-section' });
-    
-    const header = el('h3', {}, 'Tìm kiếm phổ biến');
-    section.appendChild(header);
-
-    const list = el('div', { class: 'search-keywords' });
-    
-    topKeywords.forEach(keyword => {
-      const item = el('button', {
-        class: 'search-keyword popular',
-        onclick: () => this.handleSearch(keyword)
-      }, keyword);
-      list.appendChild(item);
-    });
-
-    section.appendChild(list);
-    return section;
-  }
-
-  async performSearch(query, contentEl) {
-    if (!query.trim()) {
-      this.showInitialState(contentEl);
-      return;
-    }
-
-    this.searchState = 'searching';
-    this.currentQuery = query;
-
-    // Update UI
-    this.updateSearchHero(query, 'Đang tìm kiếm...');
-    contentEl.innerHTML = '';
-    contentEl.appendChild(buildSearchSkeleton(UI_CONFIG.SKELETON_COUNT));
-
-    // Cancel previous request
-    if (this.abortController) {
-      this.abortController.abort();
-    }
-    this.abortController = requestManager.createController('search');
+    this.abortController = requestManager.next('search');
 
     try {
-      // Search API call
-      const data = await movieSourceClient.search(query, true);
+      const payload = await searchMovies(query, { signal: this.abortController.signal });
+      if (this.abortController.signal.aborted) return;
 
-      // Track search analytics
-      const itemCount = data.items?.length || 0;
-      SearchStorage.analytics.track(query, itemCount);
+      const items = Array.isArray(payload?.items) ? payload.items : [];
+      SearchStorage.pushRecent(query);
 
-      // Save to recent searches
-      SearchStorage.recent.push(query);
+      content.innerHTML = '';
 
-      // Display results
-      this.displayResults(data, contentEl, query);
-
-    } catch (error) {
-      console.error('Search error:', error);
-      this.searchState = 'error';
-      this.showError(contentEl, error);
-    }
-  }
-
-  displayResults(data, contentEl, query) {
-    contentEl.innerHTML = '';
-
-    const items = data.items || [];
-    this.searchResults = DataNormalizer.normalizeItems(data);
-
-    if (items.length === 0) {
-      this.searchState = 'no-results';
-      this.showNoResults(contentEl, query);
-      return;
-    }
-
-    this.searchState = 'results';
-    this.updateSearchHero(query, `Tìm thấy ${items.length} kết quả`);
-
-    // Results header
-    const header = el('div', { class: 'search-results-header' });
-    header.innerHTML = `
-      <div class="results-info">
-        <span class="results-count">${items.length} kết quả</span>
-        <span class="search-query">cho "${this.escapeHtml(query)}"</span>
-      </div>
-    `;
-    contentEl.appendChild(header);
-
-    // Results grid
-    const grid = el('div', { class: 'search-grid' });
-    contentEl.appendChild(grid);
-
-    renderCardsProgressively(grid, this.searchResults, UI_CONFIG.RENDER_PAGE_SIZE, (movie) => 
-      this.createSearchResultCard(movie, query)
-    );
-  }
-
-  showNoResults(contentEl, query) {
-    this.updateSearchHero(query, 'Không tìm thấy kết quả');
-    
-    const noResults = el('div', { class: 'no-results' });
-    noResults.innerHTML = `
-      <div class="no-results-content">
-        <i class="fa-solid fa-search"></i>
-        <h3>Không tìm thấy kết quả</h3>
-        <p>Không tìm thấy phim nào khớp với "${this.escapeHtml(query)}"</p>
-        <div class="no-results-suggestions">
-          <p>Gợi ý:</p>
-          <ul>
-            <li>Kiểm tra lỗi chính tả</li>
-            <li>Thử dùng từ khóa khác</li>
-            <li>Tìm kiếm theo tên tiếng Việt hoặc tiếng Anh</li>
-          </ul>
-        </div>
-        <button class="retry-btn" onclick="window.location.reload()">Tìm kiếm mới</button>
-      </div>
-    `;
-    contentEl.appendChild(noResults);
-  }
-
-  showError(contentEl, error) {
-    this.updateSearchHero(this.currentQuery, 'Lỗi tìm kiếm');
-    
-    const errorState = el('div', { class: 'search-error' });
-    errorState.innerHTML = `
-      <div class="error-content">
-        <i class="fa-solid fa-triangle-exclamation"></i>
-        <h3>Đã xảy ra lỗi</h3>
-        <p>${error.message || 'Không thể thực hiện tìm kiếm'}</p>
-        <button class="retry-btn" onclick="window.location.reload()">Thử lại</button>
-      </div>
-    `;
-    contentEl.appendChild(errorState);
-  }
-
-  createSearchResultCard(movie, query) {
-    const card = el('div', { class: 'card search-result-card' });
-    card.onclick = () => this.handleMovieClick(movie.slug);
-
-    const thumb = el('div', { class: 'card-thumb' });
-    const img = document.createElement('img');
-    img.src = movie._thumb;
-    img.alt = movie.name || '';
-    img.loading = 'lazy';
-    img.onerror = () => {
-      img.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300"><rect fill="%23222"/><text x="50%25" y="50%25" fill="%23555" font-size="14" text-anchor="middle" dominant-baseline="middle">No Image</text></svg>';
-    };
-    thumb.appendChild(img);
-
-    const info = el('div', { class: 'card-info' });
-    
-    const title = el('div', { class: 'card-title' });
-    title.innerHTML = highlightText(movie.name || '', query);
-    info.appendChild(title);
-
-    if (movie.origin_name && movie.origin_name !== movie.name) {
-      const origTitle = el('div', { class: 'card-original-title' });
-      origTitle.innerHTML = highlightText(movie.origin_name, query);
-      info.appendChild(origTitle);
-    }
-
-    const meta = el('div', { class: 'card-meta' });
-    
-    if (movie.year) {
-      meta.appendChild(el('span', {}, String(movie.year)));
-    }
-    
-    if (movie.quality || movie.episode_current) {
-      if (movie.year) {
-        meta.appendChild(el('span', { class: 'dot' }, '•'));
+      if (!items.length) {
+        content.appendChild(createEmptyState('Kh�ng t�m th?y phim ph� h?p.'));
+        return;
       }
-      meta.appendChild(el('span', {}, movie.quality || movie.episode_current || 'HD'));
+
+      const header = createElement('div', { className: 'search-results-header' }, [
+        createElement('div', { className: 'results-info' }, [
+          createElement('span', { className: 'results-count', text: `${items.length} k?t qu?` })
+        ])
+      ]);
+      content.appendChild(header);
+
+      const grid = createElement('div', { className: 'search-grid' });
+      items.forEach((movie) => {
+        const card = createMovieCard(movie, {
+          onOpen: (pickedMovie) => router.navigate(ROUTES.DETAIL, { slug: pickedMovie.slug })
+        });
+        grid.appendChild(card);
+      });
+
+      content.appendChild(grid);
+    } catch (_) {
+      content.innerHTML = '';
+      content.appendChild(createErrorState(UI_TEXT.networkError, [
+        {
+          label: UI_TEXT.retry,
+          onClick: () => router.navigate(ROUTES.SEARCH, { q: query }, true)
+        }
+      ]));
     }
-    
-    info.appendChild(meta);
-
-    card.appendChild(thumb);
-    card.appendChild(info);
-
-    return card;
   }
 
-  updateSearchHero(query, subtitle) {
-    const subtitleEl = document.querySelector('.search-subtitle');
-    if (subtitleEl) {
-      subtitleEl.textContent = subtitle;
-    }
+  onMounted() {
+    this.updateActiveTab('search');
+    syncSearchInputValue(this.currentQuery);
+    window.scrollTo(0, 0);
   }
 
-  handleSearch(query) {
-    if (this.debounceTimer) {
-      clearTimeout(this.debounceTimer);
+  async unmount() {
+    if (this.abortController) {
+      try {
+        this.abortController.abort();
+      } catch (_) {
+        // ignore
+      }
     }
 
-    this.debounceTimer = setTimeout(() => {
-      this.performSearch(query, document.querySelector('.search-content'));
-    }, UI_CONFIG.DEBOUNCE_DELAY);
-  }
-
-  handleMovieClick(slug) {
-    window.location.href = `/?view=detail&slug=${encodeURIComponent(slug)}`;
-  }
-
-  escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+    await super.unmount();
   }
 }
 

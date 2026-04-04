@@ -123,3 +123,13 @@ export function getCacheStats() {
   };
 }
 
+export function initCacheCleanup() {
+  startCacheCleanup();
+}
+
+export const CacheManager = {
+  clearAll: clearAllCache,
+  cleanup: cleanupCache,
+  stats: getCacheStats
+};
+
