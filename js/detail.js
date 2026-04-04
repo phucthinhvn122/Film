@@ -1,4 +1,4 @@
-﻿import { BasePage } from './router.js';
+﻿import { BasePage, router } from './router.js';
 import { ROUTES, UI_TEXT } from './config.js';
 import { fetchMovieDetail, requestManager } from './api.js';
 import {
@@ -10,17 +10,10 @@ import {
 } from './dom.js';
 import { FavoritesStorage, HistoryStorage } from './storage.js';
 
-function safeOpen(url = '') {
-  const target = String(url || '').trim();
-  if (!target) return false;
-  window.open(target, '_blank', 'noopener,noreferrer');
-  return true;
-}
-
 function firstPlayableEpisode(episodes = []) {
   for (const server of episodes) {
     const items = Array.isArray(server?.items) ? server.items : [];
-    const ep = items.find((item) => String(item?.linkM3u8 || item?.linkEmbed || '').trim());
+    const ep = items.find((item) => String(item?.linkEmbed || item?.linkM3u8 || '').trim());
     if (ep) return { server, episode: ep };
   }
   return null;
@@ -97,7 +90,7 @@ export class DetailPage extends BasePage {
     });
     info.appendChild(desc);
 
-    const actionRow = createElement('div', { className: 'hero-btns' });
+    const actionRow = createElement('div', { className: 'hero-btns detail-actions-row' });
     const favBtn = createElement('button', {
       type: 'button',
       className: 'btn btn-gray',
@@ -122,10 +115,13 @@ export class DetailPage extends BasePage {
       }
 
       const ep = picked.episode;
+      const serverName = picked.server?.name || 'Server';
+      const epSlug = ep.slug || 'tap-1';
+
       HistoryStorage.upsert({
         movieSlug: movie.slug,
-        epSlug: ep.slug || 'tap-1',
-        serverName: picked.server?.name || 'Server',
+        epSlug,
+        serverName,
         movieName: movie.name,
         episodeName: ep.name || 'Tap 1',
         poster: movie.poster || movie.thumb,
@@ -133,8 +129,7 @@ export class DetailPage extends BasePage {
         durationSeconds: 0
       });
 
-      const opened = safeOpen(ep.linkEmbed || ep.linkM3u8 || '');
-      if (!opened) toast('Tap nay chua co link phat.');
+      router.navigate(ROUTES.WATCH, { slug: movie.slug, epSlug, server: serverName });
     });
 
     actionRow.appendChild(watchBtn);
@@ -142,7 +137,7 @@ export class DetailPage extends BasePage {
     info.appendChild(actionRow);
 
     if (Array.isArray(movie.categories) && movie.categories.length > 0) {
-      const catWrap = createElement('div', { className: 'category-chips' });
+      const catWrap = createElement('div', { className: 'category-chips detail-categories-row' });
       movie.categories.slice(0, 8).forEach((cat) => {
         catWrap.appendChild(createElement('span', {
           className: 'category-chip',

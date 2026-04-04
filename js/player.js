@@ -67,7 +67,7 @@ function formatTime(seconds) {
 
 export async function renderWatchPage(ctx, params = {}) {
   const slug = String(params.slug || '').trim();
-  const requestedEp = String(params.ep || '').trim();
+  const requestedEp = String(params.epSlug || params.ep || '').trim();
   const requestedServer = String(params.server || '').trim();
   const controller = requestManager.next('watch');
 
@@ -287,11 +287,11 @@ export async function renderWatchPage(ctx, params = {}) {
       const query = new URLSearchParams({
         view: ROUTES.WATCH,
         slug: detail.movie.slug,
-        ep: activeEpisodeSlug,
+        epSlug: activeEpisodeSlug,
         server: activeServerName
       });
       history.replaceState(
-        { route: { name: ROUTES.WATCH, params: { slug: detail.movie.slug, ep: activeEpisodeSlug, server: activeServerName } } },
+        { route: { name: ROUTES.WATCH, params: { slug: detail.movie.slug, epSlug: activeEpisodeSlug, server: activeServerName } } },
         '',
         `${window.location.pathname}?${query.toString()}`
       );
@@ -574,7 +574,7 @@ export async function renderWatchPage(ctx, params = {}) {
         ? 'Phim nay hien chua co tap de phat.'
         : 'Khong the mo trang xem phim.',
       [
-        { label: UI_TEXT.retry, onClick: () => ctx.navigate(ROUTES.WATCH, { slug, ep: requestedEp, server: requestedServer }, { replace: true }) },
+        { label: UI_TEXT.retry, onClick: () => ctx.navigate(ROUTES.WATCH, { slug, epSlug: requestedEp, server: requestedServer }, { replace: true }) },
         { label: 'Ve chi tiet', onClick: () => ctx.navigate(ROUTES.DETAIL, { slug }) }
       ]
     ));

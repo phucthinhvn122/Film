@@ -10,6 +10,7 @@ import { router, pageRegistry, NavigationHelpers } from './router.js';
 import { HomePage } from './home.js';
 import { SearchPage } from './search.js';
 import { DetailPage } from './detail.js';
+import { WatchPage } from './watch.js';
 import { HistoryPage } from './history.js';
 import { FavoritesPage } from './favorites.js';
 import { initUI, destroyUI } from './ui.js';
@@ -99,6 +100,7 @@ class App {
       pageRegistry.register('home', HomePage);
       pageRegistry.register('search', SearchPage);
       pageRegistry.register('detail', DetailPage);
+      pageRegistry.register('watch', WatchPage);
       pageRegistry.register('history', HistoryPage);
       pageRegistry.register('favorites', FavoritesPage);
       
