@@ -15,7 +15,7 @@ function ensureHlsScript() {
     script.async = true;
     script.crossOrigin = 'anonymous';
     script.onload = () => resolve(window.Hls);
-    script.onerror = () => reject(new Error('KhÃ´ng thá»ƒ táº£i thÆ° viá»‡n HLS.'));
+    script.onerror = () => reject(new Error('Khong the tai thu vien HLS.'));
     document.head.appendChild(script);
   });
 
@@ -76,8 +76,8 @@ export async function renderWatchPage(ctx, params = {}) {
 
   if (!slug) {
     loading.innerHTML = '';
-    loading.appendChild(createErrorState('KhÃ´ng tÃ¬m tháº¥y phim cáº§n xem.', [
-      { label: 'Vá» trang chá»§', onClick: () => ctx.navigate(ROUTES.HOME) }
+    loading.appendChild(createErrorState('Khong tim thay phim can xem.', [
+      { label: 'Ve trang chu', onClick: () => ctx.navigate(ROUTES.HOME) }
     ]));
     return { node: page, cleanup: () => requestManager.cancel('watch'), title: UI_TEXT.watch };
   }
@@ -238,7 +238,7 @@ export async function renderWatchPage(ctx, params = {}) {
     const summary = createElement('div', { className: 'watch-card' }, [
       createElement('h1', { className: 'watch-info-title', text: detail.movie.name }),
       createElement('div', { className: 'watch-info-meta', text: `${detail.movie.year || ''} ${detail.movie.lang || ''}`.trim() }),
-      createElement('p', { className: 'watch-info-desc', text: detail.movie.content || 'ChÆ°a cÃ³ mÃ´ táº£.' })
+      createElement('p', { className: 'watch-info-desc', text: detail.movie.content || 'Chua co mo ta.' })
     ]);
 
     const serverCard = createElement('div', { className: 'watch-content-align watch-card' });
@@ -249,7 +249,7 @@ export async function renderWatchPage(ctx, params = {}) {
         fontSize: '.88rem',
         fontWeight: '700'
       },
-      text: 'MÃY CHá»¦ PHÃT'
+      text: 'MAY CHU PHAT'
     }));
     const serverList = createElement('div', { className: 'watch-server-list' });
     serverCard.appendChild(serverList);
@@ -262,7 +262,7 @@ export async function renderWatchPage(ctx, params = {}) {
         fontSize: '.9rem',
         fontWeight: '700'
       },
-      text: 'Táº¬P PHIM'
+      text: 'TAP PHIM'
     }));
     const episodeGrid = createElement('div', { className: 'watch-ep-grid' });
     episodeCard.appendChild(episodeGrid);
@@ -310,7 +310,7 @@ export async function renderWatchPage(ctx, params = {}) {
       const source = resolvePlayableSource(episode);
       playerBody.innerHTML = '';
       if (!source) {
-        playerBody.appendChild(createErrorState('Táº­p nÃ y khÃ´ng cÃ³ nguá»“n phÃ¡t kháº£ dá»¥ng.', [
+        playerBody.appendChild(createErrorState('Tap nay khong co nguon phat kha dung.', [
           { label: UI_TEXT.retry, onClick: () => mountSource(activeServerName, activeEpisodeSlug) }
         ]));
         return;
@@ -570,11 +570,11 @@ export async function renderWatchPage(ctx, params = {}) {
     loading.innerHTML = '';
     loading.appendChild(createErrorState(
       error.message === 'NO_PLAYABLE_EPISODE'
-        ? 'Phim nÃ y hiá»‡n chÆ°a cÃ³ táº­p Ä‘á»ƒ phÃ¡t.'
-        : 'KhÃ´ng thá»ƒ má»Ÿ trang xem phim.',
+        ? 'Phim nay hien chua co tap de phat.'
+        : 'Khong the mo trang xem phim.',
       [
         { label: UI_TEXT.retry, onClick: () => ctx.navigate(ROUTES.WATCH, { slug, ep: requestedEp, server: requestedServer }, { replace: true }) },
-        { label: 'Vá» chi tiáº¿t', onClick: () => ctx.navigate(ROUTES.DETAIL, { slug }) }
+        { label: 'Ve chi tiet', onClick: () => ctx.navigate(ROUTES.DETAIL, { slug }) }
       ]
     ));
 
