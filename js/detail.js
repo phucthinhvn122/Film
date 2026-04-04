@@ -133,7 +133,7 @@ export class DetailPage extends BasePage {
         durationSeconds: 0
       });
 
-      const opened = safeOpen(ep.linkM3u8 || ep.linkEmbed || '');
+      const opened = safeOpen(ep.linkEmbed || ep.linkM3u8 || '');
       if (!opened) toast('Tap nay chua co link phat.');
     });
 

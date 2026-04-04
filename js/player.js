@@ -50,8 +50,9 @@ function resolvePlayableSource(episode) {
   const m3u8 = String(episode?.linkM3u8 || '').trim();
   const embed = String(episode?.linkEmbed || '').trim();
 
-  if (m3u8) return { type: 'm3u8', url: m3u8, fallbackEmbed: embed };
+  // Prefer embed because some networks block/override m3u8 hostnames.
   if (embed) return { type: 'embed', url: embed, fallbackEmbed: '' };
+  if (m3u8) return { type: 'm3u8', url: m3u8, fallbackEmbed: '' };
   return null;
 }
 

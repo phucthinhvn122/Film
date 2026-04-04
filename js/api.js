@@ -159,36 +159,55 @@ function resolveImageUrl(value = '', imageBase = '') {
 }
 
 function normalizeCategories(category) {
-  if (!Array.isArray(category)) return [];
-  return category
-    .map((item) => ({
-      slug: String(item?.slug || '').trim(),
-      name: String(item?.name || '').trim()
-    }))
-    .filter((item) => item.slug || item.name);
+  if (Array.isArray(category)) {
+    return category
+      .map((item) => ({
+        slug: String(item?.slug || '').trim(),
+        name: String(item?.name || '').trim()
+      }))
+      .filter((item) => item.slug || item.name);
+  }
+
+  // New NguonC schema: category is an object keyed by group id
+  if (category && typeof category === 'object') {
+    const groups = Object.values(category);
+    const flat = [];
+    groups.forEach((group) => {
+      const list = Array.isArray(group?.list) ? group.list : [];
+      list.forEach((item) => {
+        const slug = String(item?.slug || '').trim();
+        const name = String(item?.name || '').trim();
+        if (slug || name) flat.push({ slug, name });
+      });
+    });
+    return flat;
+  }
+
+  return [];
 }
 
 export function normalizeMovie(item = {}, imageBase = '') {
   const name = String(item.name || '').trim();
-  const originName = String(item.origin_name || '').trim();
+  const originName = String(item.origin_name || item.original_name || '').trim();
+  const contentText = stripHtml(item.content || item.description || '');
 
   return {
     slug: String(item.slug || '').trim(),
     name,
     originName,
-    year: String(item.year || '').trim(),
+    year: String(item.year || item.release_year || '').trim(),
     quality: String(item.quality || '').trim(),
-    episodeCurrent: String(item.episode_current || '').trim(),
-    episodeTotal: String(item.episode_total || '').trim(),
+    episodeCurrent: String(item.episode_current || item.current_episode || '').trim(),
+    episodeTotal: String(item.episode_total || item.total_episodes || '').trim(),
     time: String(item.time || '').trim(),
-    lang: String(item.lang || '').trim(),
+    lang: String(item.lang || item.language || '').trim(),
     type: String(item.type || '').trim(),
-    country: String(item.country?.[0]?.name || '').trim(),
+    country: String(item.country?.[0]?.name || item.nation?.[0]?.name || '').trim(),
     thumb: resolveImageUrl(item.thumb_url, imageBase),
     poster: resolveImageUrl(item.poster_url || item.thumb_url, imageBase),
     categories: normalizeCategories(item.category),
-    content: stripHtml(item.content || ''),
-    searchText: `${name} ${originName} ${stripHtml(item.content || '')}`.toLowerCase(),
+    content: contentText,
+    searchText: `${name} ${originName} ${contentText}`.toLowerCase(),
     raw: item
   };
 }
@@ -216,7 +235,7 @@ function normalizeEpisodeServer(server = {}) {
     name: String(server.server_name || server.name || '').trim() || 'Server',
     items: list
       .map((ep) => ({
-        name: String(ep.name || '').trim() || 'Táº­p',
+        name: String(ep.name || '').trim() || 'Tap',
         slug: String(ep.slug || '').trim(),
         linkM3u8: String(ep.link_m3u8 || ep.m3u8 || '').trim(),
         linkEmbed: String(ep.link_embed || ep.embed || '').trim()
@@ -232,9 +251,13 @@ export function normalizeMovieDetailResponse(payload = {}) {
 
   const episodesRaw = Array.isArray(payload?.episodes)
     ? payload.episodes
-    : Array.isArray(payload?.data?.episodes)
-      ? payload.data.episodes
-      : [];
+    : Array.isArray(payload?.movie?.episodes)
+      ? payload.movie.episodes
+      : Array.isArray(payload?.data?.episodes)
+        ? payload.data.episodes
+        : Array.isArray(payload?.data?.movie?.episodes)
+          ? payload.data.movie.episodes
+          : [];
 
   const episodes = episodesRaw
     .map(normalizeEpisodeServer)
