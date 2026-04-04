@@ -278,35 +278,37 @@ export class Router {
   }
 
   buildURL(pageName, params) {
-    const baseURL = `${window.location.origin}/`;
+    const origin = window.location.origin;
     
     switch (pageName) {
       case PAGES.HOME:
-        return baseURL;
+        return `${origin}/`;
       
       case PAGES.DETAIL:
-        return `${baseURL}detail/${encodeURIComponent(params.slug || '')}`;
+        return `${origin}/detail/${encodeURIComponent(params.slug || '')}`;
       
       case PAGES.WATCH:
-        return `${baseURL}watch/${encodeURIComponent(params.slug || '')}/${encodeURIComponent(params.epSlug || '')}`;
+        return `${origin}/watch/${encodeURIComponent(params.slug || '')}/${encodeURIComponent(params.epSlug || params.ep || '')}`;
       
       case PAGES.SEARCH:
         const query = params.q ? `?q=${encodeURIComponent(params.q)}` : '';
-        return `${baseURL}search${query}`;
+        return `${origin}/search${query}`;
       
       case PAGES.HISTORY:
-        return `${baseURL}history`;
+        return `${origin}/history`;
       
       case PAGES.FAVORITES:
-        return `${baseURL}favorites`;
+        return `${origin}/favorites`;
       
       default:
-        return baseURL;
+        return `${origin}/`;
     }
   }
 
   parseURL() {
-    const path = window.location.pathname;
+    const path = (window.location.pathname || '/')
+      .replace(/\/{2,}/g, '/')
+      .replace(/\/+$/, '') || '/';
     const search = window.location.search;
     const params = new URLSearchParams(search);
 

@@ -121,11 +121,7 @@ function renderContinueRow(ctx) {
       thumb: item.poster,
       poster: item.poster
     }, {
-      onOpen: () => ctx.navigate(ROUTES.WATCH, {
-        slug: item.movieSlug,
-        ep: item.epSlug,
-        server: item.serverName
-      })
+      onOpen: () => ctx.navigate(ROUTES.DETAIL, { slug: item.movieSlug })
     });
     row.appendChild(card);
   });
@@ -156,11 +152,7 @@ function renderHistoryRow(ctx) {
       thumb: item.poster,
       poster: item.poster
     }, {
-      onOpen: () => ctx.navigate(ROUTES.WATCH, {
-        slug: item.movieSlug,
-        ep: item.epSlug,
-        server: item.serverName
-      })
+      onOpen: () => ctx.navigate(ROUTES.DETAIL, { slug: item.movieSlug })
     });
     row.appendChild(card);
   });
