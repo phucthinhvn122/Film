@@ -339,6 +339,7 @@ export async function renderWatchPage(ctx, params = {}) {
       currentSourceUrl = source.url;
 
       if (source.type === 'embed') {
+        page.classList.add('embed-mode');
         const iframe = createElement('iframe', {
           src: source.url,
           allowfullscreen: 'allowfullscreen',
@@ -369,6 +370,7 @@ export async function renderWatchPage(ctx, params = {}) {
         return;
       }
 
+      page.classList.remove('embed-mode');
       playBtn.disabled = false;
       muteBtn.disabled = false;
       progressWrap.style.pointerEvents = '';

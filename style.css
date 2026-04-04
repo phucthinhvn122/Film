@@ -375,6 +375,8 @@ mark.hl{background:rgba(229,9,20,.24);color:#fff;padding:0 2px;border-radius:3px
 .controls{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,.98),rgba(0,0,0,.56),transparent);padding:10px 14px 12px;display:flex;flex-direction:column;gap:8px;z-index:20;transition:opacity .18s}
 .watch-page.idle .controls{opacity:0;pointer-events:none}
 .watch-page.paused .controls,.watch-page.paused .watch-top{opacity:1!important}
+.watch-page.embed-mode .controls{display:none!important}
+.watch-page.embed-mode .player-meta-overlay{display:none!important}
 .watch-page.theater .watch-bg{opacity:.05}
 .watch-page.theater .watch-info-section{opacity:.06;filter:blur(2px);pointer-events:none;transition:opacity .2s,filter .2s}
 .watch-page.theater .player-wrap{width:min(1520px,99.6vw);margin-top:2px;box-shadow:0 26px 66px rgba(0,0,0,.74)}
