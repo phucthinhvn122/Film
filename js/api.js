@@ -1,4 +1,4 @@
-﻿import {
+import {
   API_SOURCE,
   CACHE_TTL,
   IMG_FALLBACK,
@@ -131,20 +131,7 @@ export function buildImageProxyUrl(url = '', opts = {}) {
   if (!target) return IMG_FALLBACK;
   if (target.startsWith('data:')) return target;
 
-  const width = Math.max(0, Math.min(1600, Number(opts.width) || 0));
-  const quality = Math.max(40, Math.min(90, Number(opts.quality) || 0));
-
-  const query = new URLSearchParams({ url: target });
-  if (width) query.set('w', String(width));
-  if (quality) query.set('q', String(quality));
-
-  const key = `${target}::w=${width}::q=${quality}`;
-  const hit = getCache('imageProxy', key);
-  if (hit) return hit;
-
-  const proxy = `/img-proxy?${query.toString()}`;
-  setCache('imageProxy', key, proxy, CACHE_TTL.IMAGE_PROXY);
-  return proxy;
+  return target;
 }
 
 function resolveImageUrl(value = '', imageBase = '') {
