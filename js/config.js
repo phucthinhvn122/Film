@@ -1,8 +1,8 @@
 ﻿export const BRAND = {
-  name: 'ThinFilm',
-  fullName: 'ThinFilm Streaming',
-  tagline: 'Nền tảng xem phim trực tuyến ổn định và cập nhật nhanh',
-  shortDescription: 'Xem phim trực tuyến chất lượng cao với giao diện gọn gàng.'
+  name: 'Netflix',
+  fullName: 'Netflix Streaming',
+  tagline: 'Nen tang xem phim truc tuyen on dinh va cap nhat nhanh',
+  shortDescription: 'Xem phim truc tuyen chat luong cao voi giao dien gon gang.'
 };
 
 export const API_SOURCE = {
@@ -19,10 +19,10 @@ export const API_SOURCE = {
 };
 
 export const CATEGORY_LABELS = {
-  latest: 'Mới cập nhật',
-  'phim-bo': 'Phim bộ',
-  'phim-le': 'Phim lẻ',
-  'hoat-hinh': 'Anime / Hoạt hình',
+  latest: 'Moi cap nhat',
+  'phim-bo': 'Phim bo',
+  'phim-le': 'Phim le',
+  'hoat-hinh': 'Anime / Hoat hinh',
   'tv-shows': 'TV Show'
 };
 
@@ -84,19 +84,19 @@ export const PLAYER_CONFIG = {
 };
 
 export const UI_TEXT = {
-  loading: 'Đang tải dữ liệu...',
-  loadingMeta: 'Đang tải metadata phim...',
-  noData: 'Không có dữ liệu để hiển thị.',
-  networkError: 'Không thể kết nối máy chủ. Vui lòng thử lại.',
-  ERROR: 'Đã có lỗi xảy ra.',
-  retry: 'Thử lại',
-  favorites: 'Yêu thích',
-  history: 'Lịch sử',
-  continueWatching: 'Tiếp tục xem',
-  home: 'Trang chủ',
-  search: 'Tìm kiếm',
+  loading: 'Dang tai du lieu...',
+  loadingMeta: 'Dang tai metadata phim...',
+  noData: 'Khong co du lieu de hien thi.',
+  networkError: 'Khong the ket noi may chu. Vui long thu lai.',
+  ERROR: 'Da co loi xay ra.',
+  retry: 'Thu lai',
+  favorites: 'Yeu thich',
+  history: 'Lich su',
+  continueWatching: 'Tiep tuc xem',
+  home: 'Trang chu',
+  search: 'Tim kiem',
   watch: 'Xem phim',
-  detail: 'Chi tiết phim'
+  detail: 'Chi tiet phim'
 };
 
 export const ROUTES = {
@@ -111,4 +111,7 @@ export const ROUTES = {
 export const IMG_FALLBACK = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='300'><rect width='100%' height='100%' fill='%23222222'/><text x='50%25' y='50%25' fill='%23999999' font-size='14' text-anchor='middle' dominant-baseline='middle'>No Image</text></svg>";
 
 export const DEFAULT_PAGE_SIZE = 24;
+
+
+
 

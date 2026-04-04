@@ -88,21 +88,21 @@ export function stripHtml(text = '') {
   return String(text || '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
-export function createLoaderState(message = 'Đang tải...') {
+export function createLoaderState(message = 'Dang tai...') {
   return createElement('div', { className: 'loader' }, [
     createElement('div', { className: 'spin', 'aria-hidden': 'true' }),
     createElement('span', { className: 'sr-only', text: message })
   ]);
 }
 
-export function createEmptyState(message = 'Không có dữ liệu.') {
+export function createEmptyState(message = 'Khong co du lieu.') {
   return createElement('div', { className: 'empty' }, [
     createElement('i', { class: 'fa-solid fa-box-open', 'aria-hidden': 'true' }),
     createElement('p', { text: message })
   ]);
 }
 
-export function createErrorState(message = 'Đã có lỗi xảy ra.', actions = []) {
+export function createErrorState(message = 'Da co loi xay ra.', actions = []) {
   const wrap = createElement('div', { className: 'empty' }, [
     createElement('i', { class: 'fa-solid fa-triangle-exclamation', 'aria-hidden': 'true' }),
     createElement('p', { text: message })
@@ -117,7 +117,7 @@ export function createErrorState(message = 'Đã có lỗi xảy ra.', actions =
       const button = createElement('button', {
         className: action.className || 'section-more',
         type: 'button',
-        text: action.label || 'Thực hiện'
+        text: action.label || 'Thuc hien'
       });
       button.addEventListener('click', () => action.onClick?.());
       actionRow.appendChild(button);
@@ -206,8 +206,8 @@ export function createMovieCard(movie, options = {}) {
     const favButton = createElement('button', {
       type: 'button',
       className: `fav-btn${options.isFavorite ? ' on' : ''}`,
-      'aria-label': options.isFavorite ? 'Bỏ yêu thích' : 'Thêm yêu thích',
-      title: options.isFavorite ? 'Bỏ yêu thích' : 'Thêm yêu thích'
+      'aria-label': options.isFavorite ? 'Bo yeu thich' : 'Them yeu thich',
+      title: options.isFavorite ? 'Bo yeu thich' : 'Them yeu thich'
     }, [createElement('i', { class: 'fa-solid fa-heart', 'aria-hidden': 'true' })]);
 
     favButton.addEventListener('click', (event) => {
@@ -244,8 +244,8 @@ export function setMainContent(node, onMounted) {
     : createElement('div', { className: 'error-page' }, [
         createElement('div', { className: 'error-content' }, [
           createElement('i', { class: 'fa-solid fa-triangle-exclamation', 'aria-hidden': 'true' }),
-          createElement('h2', { text: 'Đã xảy ra lỗi hiển thị' }),
-          createElement('p', { text: 'Nội dung trang không hợp lệ. Vui lòng tải lại.' })
+          createElement('h2', { text: 'Da xay ra loi hien thi' }),
+          createElement('p', { text: 'Noi dung trang khong hop le. Vui long tai lai.' })
         ])
       ]);
 
@@ -280,7 +280,7 @@ export function setMainContent(node, onMounted) {
   }, 220);
 }
 
-export function updateDocumentTitle(pageTitle, appName = 'ThinFilm') {
+export function updateDocumentTitle(pageTitle, appName = 'Netflix') {
   document.title = pageTitle ? `${pageTitle} | ${appName}` : appName;
 }
 
@@ -292,7 +292,7 @@ export function el(tag, attrs = {}, children = []) {
   return createElement(tag, attrs, children);
 }
 
-export function loader(message = 'Đang tải...') {
+export function loader(message = 'Dang tai...') {
   return createLoaderState(message);
 }
 
@@ -368,4 +368,7 @@ export function highlightText(text = '', keyword = '') {
   const regex = new RegExp(`(${pattern})`, 'ig');
   return escapeHtml(source).replace(regex, '<mark>$1</mark>');
 }
+
+
+
 

@@ -1,7 +1,7 @@
-{
-  "name": "ThinhFilm",
-  "short_name": "ThinhFilm",
-  "description": "ThinhFilm - Nền tảng xem phim trực tuyến với giao diện tối ưu cho cả mobile và desktop.",
+﻿{
+  "name": "Netflix",
+  "short_name": "Netflix",
+  "description": "Netflix - Nen tang xem phim truc tuyen voi giao dien toi uu cho mobile va desktop.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

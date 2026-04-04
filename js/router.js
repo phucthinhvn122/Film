@@ -153,9 +153,9 @@ export class BasePage {
     errorContent.innerHTML = `
       <div class="error-content">
         <i class="fa-solid fa-triangle-exclamation"></i>
-        <h2>Đã xảy ra lỗi</h2>
-        <p>${error.message || 'Không thể tải trang này'}</p>
-        <button onclick="location.reload()" class="retry-btn">Thử lại</button>
+        <h2>Da xay ra loi</h2>
+        <p>${error.message || 'Khong the tai trang nay'}</p>
+        <button onclick="location.reload()" class="retry-btn">Thu lai</button>
       </div>
     `;
     
@@ -167,7 +167,7 @@ export class BasePage {
   }
 
   setTitle(title) {
-    document.title = `${title} - ThinhFilm`;
+    document.title = `${title} - Netflix`;
   }
 
   updateActiveTab(tabName) {
@@ -388,9 +388,9 @@ export class Router {
         font-family: system-ui, -apple-system, sans-serif;
       ">
         <i class="fa-solid fa-triangle-exclamation" style="font-size: 4rem; color: #ff4444; margin-bottom: 1rem;"></i>
-        <h1 style="margin: 0 0 1rem 0; color: #333;">Lỗi nghiêm trọng</h1>
+        <h1 style="margin: 0 0 1rem 0; color: #333;">Loi nghiem trong</h1>
         <p style="margin: 0 0 2rem 0; color: #666; max-width: 400px;">
-          ${error.message || 'Không thể khởi tạo ứng dụng. Vui lòng tải lại trang.'}
+          ${error.message || 'Khong the khoi tao ung dung. Vui long tai lai trang.'}
         </p>
         <button onclick="location.reload()" style="
           padding: 12px 24px;
@@ -400,7 +400,7 @@ export class Router {
           border-radius: 4px;
           cursor: pointer;
           font-size: 16px;
-        ">Tải lại trang</button>
+        ">Tai lai trang</button>
       </div>
     `;
   }
@@ -478,4 +478,7 @@ export default {
   router,
   NavigationHelpers
 };
+
+
+
 

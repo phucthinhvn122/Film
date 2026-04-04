@@ -1,4 +1,4 @@
-import { CATEGORY_LABELS, DEFAULT_PAGE_SIZE, ROUTES, UI_TEXT } from './config.js';
+﻿import { CATEGORY_LABELS, DEFAULT_PAGE_SIZE, ROUTES, UI_TEXT } from './config.js';
 import { requestManager, fetchHomeLatest, fetchCategory } from './api.js';
 import { BasePage, router } from './router.js';
 import {
@@ -41,15 +41,15 @@ function createHero(movie, onOpen) {
   });
 
   const body = createElement('div', { className: 'hero-body' }, [
-    createElement('span', { className: 'hero-badge', text: 'ThinFilm' }),
-    createElement('h1', { className: 'hero-title', text: movie?.name || 'ThinFilm' }),
+    createElement('span', { className: 'hero-badge', text: 'Netflix' }),
+    createElement('h1', { className: 'hero-title', text: movie?.name || 'Netflix' }),
     createElement('p', {
       className: 'hero-sub',
-      text: movie?.originName || movie?.episodeCurrent || 'Kho phim cập nhật liên tục'
+      text: movie?.originName || movie?.episodeCurrent || 'Kho phim cap nhat lien tuc'
     }),
     createElement('p', {
       className: 'hero-desc',
-      text: movie?.content || 'Khám phá các bộ phim mới và danh sách nội dung nổi bật.'
+      text: movie?.content || 'Kham pha cac bo phim moi va danh sach noi dung noi bat.'
     })
   ]);
 
@@ -70,7 +70,7 @@ function createHero(movie, onOpen) {
     className: 'btn btn-gray'
   }, [
     createElement('i', { class: 'fa-solid fa-circle-info', 'aria-hidden': 'true' }),
-    createElement('span', { text: 'Chi tiết' })
+    createElement('span', { text: 'Chi tiet' })
   ]);
   detailBtn.addEventListener('click', () => {
     if (movie?.slug) onOpen(movie.slug);
@@ -96,7 +96,7 @@ function fillCards(grid, movies, ctx) {
       onOpen: (pickedMovie) => ctx.navigate(ROUTES.DETAIL, { slug: pickedMovie.slug }),
       onFavoriteToggle: () => {
         const added = FavoritesStorage.toggle(movie);
-        ctx.toast(added ? 'Đã thêm vào yêu thích' : 'Đã bỏ khỏi yêu thích');
+        ctx.toast(added ? 'Da them vao yeu thich' : 'Da bo khoi yeu thich');
         card.querySelector('.fav-btn')?.classList.toggle('on', added);
       }
     });
@@ -108,7 +108,7 @@ function renderContinueRow(ctx) {
   const items = ContinueWatchingStorage.list();
   if (!items.length) return null;
 
-  const section = createRowSection(UI_TEXT.continueWatching, 'Tiếp tục từ thời điểm bạn đang xem gần nhất');
+  const section = createRowSection(UI_TEXT.continueWatching, 'Tiep tuc tu thoi diem ban dang xem gan nhat');
   const row = createElement('div', { className: 'movie-row movie-row-history' });
 
   items.forEach((item) => {
@@ -138,8 +138,8 @@ function renderHistoryRow(ctx) {
   const items = HistoryStorage.list().slice(0, 12);
   if (!items.length) return null;
 
-  const section = createRowSection(UI_TEXT.history, 'Lịch sử xem gần đây', {
-    actionLabel: 'Xóa lịch sử',
+  const section = createRowSection(UI_TEXT.history, 'Lich su xem gan day', {
+    actionLabel: 'Xoa lich su',
     onAction: () => {
       HistoryStorage.clear();
       ctx.navigate(ROUTES.HOME, {}, { replace: true });
@@ -207,11 +207,11 @@ export async function renderHomePage(ctx) {
     if (historyRow) sectionsWrap.appendChild(historyRow);
 
     const map = [
-      { result: latestResult, key: 'latest', subtitle: 'Các tựa phim vừa được cập nhật' },
-      { result: seriesResult, key: 'phim-bo', subtitle: 'Theo dõi tập mới nhất mỗi ngày' },
-      { result: movieResult, key: 'phim-le', subtitle: 'Phim lẻ hấp dẫn chọn lọc' },
-      { result: animeResult, key: 'hoat-hinh', subtitle: 'Kho anime và hoạt hình nổi bật' },
-      { result: tvResult, key: 'tv-shows', subtitle: 'Chương trình truyền hình thịnh hành' }
+      { result: latestResult, key: 'latest', subtitle: 'Cac tua phim vua duoc cap nhat' },
+      { result: seriesResult, key: 'phim-bo', subtitle: 'Theo doi tap moi nhat moi ngay' },
+      { result: movieResult, key: 'phim-le', subtitle: 'Phim le hap dan chon loc' },
+      { result: animeResult, key: 'hoat-hinh', subtitle: 'Kho anime va hoat hinh noi bat' },
+      { result: tvResult, key: 'tv-shows', subtitle: 'Chuong trinh truyen hinh thinh hanh' }
     ];
 
     map.forEach((item) => {
@@ -220,7 +220,7 @@ export async function renderHomePage(ctx) {
         item.subtitle,
         item.key !== 'latest'
           ? {
-              actionLabel: 'Xem tất cả',
+              actionLabel: 'Xem tat ca',
               onAction: () => ctx.navigate(ROUTES.SEARCH, { q: `category:${item.key}` })
             }
           : undefined
@@ -231,7 +231,7 @@ export async function renderHomePage(ctx) {
       if (item.result.status === 'fulfilled') {
         fillCards(grid, item.result.value.items, ctx);
       } else {
-        grid.appendChild(createErrorState('Không thể tải danh sách này. Bạn có thể thử lại sau.'));
+        grid.appendChild(createErrorState('Khong the tai danh sach nay. Ban co the thu lai sau.'));
       }
 
       sectionsWrap.appendChild(section);
@@ -240,18 +240,18 @@ export async function renderHomePage(ctx) {
     return {
       node,
       cleanup: () => requestManager.cancel('home'),
-      title: 'Trang chủ'
+      title: 'Trang chu'
     };
   } catch (error) {
     rowsContainer.innerHTML = '';
     rowsContainer.appendChild(createErrorState(UI_TEXT.networkError, [
-      { label: 'Thử lại', onClick: () => ctx.navigate(ROUTES.HOME, {}, { replace: true }) }
+      { label: 'Thu lai', onClick: () => ctx.navigate(ROUTES.HOME, {}, { replace: true }) }
     ]));
 
     return {
       node,
       cleanup: () => requestManager.cancel('home'),
-      title: 'Trang chủ'
+      title: 'Trang chu'
     };
   }
 }
@@ -280,7 +280,7 @@ export class HomePage extends BasePage {
       return createElement('section', { className: 'search-page' }, [
         createErrorState(UI_TEXT.networkError, [
           {
-            label: 'Thử lại',
+            label: 'Thu lai',
             onClick: () => router.navigate(ROUTES.HOME, {}, true)
           }
         ])
@@ -293,4 +293,6 @@ export class HomePage extends BasePage {
     window.scrollTo(0, 0);
   }
 }
+
+
 

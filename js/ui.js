@@ -138,10 +138,10 @@ export function initUI(actions) {
         if (event.target === actionNode) closeDrawer();
         break;
       case 'notifications':
-        showToast('TÃ­nh nÄƒng thÃ´ng bÃ¡o Ä‘ang phÃ¡t triá»ƒn.');
+        showToast('Tinh nang thong bao dang phat trien.');
         break;
       case 'profile':
-        showToast('TÃ­nh nÄƒng há»“ sÆ¡ Ä‘ang phÃ¡t triá»ƒn.');
+        showToast('Tinh nang ho so dang phat trien.');
         break;
       default:
         break;
@@ -226,4 +226,5 @@ export function destroyUI() {
   });
   cleanupFns = [];
 }
+
 
