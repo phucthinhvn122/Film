@@ -1,10 +1,11 @@
 ﻿import { BasePage } from './router.js';
 import { ROUTES, UI_TEXT } from './config.js';
-import { fetchMovieDetail, fetchTmdbMeta, requestManager } from './api.js';
+import { fetchMovieDetail, requestManager } from './api.js';
 import {
   createElement,
   createErrorState,
   createLoaderState,
+  stripHtml,
   toast
 } from './dom.js';
 import { FavoritesStorage, HistoryStorage } from './storage.js';
@@ -16,18 +17,26 @@ function safeOpen(url = '') {
   return true;
 }
 
+function firstPlayableEpisode(episodes = []) {
+  for (const server of episodes) {
+    const items = Array.isArray(server?.items) ? server.items : [];
+    const ep = items.find((item) => String(item?.linkM3u8 || item?.linkEmbed || '').trim());
+    if (ep) return { server, episode: ep };
+  }
+  return null;
+}
+
 export class DetailPage extends BasePage {
   constructor() {
     super(ROUTES.DETAIL);
     this.abortController = null;
-    this.movieSlug = '';
   }
 
   async render(params = {}) {
-    this.movieSlug = String(params.slug || '').trim();
-
+    const slug = String(params.slug || '').trim();
     const page = createElement('section', { className: 'detail-page' });
-    if (!this.movieSlug) {
+
+    if (!slug) {
       page.appendChild(createErrorState('Thieu ma phim.'));
       return page;
     }
@@ -36,7 +45,7 @@ export class DetailPage extends BasePage {
     this.abortController = requestManager.next('detail');
 
     try {
-      const detail = await fetchMovieDetail(this.movieSlug, { signal: this.abortController.signal });
+      const detail = await fetchMovieDetail(slug, { signal: this.abortController.signal });
       if (this.abortController.signal.aborted) return page;
 
       const movie = detail?.movie;
@@ -46,187 +55,106 @@ export class DetailPage extends BasePage {
         return page;
       }
 
-      let tmdb = null;
-      try {
-        tmdb = await fetchTmdbMeta(movie.name || movie.originName || '', movie.year, {
-          signal: this.abortController.signal
-        });
-      } catch (_) {
-        tmdb = null;
-      }
-
       page.innerHTML = '';
-      page.appendChild(this.createHero(movie, tmdb));
-      page.appendChild(this.createEpisodes(detail?.episodes || [], movie));
-      page.appendChild(this.createDescription(movie, tmdb));
-
+      page.appendChild(this.buildLayout(movie, detail.episodes || []));
       this.setTitle(movie.name || 'Chi tiet phim');
       return page;
     } catch (_) {
       page.innerHTML = '';
       page.appendChild(createErrorState(UI_TEXT.networkError, [
-        {
-          label: UI_TEXT.retry,
-          onClick: () => window.location.reload()
-        }
+        { label: UI_TEXT.retry, onClick: () => window.location.reload() }
       ]));
       return page;
     }
   }
 
-  createHero(movie, tmdb) {
-    const isFavorite = FavoritesStorage.isFavorite(movie.slug);
+  buildLayout(movie, episodes = []) {
+    const wrap = createElement('div', { className: 'detail-wrap' });
 
-    const hero = createElement('section', {
-      className: 'detail-hero',
-      style: movie.poster ? { backgroundImage: `url('${movie.poster}')` } : {}
+    const poster = createElement('img', {
+      className: 'detail-poster',
+      src: movie.poster || movie.thumb,
+      alt: movie.name || 'Poster phim',
+      loading: 'lazy'
     });
 
-    const overlay = createElement('div', { className: 'detail-hero-overlay' });
-    const body = createElement('div', { className: 'detail-hero-content' });
-
-    const posterWrap = createElement('div', { className: 'detail-poster-container' }, [
-      createElement('div', { className: 'detail-poster' }, [
-        createElement('img', {
-          src: movie.poster || movie.thumb,
-          alt: movie.name || 'Poster phim',
-          loading: 'lazy'
-        })
-      ])
-    ]);
-
-    const info = createElement('div', { className: 'detail-hero-info' });
-    info.appendChild(createElement('h1', { className: 'detail-title', text: movie.name || 'Khong ro ten' }));
+    const info = createElement('div', { className: 'detail-info' });
+    info.appendChild(createElement('h1', { text: movie.name || 'Khong ro ten' }));
 
     if (movie.originName && movie.originName !== movie.name) {
-      info.appendChild(createElement('div', {
-        className: 'detail-original-title',
-        text: movie.originName
-      }));
+      info.appendChild(createElement('div', { className: 'detail-origin', text: movie.originName }));
     }
 
-    const metaRow = createElement('div', { className: 'detail-meta' });
-    const tags = [movie.year, movie.quality || movie.episodeCurrent || '', movie.time || ''].filter(Boolean);
-    tags.forEach((tag, index) => {
-      if (index > 0) metaRow.appendChild(createElement('span', { className: 'detail-separator', text: '•' }));
-      metaRow.appendChild(createElement('span', { text: String(tag) }));
+    const tags = createElement('div', { className: 'tags' });
+    [movie.year, movie.quality || movie.episodeCurrent, movie.time, movie.lang]
+      .filter(Boolean)
+      .forEach((tag) => tags.appendChild(createElement('span', { className: 'tag', text: String(tag) })));
+    if (tags.childNodes.length) info.appendChild(tags);
+
+    const desc = createElement('p', {
+      className: 'detail-desc',
+      text: stripHtml(movie.content || '') || 'Dang cap nhat noi dung.'
     });
-    info.appendChild(metaRow);
+    info.appendChild(desc);
 
-    if (Array.isArray(movie.categories) && movie.categories.length > 0) {
-      const categories = createElement('div', { className: 'detail-categories' });
-      movie.categories.slice(0, 5).forEach((cat) => {
-        categories.appendChild(createElement('span', {
-          className: 'detail-category',
-          text: cat.name || cat.slug || ''
-        }));
-      });
-      info.appendChild(categories);
-    }
-
-    const actions = createElement('div', { className: 'detail-actions' });
-
-    const favoriteBtn = createElement('button', {
+    const actionRow = createElement('div', { className: 'hero-btns' });
+    const favBtn = createElement('button', {
       type: 'button',
-      className: `btn btn-outline btn-large ${isFavorite ? 'favorited' : ''}`,
-      text: isFavorite ? 'Da thich' : 'Them yeu thich'
+      className: 'btn btn-gray',
+      text: FavoritesStorage.isFavorite(movie.slug) ? 'Da thich' : 'Them yeu thich'
     });
-
-    favoriteBtn.addEventListener('click', () => {
+    favBtn.addEventListener('click', () => {
       const added = FavoritesStorage.toggle(movie);
-      favoriteBtn.classList.toggle('favorited', added);
-      favoriteBtn.textContent = added ? 'Da thich' : 'Them yeu thich';
+      favBtn.textContent = added ? 'Da thich' : 'Them yeu thich';
       toast(added ? 'Da them vao yeu thich' : 'Da bo khoi yeu thich');
     });
 
-    actions.appendChild(favoriteBtn);
-    info.appendChild(actions);
+    const watchBtn = createElement('button', {
+      type: 'button',
+      className: 'btn btn-orange',
+      text: 'Xem ngay'
+    });
+    watchBtn.addEventListener('click', () => {
+      const picked = firstPlayableEpisode(episodes);
+      if (!picked) {
+        toast('Phim nay chua co nguon phat.');
+        return;
+      }
 
-    if (tmdb?.overview && tmdb.overview !== movie.content) {
-      info.appendChild(createElement('p', {
-        className: 'hero-desc',
-        text: tmdb.overview
-      }));
-    }
-
-    body.appendChild(posterWrap);
-    body.appendChild(info);
-    hero.appendChild(overlay);
-    hero.appendChild(body);
-
-    return hero;
-  }
-
-  createEpisodes(episodes = [], movie) {
-    const section = createElement('section', { className: 'detail-content detail-section' });
-    section.appendChild(createElement('h2', { className: 'detail-section-title', text: 'Danh sach tap' }));
-
-    if (!Array.isArray(episodes) || episodes.length === 0) {
-      section.appendChild(createElement('p', {
-        className: 'detail-description',
-        text: 'Phim nay chua co tap phat song.'
-      }));
-      return section;
-    }
-
-    const container = createElement('div', { className: 'detail-episodes' });
-
-    episodes.forEach((server) => {
-      const block = createElement('div', { className: 'episode-server' });
-      block.appendChild(createElement('h3', {
-        className: 'episode-server-name',
-        text: server?.name || 'Server'
-      }));
-
-      const list = createElement('div', { className: 'episode-list' });
-      const items = Array.isArray(server?.items) ? server.items : [];
-
-      items.forEach((episode, index) => {
-        const btn = createElement('button', {
-          type: 'button',
-          className: 'episode-btn',
-          text: episode?.name || `Tap ${index + 1}`
-        });
-
-        btn.addEventListener('click', () => {
-          HistoryStorage.upsert({
-            movieSlug: movie.slug,
-            epSlug: episode?.slug || `tap-${index + 1}`,
-            serverName: server?.name || 'Server',
-            movieName: movie.name,
-            episodeName: episode?.name || `Tap ${index + 1}`,
-            poster: movie.poster || movie.thumb,
-            progressSeconds: 0,
-            durationSeconds: 0
-          });
-
-          const opened = safeOpen(episode?.linkM3u8 || episode?.linkEmbed || '');
-          if (!opened) {
-            toast('Tap nay chua co link phat.');
-          }
-        });
-
-        list.appendChild(btn);
+      const ep = picked.episode;
+      HistoryStorage.upsert({
+        movieSlug: movie.slug,
+        epSlug: ep.slug || 'tap-1',
+        serverName: picked.server?.name || 'Server',
+        movieName: movie.name,
+        episodeName: ep.name || 'Tap 1',
+        poster: movie.poster || movie.thumb,
+        progressSeconds: 0,
+        durationSeconds: 0
       });
 
-      block.appendChild(list);
-      container.appendChild(block);
+      const opened = safeOpen(ep.linkM3u8 || ep.linkEmbed || '');
+      if (!opened) toast('Tap nay chua co link phat.');
     });
 
-    section.appendChild(container);
-    return section;
-  }
+    actionRow.appendChild(watchBtn);
+    actionRow.appendChild(favBtn);
+    info.appendChild(actionRow);
 
-  createDescription(movie, tmdb) {
-    const section = createElement('section', { className: 'detail-content detail-section' });
-    section.appendChild(createElement('h2', { className: 'detail-section-title', text: 'Noi dung' }));
+    if (Array.isArray(movie.categories) && movie.categories.length > 0) {
+      const catWrap = createElement('div', { className: 'category-chips' });
+      movie.categories.slice(0, 8).forEach((cat) => {
+        catWrap.appendChild(createElement('span', {
+          className: 'category-chip',
+          text: cat.name || cat.slug || ''
+        }));
+      });
+      info.appendChild(catWrap);
+    }
 
-    section.appendChild(createElement('div', {
-      className: 'detail-description',
-      text: movie.content || tmdb?.overview || 'Dang cap nhat noi dung.'
-    }));
-
-    return section;
+    wrap.appendChild(poster);
+    wrap.appendChild(info);
+    return wrap;
   }
 
   onMounted() {
@@ -248,4 +176,3 @@ export class DetailPage extends BasePage {
 }
 
 export default DetailPage;
-
