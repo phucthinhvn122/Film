@@ -274,6 +274,13 @@ export async function renderWatchPage(ctx, params = {}) {
     infoSection.appendChild(mainCol);
     page.appendChild(infoSection);
 
+    const setEmbedUiMode = (enabled) => {
+      page.classList.toggle('embed-mode', Boolean(enabled));
+      controls.style.display = enabled ? 'none' : '';
+      metaOverlay.style.display = enabled ? 'none' : '';
+      top.style.display = enabled ? 'none' : '';
+    };
+
     const mountSource = async (serverName, episodeSlug, { preserveTime = false } = {}) => {
       const server = detail.episodes.find((item) => item.name === serverName) || detail.episodes[0];
       if (!server) return;
@@ -339,7 +346,7 @@ export async function renderWatchPage(ctx, params = {}) {
       currentSourceUrl = source.url;
 
       if (source.type === 'embed') {
-        page.classList.add('embed-mode');
+        setEmbedUiMode(true);
         const iframe = createElement('iframe', {
           src: source.url,
           allowfullscreen: 'allowfullscreen',
@@ -370,7 +377,7 @@ export async function renderWatchPage(ctx, params = {}) {
         return;
       }
 
-      page.classList.remove('embed-mode');
+      setEmbedUiMode(false);
       playBtn.disabled = false;
       muteBtn.disabled = false;
       progressWrap.style.pointerEvents = '';

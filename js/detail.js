@@ -134,7 +134,10 @@ export class DetailPage extends BasePage {
 
     actionRow.appendChild(watchBtn);
     actionRow.appendChild(favBtn);
-    info.appendChild(actionRow);
+
+    const actionsBlock = createElement('div', { className: 'detail-block detail-actions-block' });
+    actionsBlock.appendChild(actionRow);
+    info.appendChild(actionsBlock);
 
     if (Array.isArray(movie.categories) && movie.categories.length > 0) {
       const catWrap = createElement('div', { className: 'category-chips detail-categories-row' });
@@ -144,7 +147,10 @@ export class DetailPage extends BasePage {
           text: cat.name || cat.slug || ''
         }));
       });
-      info.appendChild(catWrap);
+
+      const categoriesBlock = createElement('div', { className: 'detail-block detail-categories-block' });
+      categoriesBlock.appendChild(catWrap);
+      info.appendChild(categoriesBlock);
     }
 
     wrap.appendChild(poster);
