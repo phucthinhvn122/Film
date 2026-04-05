@@ -2,7 +2,12 @@
   "rewrites": [
     { "source": "/api/vsmov/:path*", "destination": "/api/vsmov/[...path]?path=:path*" },
     { "source": "/img-proxy", "destination": "/api/img-proxy" },
-    { "source": "/api/tmdb-meta", "destination": "/api/tmdb-meta" }
+    { "source": "/api/tmdb-meta", "destination": "/api/tmdb-meta" },
+    { "source": "/detail/:slug", "destination": "/index.html" },
+    { "source": "/watch/:slug/:epSlug", "destination": "/index.html" },
+    { "source": "/search", "destination": "/index.html" },
+    { "source": "/history", "destination": "/index.html" },
+    { "source": "/favorites", "destination": "/index.html" }
   ],
   "headers": [
     {
