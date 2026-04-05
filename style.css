@@ -32,6 +32,18 @@ body{
 a{text-decoration:none;color:inherit}
 button,input,select{font-family:inherit;outline:none;border:none;background:none;color:inherit}
 img{display:block;max-width:100%;}
+button,
+[role="button"],
+.card,
+.category-chip,
+.section-more,
+.w-srv-btn,
+.ep-num,
+.cb,
+.progress-wrap{
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
 :focus-visible{
   outline:2px solid #ffffff;
   outline-offset:2px;
@@ -390,9 +402,10 @@ mark.hl{background:rgba(229,9,20,.24);color:#fff;padding:0 2px;border-radius:3px
 .progress-wrap:hover .progress-fill::after{opacity:1}
 .ctrl-row{display:flex;align-items:center;justify-content:space-between}
 .ctrl-left,.ctrl-right{display:flex;align-items:center;gap:12px}
-.cb{background:none;border:none;color:#fff;font-size:1.08rem;cursor:pointer;padding:3px;transition:transform .15s,color .15s}
+.cb{background:none;border:none;color:#fff;font-size:1.08rem;cursor:pointer;padding:8px;min-width:42px;min-height:42px;display:inline-flex;align-items:center;justify-content:center;transition:transform .15s,color .15s}
 .cb:hover{transform:scale(1.08);color:#fff}
 .cb.on{color:#e50914}
+.quality-txt{font-size:.72rem;font-weight:700;color:var(--text2);padding:0 2px;white-space:nowrap}
 .time-txt{font-size:.74rem;color:#d4d4d4;white-space:nowrap}
 
 /* Quality menu */
@@ -432,7 +445,7 @@ mark.hl{background:rgba(229,9,20,.24);color:#fff;padding:0 2px;border-radius:3px
 }
 .qbtn:hover{background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.15)}
 .qbtn.active{color:#fff;font-weight:700;background:rgba(229,9,20,.12);border-color:rgba(229,9,20,.42)}
-.qbtn.active::after{content:'âœ“';color:var(--accent)}
+.qbtn.active::after{content:'✓';color:var(--accent)}
 .qbtn-meta{font-size:.72rem;color:var(--muted);font-weight:500}
 .player-stats{
   display:flex;
@@ -658,7 +671,8 @@ mark.hl{background:rgba(229,9,20,.24);color:#fff;padding:0 2px;border-radius:3px
   .detail-desc{font-size:.84rem;line-height:1.5}
   .play-btn-big{padding:13px 20px;font-size:1rem}
   .ctrl-left,.ctrl-right{gap:6px}
-  .cb{font-size:.92rem;padding:5px}
+  .cb{font-size:.92rem;padding:8px;min-width:40px;min-height:40px}
+  .quality-txt{font-size:.66rem}
   .time-txt{font-size:.66rem}
   .search-page{padding:60px 14px 100px}
   .search-hero h2{font-size:1.15rem}
@@ -684,7 +698,9 @@ mark.hl{background:rgba(229,9,20,.24);color:#fff;padding:0 2px;border-radius:3px
   .watch-server-list{gap:6px}
   .watch-action-row{gap:6px}
   .player-wrap{width:100vw;margin:0 auto;border-radius:0}
-  .controls{padding:8px 10px 10px}
+  .controls{padding:10px 10px 12px}
+  .progress-wrap{height:5px}
+  .progress-wrap:hover{height:5px}
   .player-meta-overlay{top:8px;left:8px;padding:6px 8px}
   .player-meta-title{font-size:.8rem}
   .player-meta-ep{font-size:.7rem}
@@ -742,6 +758,7 @@ body.watch-mode .mobile-bottom-nav{display:none!important}
   .watch-page #fsbtn{margin-left:2px;order:99}
 }
 @media(max-width:540px){
+  .watch-page .ctrl-left .quality-txt{display:none}
   .watch-page .ctrl-left .time-txt{display:none}
   .watch-page #pipbtn,.watch-page #theaterbtn,.watch-page #autonextbtn{display:none}
   .watch-page .ctrl-right{margin-left:auto}

@@ -46,13 +46,14 @@ function pickServerAndEpisode(episodes, requestedServer, requestedEp, movieSlug)
   return { server, episode };
 }
 
-function resolvePlayableSource(episode) {
+function resolvePlayableSource(episode, options = {}) {
   const m3u8 = String(episode?.linkM3u8 || '').trim();
   const embed = String(episode?.linkEmbed || '').trim();
+  const forceEmbed = Boolean(options.forceEmbed);
 
-  // Prefer embed because some networks block/override m3u8 hostnames.
+  if (forceEmbed && embed) return { type: 'embed', url: embed, fallbackEmbed: '' };
+  if (m3u8) return { type: 'm3u8', url: m3u8, fallbackEmbed: embed };
   if (embed) return { type: 'embed', url: embed, fallbackEmbed: '' };
-  if (m3u8) return { type: 'm3u8', url: m3u8, fallbackEmbed: '' };
   return null;
 }
 
@@ -93,11 +94,24 @@ export async function renderWatchPage(ctx, params = {}) {
   let activeSourceType = '';
   let currentSourceUrl = '';
   let activeEpisodeRef = null;
+  let sourceFallbackLocked = false;
+  let qualityMode = 'auto';
   const removeListeners = [];
 
   const bind = (target, event, handler, options) => {
     target.addEventListener(event, handler, options);
     removeListeners.push(() => target.removeEventListener(event, handler, options));
+  };
+
+  const bindHls = (instance, eventName, handler) => {
+    instance.on(eventName, handler);
+    removeListeners.push(() => {
+      try {
+        instance.off(eventName, handler);
+      } catch (_) {
+        // ignore
+      }
+    });
   };
 
   const cleanup = () => {
@@ -161,7 +175,7 @@ export async function renderWatchPage(ctx, params = {}) {
     const backBtn = createElement('button', {
       type: 'button',
       className: 'watch-back',
-         'aria-label': 'Quay láº¡i trang chi tiáº¿t'
+      'aria-label': 'Quay lai trang chi tiet'
     }, [createElement('i', { class: 'fa-solid fa-arrow-left', 'aria-hidden': 'true' })]);
     backBtn.addEventListener('click', () => {
       cleanup();
@@ -170,7 +184,7 @@ export async function renderWatchPage(ctx, params = {}) {
 
     const title = createElement('div', {
       className: 'watch-title',
-      text: `${detail.movie.name || 'Äang xem'} â€¢ ${selectedEpisode.name || ''}`
+      text: `${detail.movie.name || 'Dang xem'} • ${selectedEpisode.name || ''}`
     });
 
     const serverBadge = createElement('div', { className: 'watch-srv' }, [
@@ -221,12 +235,28 @@ export async function renderWatchPage(ctx, params = {}) {
     const retryBtn = createElement('button', { type: 'button', className: 'cb', id: 'retrybtn' }, [
       createElement('i', { class: 'fa-solid fa-rotate-right', 'aria-hidden': 'true' })
     ]);
+    const qualityBtn = createElement('button', {
+      type: 'button',
+      className: 'cb quality-btn',
+      id: 'qualitybtn',
+      title: 'Chat luong'
+    }, [
+      createElement('i', { class: 'fa-solid fa-sliders', 'aria-hidden': 'true' })
+    ]);
     const timeText = createElement('span', { className: 'time-txt', text: '00:00 / 00:00' });
+    const qualityText = createElement('span', { className: 'quality-txt', text: 'Auto' });
+
+    const qmenuWrap = createElement('div', { className: 'qmenu-wrap' });
+    const qmenu = createElement('div', { className: 'qmenu', id: 'qualitymenu' });
+    qmenuWrap.appendChild(qualityBtn);
+    qmenuWrap.appendChild(qmenu);
 
     left.appendChild(playBtn);
     left.appendChild(muteBtn);
+    left.appendChild(qualityText);
     left.appendChild(timeText);
     right.appendChild(retryBtn);
+    right.appendChild(qmenuWrap);
     right.appendChild(fsBtn);
     ctrlRow.appendChild(left);
     ctrlRow.appendChild(right);
@@ -278,10 +308,104 @@ export async function renderWatchPage(ctx, params = {}) {
       page.classList.toggle('embed-mode', Boolean(enabled));
       controls.style.display = enabled ? 'none' : '';
       metaOverlay.style.display = enabled ? 'none' : '';
-      top.style.display = enabled ? 'none' : '';
+      top.style.display = '';
     };
 
-    const mountSource = async (serverName, episodeSlug, { preserveTime = false } = {}) => {
+    const closeQualityMenu = () => qmenu.classList.remove('open');
+
+    const updateQualityLabel = (label = 'Auto') => {
+      qualityText.textContent = label;
+    };
+
+    const renderQualityMenu = (levels = []) => {
+      qmenu.innerHTML = '';
+
+      const items = Array.isArray(levels) ? levels : [];
+      if (!items.length) {
+        qmenu.appendChild(createElement('div', { className: 'qmenu-head' }, [
+          createElement('strong', { text: 'Chat luong' }),
+          createElement('span', { text: 'Tu dong' })
+        ]));
+        updateQualityLabel(activeSourceType === 'embed' ? 'Embed' : 'Auto');
+        qualityBtn.disabled = activeSourceType !== 'm3u8';
+        return;
+      }
+
+      qualityBtn.disabled = false;
+      qmenu.appendChild(createElement('div', { className: 'qmenu-head' }, [
+        createElement('strong', { text: 'Chat luong' }),
+        createElement('span', { text: 'Chon muc phat' })
+      ]));
+
+      const entries = [
+        { value: 'auto', label: 'Auto', meta: 'Tu dong toi uu' },
+        ...items
+      ];
+
+      entries.forEach((entry) => {
+        const isAuto = entry.value === 'auto';
+        const btn = createElement('button', {
+          type: 'button',
+          className: `qbtn${qualityMode === entry.value ? ' active' : ''}`,
+          dataset: { qualityValue: entry.value }
+        }, [
+          createElement('span', { text: entry.label }),
+          createElement('span', { className: 'qbtn-meta', text: entry.meta || '' })
+        ]);
+        btn.addEventListener('click', () => {
+          if (!hls) return;
+          if (isAuto) {
+            hls.currentLevel = -1;
+            hls.nextLevel = -1;
+            qualityMode = 'auto';
+            updateQualityLabel('Auto');
+          } else {
+            const levelIndex = Number(entry.value);
+            hls.currentLevel = levelIndex;
+            hls.nextLevel = levelIndex;
+            qualityMode = String(levelIndex);
+            updateQualityLabel(entry.label);
+          }
+          renderQualityMenu(items);
+          closeQualityMenu();
+        });
+        qmenu.appendChild(btn);
+      });
+    };
+
+    const getUniqueQualityLevels = (levels = []) => {
+      const seen = new Set();
+      return levels
+        .map((level, index) => {
+          const height = Number(level?.height) || 0;
+          const bitrate = Number(level?.bitrate) || 0;
+          const label = height > 0 ? `${height}p` : `Level ${index + 1}`;
+          const meta = bitrate > 0 ? `${Math.round(bitrate / 1000)} kbps` : '';
+          const key = `${height}:${bitrate}`;
+          if (seen.has(key)) return null;
+          seen.add(key);
+          return { value: String(index), label, meta, height, bitrate };
+        })
+        .filter(Boolean)
+        .sort((a, b) => b.height - a.height || b.bitrate - a.bitrate);
+    };
+
+    const rebuildEpisodeGrid = (server) => {
+      episodeGrid.innerHTML = '';
+      const items = Array.isArray(server?.items) ? server.items : [];
+      items.forEach((episode) => {
+        const btn = createElement('button', {
+          type: 'button',
+          className: `ep-num${episode.slug === activeEpisodeSlug ? ' active' : ''}`,
+          dataset: { epSlug: episode.slug },
+          text: episode.name || episode.slug
+        });
+        btn.addEventListener('click', () => mountSource(server.name, episode.slug));
+        episodeGrid.appendChild(btn);
+      });
+    };
+
+    const mountSource = async (serverName, episodeSlug, { preserveTime = false, forceEmbed = false } = {}) => {
       const server = detail.episodes.find((item) => item.name === serverName) || detail.episodes[0];
       if (!server) return;
       const episode = server.items.find((item) => item.slug === episodeSlug) || server.items[0];
@@ -290,6 +414,7 @@ export async function renderWatchPage(ctx, params = {}) {
       activeServerName = server.name;
       activeEpisodeSlug = episode.slug;
       activeEpisodeRef = episode;
+      if (!forceEmbed) sourceFallbackLocked = false;
       ServerMemoryStorage.remember(detail.movie.slug, activeServerName);
       const query = new URLSearchParams({
         view: ROUTES.WATCH,
@@ -306,16 +431,14 @@ export async function renderWatchPage(ctx, params = {}) {
       serverList.querySelectorAll('.w-srv-btn').forEach((button) => {
         button.classList.toggle('active', button.dataset.serverName === activeServerName);
       });
-      episodeGrid.querySelectorAll('.ep-num').forEach((button) => {
-        button.classList.toggle('active', button.dataset.epSlug === activeEpisodeSlug);
-      });
+      rebuildEpisodeGrid(server);
 
-      title.textContent = `${detail.movie.name} â€¢ ${episode.name || ''}`;
+      title.textContent = `${detail.movie.name} • ${episode.name || ''}`;
       metaOverlay.querySelector('.player-meta-ep').textContent = episode.name || '';
       serverBadge.innerHTML = '';
       serverBadge.appendChild(createElement('span', { className: 'srv-btn active', text: activeServerName }));
 
-      const source = resolvePlayableSource(episode);
+      const source = resolvePlayableSource(episode, { forceEmbed });
       playerBody.innerHTML = '';
       if (!source) {
         playerBody.appendChild(createErrorState('Tap nay khong co nguon phat kha dung.', [
@@ -344,6 +467,9 @@ export async function renderWatchPage(ctx, params = {}) {
 
       activeSourceType = source.type;
       currentSourceUrl = source.url;
+      qualityMode = 'auto';
+      closeQualityMenu();
+      renderQualityMenu([]);
 
       if (source.type === 'embed') {
         setEmbedUiMode(true);
@@ -360,9 +486,11 @@ export async function renderWatchPage(ctx, params = {}) {
         playerBody.appendChild(iframe);
         playBtn.disabled = true;
         muteBtn.disabled = true;
+        qualityBtn.disabled = true;
         progressWrap.style.pointerEvents = 'none';
         progressFill.style.width = '0%';
         timeText.textContent = '--:-- / --:--';
+        updateQualityLabel('Embed');
 
         StorageUtils.savePlaybackSnapshot({
           movieSlug: detail.movie.slug,
@@ -380,7 +508,9 @@ export async function renderWatchPage(ctx, params = {}) {
       setEmbedUiMode(false);
       playBtn.disabled = false;
       muteBtn.disabled = false;
+      qualityBtn.disabled = true;
       progressWrap.style.pointerEvents = '';
+      updateQualityLabel('Auto');
 
       const nextVideo = createElement('video', {
         playsinline: 'playsinline'
@@ -432,10 +562,9 @@ export async function renderWatchPage(ctx, params = {}) {
         }
       });
       bind(video, 'error', () => {
-        if (source.fallbackEmbed) {
-          mountSource(activeServerName, activeEpisodeSlug, { preserveTime: false });
-          activeSourceType = 'embed';
-          currentSourceUrl = source.fallbackEmbed;
+        if (source.fallbackEmbed && !sourceFallbackLocked) {
+          sourceFallbackLocked = true;
+          mountSource(activeServerName, activeEpisodeSlug, { preserveTime: false, forceEmbed: true });
         }
       });
 
@@ -449,6 +578,19 @@ export async function renderWatchPage(ctx, params = {}) {
           hls = new Hls({ enableWorker: true, lowLatencyMode: false, backBufferLength: 30 });
           hls.loadSource(source.url);
           hls.attachMedia(video);
+          bindHls(hls, Hls.Events.MANIFEST_PARSED, (_, data) => {
+            const levels = getUniqueQualityLevels(data?.levels || hls.levels || []);
+            renderQualityMenu(levels);
+          });
+          bindHls(hls, Hls.Events.LEVEL_SWITCHED, (_, data) => {
+            const nextLevel = Number(data?.level);
+            if (qualityMode === 'auto') {
+              updateQualityLabel('Auto');
+              return;
+            }
+            const currentLevel = hls.levels?.[nextLevel];
+            if (currentLevel?.height) updateQualityLabel(`${currentLevel.height}p`);
+          });
         }
       }
 
@@ -473,16 +615,7 @@ export async function renderWatchPage(ctx, params = {}) {
       serverList.appendChild(btn);
     });
 
-    selectedServer.items.forEach((episode) => {
-      const btn = createElement('button', {
-        type: 'button',
-        className: `ep-num${episode.slug === selectedEpisode.slug ? ' active' : ''}`,
-        dataset: { epSlug: episode.slug },
-        text: episode.name || episode.slug
-      });
-      btn.addEventListener('click', () => mountSource(selectedServer.name, episode.slug));
-      episodeGrid.appendChild(btn);
-    });
+    rebuildEpisodeGrid(selectedServer);
 
     playBtn.addEventListener('click', () => {
       if (!video) return;
@@ -513,7 +646,12 @@ export async function renderWatchPage(ctx, params = {}) {
       mountSource(activeServerName, activeEpisodeSlug, { preserveTime: true });
     });
 
-    progressWrap.addEventListener('click', (event) => {
+    qualityBtn.addEventListener('click', () => {
+      if (qualityBtn.disabled) return;
+      qmenu.classList.toggle('open');
+    });
+
+    progressWrap.addEventListener('pointerdown', (event) => {
       if (!video || !Number.isFinite(video.duration) || video.duration <= 0) return;
       const rect = progressWrap.getBoundingClientRect();
       const ratio = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
@@ -543,6 +681,11 @@ export async function renderWatchPage(ctx, params = {}) {
       }
     };
     bind(document, 'keydown', onKeyDown);
+    bind(document, 'click', (event) => {
+      if (!qmenu.contains(event.target) && !qualityBtn.contains(event.target)) {
+        closeQualityMenu();
+      }
+    });
 
     mountSource(selectedServer.name, selectedEpisode.slug);
 
