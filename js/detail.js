@@ -110,7 +110,12 @@ export class DetailPage extends BasePage {
     watchBtn.addEventListener('click', () => {
       const picked = firstPlayableEpisode(episodes);
       if (!picked) {
-        toast('Phim này chưa có nguồn phát.');
+        const rawStatus = String(movie?.status || movie?.raw?.status || '').toLowerCase();
+        if (rawStatus === 'trailer') {
+          toast('Phim này mới có trailer, chưa có tập phim để phát.');
+        } else {
+          toast('Phim này hiện chưa có nguồn phát.');
+        }
         return;
       }
 

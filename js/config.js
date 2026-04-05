@@ -12,7 +12,7 @@ export const API_SOURCE = {
   name: 'VSMov',
   latest: `${API_BASE}/danh-sach/phim-moi-cap-nhat?page=`,
   detail: `${API_BASE}/phim/`,
-  search: `${API_BASE}/v1/api/tim-kiem?keyword=`,
+  search: `${API_BASE}/tim-kiem?keyword=`,
   categories: {
     'phim-bo': `${API_BASE}/danh-sach?type=series&page=`,
     'phim-le': `${API_BASE}/danh-sach?type=single&page=`,

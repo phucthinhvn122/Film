@@ -484,6 +484,18 @@ export async function renderWatchPage(ctx, params = {}) {
 
       if (source.type === 'embed') {
         setEmbedUiMode(true);
+        const embedFrameWrap = createElement('div', {
+          style: {
+            position: 'absolute',
+            inset: '0',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: '#000'
+          }
+        });
         const iframe = createElement('iframe', {
           src: source.url,
           allowfullscreen: 'allowfullscreen',
@@ -494,7 +506,25 @@ export async function renderWatchPage(ctx, params = {}) {
         iframe.style.width = '100%';
         iframe.style.height = '100%';
         iframe.style.border = 'none';
-        playerBody.appendChild(iframe);
+        embedFrameWrap.appendChild(iframe);
+
+        const openExternalBtn = createElement('button', {
+          type: 'button',
+          className: 'section-more',
+          text: 'Mo trinh phat ben ngoai',
+          style: {
+            position: 'relative',
+            zIndex: '30',
+            background: 'rgba(0,0,0,.65)',
+            borderColor: 'rgba(255,255,255,.35)',
+            color: '#fff'
+          }
+        });
+        openExternalBtn.addEventListener('click', () => {
+          window.open(source.url, '_blank', 'noopener,noreferrer');
+        });
+        embedFrameWrap.appendChild(openExternalBtn);
+        playerBody.appendChild(embedFrameWrap);
         playBtn.disabled = true;
         muteBtn.disabled = true;
         qualityBtn.disabled = true;
