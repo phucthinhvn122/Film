@@ -1,4 +1,4 @@
-﻿import { PLAYER_CONFIG, ROUTES, UI_TEXT } from './config.js';
+import { PLAYER_CONFIG, ROUTES, UI_TEXT } from './config.js';
 import { fetchMovieDetail, getFirstEpisode, requestManager } from './api.js';
 import { createElement, createErrorState, createLoaderState, stripHtml } from './dom.js';
 import { ServerMemoryStorage, StorageUtils, ProgressStorage } from './storage.js';
@@ -50,10 +50,11 @@ function resolvePlayableSource(episode, options = {}) {
   const m3u8 = String(episode?.linkM3u8 || '').trim();
   const embed = String(episode?.linkEmbed || '').trim();
   const forceEmbed = Boolean(options.forceEmbed);
+  const allowEmbed = Boolean(options.allowEmbed);
 
-  if (forceEmbed && embed) return { type: 'embed', url: embed, fallbackEmbed: '' };
-  if (m3u8) return { type: 'm3u8', url: m3u8, fallbackEmbed: embed };
-  if (embed) return { type: 'embed', url: embed, fallbackEmbed: '' };
+  if (forceEmbed && embed) return { type: 'embed', url: embed, embedUrl: '' };
+  if (m3u8) return { type: 'm3u8', url: m3u8, embedUrl: embed };
+  if (allowEmbed && embed) return { type: 'embed', url: embed, embedUrl: '' };
   return null;
 }
 
@@ -78,8 +79,8 @@ export async function renderWatchPage(ctx, params = {}) {
 
   if (!slug) {
     loading.innerHTML = '';
-    loading.appendChild(createErrorState('Khong tim thay phim can xem.', [
-      { label: 'Ve trang chu', onClick: () => ctx.navigate(ROUTES.HOME) }
+    loading.appendChild(createErrorState('Không tìm thấy phim cần xem.', [
+      { label: 'Về trang chủ', onClick: () => ctx.navigate(ROUTES.HOME) }
     ]));
     return { node: page, cleanup: () => requestManager.cancel('watch'), title: UI_TEXT.watch };
   }
@@ -94,7 +95,6 @@ export async function renderWatchPage(ctx, params = {}) {
   let activeSourceType = '';
   let currentSourceUrl = '';
   let activeEpisodeRef = null;
-  let sourceFallbackLocked = false;
   let qualityMode = 'auto';
   const removeListeners = [];
 
@@ -184,7 +184,7 @@ export async function renderWatchPage(ctx, params = {}) {
 
     const title = createElement('div', {
       className: 'watch-title',
-      text: `${detail.movie.name || 'Dang xem'} • ${selectedEpisode.name || ''}`
+      text: `${detail.movie.name || 'Đang xem'} • ${selectedEpisode.name || ''}`
     });
 
     const serverBadge = createElement('div', { className: 'watch-srv' }, [
@@ -239,7 +239,7 @@ export async function renderWatchPage(ctx, params = {}) {
       type: 'button',
       className: 'cb quality-btn',
       id: 'qualitybtn',
-      title: 'Chat luong'
+      title: 'Chất lượng'
     }, [
       createElement('i', { class: 'fa-solid fa-sliders', 'aria-hidden': 'true' })
     ]);
@@ -269,7 +269,7 @@ export async function renderWatchPage(ctx, params = {}) {
     const summary = createElement('div', { className: 'watch-card' }, [
       createElement('h1', { className: 'watch-info-title', text: detail.movie.name }),
       createElement('div', { className: 'watch-info-meta', text: `${detail.movie.year || ''} ${detail.movie.lang || ''}`.trim() }),
-      createElement('p', { className: 'watch-info-desc', text: detail.movie.content || 'Chua co mo ta.' })
+      createElement('p', { className: 'watch-info-desc', text: detail.movie.content || 'Chưa có mô tả.' })
     ]);
 
     const serverCard = createElement('div', { className: 'watch-content-align watch-card' });
@@ -280,7 +280,7 @@ export async function renderWatchPage(ctx, params = {}) {
         fontSize: '.88rem',
         fontWeight: '700'
       },
-      text: 'MAY CHU PHAT'
+      text: 'MÁY CHỦ PHÁT'
     }));
     const serverList = createElement('div', { className: 'watch-server-list' });
     serverCard.appendChild(serverList);
@@ -293,7 +293,7 @@ export async function renderWatchPage(ctx, params = {}) {
         fontSize: '.9rem',
         fontWeight: '700'
       },
-      text: 'TAP PHIM'
+      text: 'TẬP PHIM'
     }));
     const episodeGrid = createElement('div', { className: 'watch-ep-grid' });
     episodeCard.appendChild(episodeGrid);
@@ -323,8 +323,8 @@ export async function renderWatchPage(ctx, params = {}) {
       const items = Array.isArray(levels) ? levels : [];
       if (!items.length) {
         qmenu.appendChild(createElement('div', { className: 'qmenu-head' }, [
-          createElement('strong', { text: 'Chat luong' }),
-          createElement('span', { text: 'Tu dong' })
+          createElement('strong', { text: 'Chất lượng' }),
+          createElement('span', { text: 'Tự động' })
         ]));
         updateQualityLabel(activeSourceType === 'embed' ? 'Embed' : 'Auto');
         qualityBtn.disabled = activeSourceType !== 'm3u8';
@@ -333,12 +333,12 @@ export async function renderWatchPage(ctx, params = {}) {
 
       qualityBtn.disabled = false;
       qmenu.appendChild(createElement('div', { className: 'qmenu-head' }, [
-        createElement('strong', { text: 'Chat luong' }),
-        createElement('span', { text: 'Chon muc phat' })
+        createElement('strong', { text: 'Chất lượng' }),
+        createElement('span', { text: 'Chọn mức phát' })
       ]));
 
       const entries = [
-        { value: 'auto', label: 'Auto', meta: 'Tu dong toi uu' },
+        { value: 'auto', label: 'Auto', meta: 'Tự động tối ưu' },
         ...items
       ];
 
@@ -414,7 +414,6 @@ export async function renderWatchPage(ctx, params = {}) {
       activeServerName = server.name;
       activeEpisodeSlug = episode.slug;
       activeEpisodeRef = episode;
-      if (!forceEmbed) sourceFallbackLocked = false;
       ServerMemoryStorage.remember(detail.movie.slug, activeServerName);
       const query = new URLSearchParams({
         view: ROUTES.WATCH,
@@ -441,9 +440,22 @@ export async function renderWatchPage(ctx, params = {}) {
       const source = resolvePlayableSource(episode, { forceEmbed });
       playerBody.innerHTML = '';
       if (!source) {
-        playerBody.appendChild(createErrorState('Tap nay khong co nguon phat kha dung.', [
+        const embedOnly = String(episode?.linkEmbed || '').trim();
+        const actions = [
           { label: UI_TEXT.retry, onClick: () => mountSource(activeServerName, activeEpisodeSlug) }
-        ]));
+        ];
+        if (embedOnly) {
+          actions.push({
+            label: 'Mở nguồn nhúng',
+            onClick: () => mountSource(activeServerName, activeEpisodeSlug, { preserveTime: false, forceEmbed: true })
+          });
+        }
+        playerBody.appendChild(createErrorState(
+          embedOnly
+            ? 'Nguồn M3U8 không có sẵn. Bạn có thể thử nguồn nhúng.'
+            : 'Tập này không có nguồn phát khả dụng.',
+          actions
+        ));
         return;
       }
 
@@ -562,10 +574,17 @@ export async function renderWatchPage(ctx, params = {}) {
         }
       });
       bind(video, 'error', () => {
-        if (source.fallbackEmbed && !sourceFallbackLocked) {
-          sourceFallbackLocked = true;
-          mountSource(activeServerName, activeEpisodeSlug, { preserveTime: false, forceEmbed: true });
+        const actions = [
+          { label: UI_TEXT.retry, onClick: () => mountSource(activeServerName, activeEpisodeSlug) }
+        ];
+        if (source.embedUrl) {
+          actions.push({
+            label: 'Mở nguồn nhúng',
+            onClick: () => mountSource(activeServerName, activeEpisodeSlug, { preserveTime: false, forceEmbed: true })
+          });
         }
+        playerBody.innerHTML = '';
+        playerBody.appendChild(createErrorState('Nguồn M3U8 bị lỗi hoặc bị chặn.', actions));
       });
 
       if (video.canPlayType('application/vnd.apple.mpegurl')) {
@@ -723,11 +742,11 @@ export async function renderWatchPage(ctx, params = {}) {
     loading.innerHTML = '';
     loading.appendChild(createErrorState(
       error.message === 'NO_PLAYABLE_EPISODE'
-        ? 'Phim nay hien chua co tap de phat.'
-        : 'Khong the mo trang xem phim.',
+        ? 'Phim này hiện chưa có tập để phát.'
+        : 'Không thể mở trang xem phim.',
       [
         { label: UI_TEXT.retry, onClick: () => ctx.navigate(ROUTES.WATCH, { slug, epSlug: requestedEp, server: requestedServer }, { replace: true }) },
-        { label: 'Ve chi tiet', onClick: () => ctx.navigate(ROUTES.DETAIL, { slug }) }
+        { label: 'Về chi tiết', onClick: () => ctx.navigate(ROUTES.DETAIL, { slug }) }
       ]
     ));
 

@@ -1,4 +1,4 @@
-﻿import { IMG_FALLBACK } from './config.js';
+import { IMG_FALLBACK } from './config.js';
 
 export const SELECTORS = {
   main: '#main',
@@ -102,7 +102,7 @@ export function createEmptyState(message = 'Khong co du lieu.') {
   ]);
 }
 
-export function createErrorState(message = 'Da co loi xay ra.', actions = []) {
+export function createErrorState(message = 'Đã có lỗi xảy ra.', actions = []) {
   const wrap = createElement('div', { className: 'empty' }, [
     createElement('i', { class: 'fa-solid fa-triangle-exclamation', 'aria-hidden': 'true' }),
     createElement('p', { text: message })
@@ -206,8 +206,8 @@ export function createMovieCard(movie, options = {}) {
     const favButton = createElement('button', {
       type: 'button',
       className: `fav-btn${options.isFavorite ? ' on' : ''}`,
-      'aria-label': options.isFavorite ? 'Bo yeu thich' : 'Them yeu thich',
-      title: options.isFavorite ? 'Bo yeu thich' : 'Them yeu thich'
+      'aria-label': options.isFavorite ? 'Bỏ yêu thích' : 'Thêm yêu thích',
+      title: options.isFavorite ? 'Bỏ yêu thích' : 'Thêm yêu thích'
     }, [createElement('i', { class: 'fa-solid fa-heart', 'aria-hidden': 'true' })]);
 
     favButton.addEventListener('click', (event) => {

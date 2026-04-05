@@ -126,23 +126,19 @@ async function fetchJSON(url, {
   }
 }
 
-export function buildImageProxyUrl(url = '', opts = {}) {
+export function buildImageProxyUrl(url = '') {
   const target = String(url || '').trim();
   if (!target) return IMG_FALLBACK;
   if (target.startsWith('data:')) return target;
-
   return target;
 }
 
-function resolveImageUrl(value = '', imageBase = '') {
+function resolveImageUrl(value = '') {
   const raw = String(value || '').trim();
   if (!raw) return IMG_FALLBACK;
   if (raw.startsWith('http://') || raw.startsWith('https://')) return buildImageProxyUrl(raw);
   if (raw.startsWith('//')) return buildImageProxyUrl(`https:${raw}`);
-
-  const base = String(imageBase || '').replace(/\/+$/, '');
-  const suffix = raw.replace(/^\/+/, '');
-  return buildImageProxyUrl(base ? `${base}/${suffix}` : raw);
+  return buildImageProxyUrl(raw);
 }
 
 function normalizeCategories(category) {
@@ -155,7 +151,6 @@ function normalizeCategories(category) {
       .filter((item) => item.slug || item.name);
   }
 
-  // New NguonC schema: category is an object keyed by group id
   if (category && typeof category === 'object') {
     const groups = Object.values(category);
     const flat = [];
@@ -173,10 +168,15 @@ function normalizeCategories(category) {
   return [];
 }
 
-export function normalizeMovie(item = {}, imageBase = '') {
+export function normalizeMovie(item = {}) {
   const name = String(item.name || '').trim();
   const originName = String(item.origin_name || item.original_name || '').trim();
   const contentText = stripHtml(item.content || item.description || '');
+
+  // VSMov: poster_url = thumbnail (small), thumb_url = poster (large)
+  // We swap them so that 'thumb' = small card image, 'poster' = large hero/detail image
+  const rawThumb = String(item.poster_url || '').trim();
+  const rawPoster = String(item.thumb_url || item.poster_url || '').trim();
 
   return {
     slug: String(item.slug || '').trim(),
@@ -190,8 +190,8 @@ export function normalizeMovie(item = {}, imageBase = '') {
     lang: String(item.lang || item.language || '').trim(),
     type: String(item.type || '').trim(),
     country: String(item.country?.[0]?.name || item.nation?.[0]?.name || '').trim(),
-    thumb: resolveImageUrl(item.thumb_url, imageBase),
-    poster: resolveImageUrl(item.poster_url || item.thumb_url, imageBase),
+    thumb: resolveImageUrl(rawThumb),
+    poster: resolveImageUrl(rawPoster),
     categories: normalizeCategories(item.category),
     content: contentText,
     searchText: `${name} ${originName} ${contentText}`.toLowerCase(),
@@ -200,18 +200,22 @@ export function normalizeMovie(item = {}, imageBase = '') {
 }
 
 export function normalizeMovieListResponse(payload = {}) {
-  const dataRoot = payload?.data && typeof payload.data === 'object' ? payload.data : payload;
-  const imageBase = String(dataRoot.pathImage || dataRoot.APP_DOMAIN_CDN_IMAGE || '').trim();
-  const items = Array.isArray(dataRoot.items) ? dataRoot.items : [];
+  // VSMov returns { status, items, pathImage, pagination }
+  const items = Array.isArray(payload?.items)
+    ? payload.items
+    : Array.isArray(payload?.data?.items)
+      ? payload.data.items
+      : [];
 
   return {
-    items: items.map((item) => normalizeMovie(item, imageBase)).filter((item) => item.slug),
-    imageBase,
-    pagination: dataRoot?.params?.pagination || dataRoot?.pagination || null
+    items: items.map((item) => normalizeMovie(item)).filter((item) => item.slug),
+    imageBase: '',
+    pagination: payload?.pagination || payload?.data?.pagination || null
   };
 }
 
 function normalizeEpisodeServer(server = {}) {
+  // VSMov uses server_data, NguonC used items
   const list = Array.isArray(server.server_data)
     ? server.server_data
     : Array.isArray(server.items)
@@ -222,7 +226,7 @@ function normalizeEpisodeServer(server = {}) {
     name: String(server.server_name || server.name || '').trim() || 'Server',
     items: list
       .map((ep) => ({
-        name: String(ep.name || '').trim() || 'Tap',
+        name: String(ep.name || '').trim() || 'Tập',
         slug: String(ep.slug || '').trim(),
         linkM3u8: String(ep.link_m3u8 || ep.m3u8 || '').trim(),
         linkEmbed: String(ep.link_embed || ep.embed || '').trim()
@@ -232,9 +236,9 @@ function normalizeEpisodeServer(server = {}) {
 }
 
 export function normalizeMovieDetailResponse(payload = {}) {
-  const dataRoot = payload?.movie || payload?.data?.movie || payload?.data || payload || {};
-  const imageBase = String(payload?.pathImage || payload?.data?.APP_DOMAIN_CDN_IMAGE || payload?.data?.pathImage || '').trim();
-  const movie = normalizeMovie(dataRoot, imageBase);
+  // VSMov: { status, movie, episodes }
+  const movieRaw = payload?.movie || payload?.data?.movie || payload?.data || payload || {};
+  const movie = normalizeMovie(movieRaw);
 
   const episodesRaw = Array.isArray(payload?.episodes)
     ? payload.episodes
@@ -242,9 +246,7 @@ export function normalizeMovieDetailResponse(payload = {}) {
       ? payload.movie.episodes
       : Array.isArray(payload?.data?.episodes)
         ? payload.data.episodes
-        : Array.isArray(payload?.data?.movie?.episodes)
-          ? payload.data.movie.episodes
-          : [];
+        : [];
 
   const episodes = episodesRaw
     .map(normalizeEpisodeServer)
@@ -253,7 +255,7 @@ export function normalizeMovieDetailResponse(payload = {}) {
   return {
     movie,
     episodes,
-    imageBase
+    imageBase: ''
   };
 }
 
@@ -382,7 +384,7 @@ export async function fetchTmdbMeta(title, year, { signal, force = false } = {})
             id: actor?.id || null,
             name: String(actor?.name || ''),
             character: String(actor?.character || ''),
-            avatar: actor?.avatar ? buildImageProxyUrl(actor.avatar, { width: 185, quality: 72 }) : ''
+            avatar: actor?.avatar ? buildImageProxyUrl(actor.avatar) : ''
           })).filter((actor) => actor.name)
         : []
     };
@@ -405,8 +407,8 @@ function mapLegacyCategory(input = []) {
     .filter((item) => item.slug || item.name);
 }
 
-function normalizeLegacyMovie(movie = {}, imageBase = '') {
-  const normalized = normalizeMovie(movie, imageBase);
+function normalizeLegacyMovie(movie = {}) {
+  const normalized = normalizeMovie(movie);
   return {
     slug: normalized.slug,
     name: normalized.name,
@@ -440,7 +442,7 @@ function normalizeLegacyDetail(detail = {}) {
 
   return {
     movie: {
-      ...normalizeLegacyMovie(movie, detail.imageBase || ''),
+      ...normalizeLegacyMovie(movie),
       episodes: episodes.map((server) => ({
         server_name: server?.name || 'Server',
         items: Array.isArray(server?.items)
@@ -464,20 +466,19 @@ function normalizeLegacyDetail(detail = {}) {
           }))
         : []
     })),
-    pathImage: detail.imageBase || ''
+    pathImage: ''
   };
 }
 
 export const DataNormalizer = {
-  normalizeMovie(movie = {}, imageBase = '') {
-    return normalizeLegacyMovie(movie, imageBase);
+  normalizeMovie(movie = {}) {
+    return normalizeLegacyMovie(movie);
   },
 
   normalizeItems(payload = {}) {
     if (Array.isArray(payload)) return payload.map((item) => normalizeLegacyMovie(item));
     const items = Array.isArray(payload?.items) ? payload.items : [];
-    const imageBase = String(payload?.imageBase || payload?.pathImage || '').trim();
-    return items.map((item) => normalizeLegacyMovie(item, imageBase));
+    return items.map((item) => normalizeLegacyMovie(item));
   }
 };
 
@@ -500,6 +501,3 @@ export const movieSourceClient = {
     return fetchHomeLatest(page, { force, signal: options?.signal });
   }
 };
-
-
-

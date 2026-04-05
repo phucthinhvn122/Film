@@ -45,11 +45,11 @@ function createHero(movie, onOpen) {
     createElement('h1', { className: 'hero-title', text: movie?.name || 'Netflix' }),
     createElement('p', {
       className: 'hero-sub',
-      text: movie?.originName || movie?.episodeCurrent || 'Kho phim cap nhat lien tuc'
+      text: movie?.originName || movie?.episodeCurrent || 'Kho phim cập nhật liên tục'
     }),
     createElement('p', {
       className: 'hero-desc',
-      text: movie?.content || 'Kham pha cac bo phim moi va danh sach noi dung noi bat.'
+      text: movie?.content || 'Khám phá các bộ phim mới và danh sách nội dung nổi bật.'
     })
   ]);
 
@@ -96,7 +96,7 @@ function fillCards(grid, movies, ctx) {
       onOpen: (pickedMovie) => ctx.navigate(ROUTES.DETAIL, { slug: pickedMovie.slug }),
       onFavoriteToggle: () => {
         const added = FavoritesStorage.toggle(movie);
-        ctx.toast(added ? 'Da them vao yeu thich' : 'Da bo khoi yeu thich');
+        ctx.toast(added ? 'Đã thêm vào yêu thích' : 'Đã bỏ khỏi yêu thích');
         card.querySelector('.fav-btn')?.classList.toggle('on', added);
       }
     });
@@ -108,7 +108,7 @@ function renderContinueRow(ctx) {
   const items = ContinueWatchingStorage.list();
   if (!items.length) return null;
 
-  const section = createRowSection(UI_TEXT.continueWatching, 'Tiep tuc tu thoi diem ban dang xem gan nhat');
+  const section = createRowSection(UI_TEXT.continueWatching, 'Tiếp tục từ thời điểm bạn đang xem gần nhất');
   const row = createElement('div', { className: 'movie-row movie-row-history' });
 
   items.forEach((item) => {
@@ -200,10 +200,10 @@ export async function renderHomePage(ctx) {
 
     const map = [
       { result: latestResult, key: 'latest', subtitle: 'Các tựa phim vừa được cập nhật' },
-      { result: seriesResult, key: 'phim-bo', subtitle: 'Theo doi tap moi nhat moi ngay' },
-      { result: movieResult, key: 'phim-le', subtitle: 'Phim le hap dan chon loc' },
-      { result: animeResult, key: 'hoat-hinh', subtitle: 'Kho anime va hoat hinh noi bat' },
-      { result: tvResult, key: 'tv-shows', subtitle: 'Chuong trinh truyen hinh thinh hanh' }
+      { result: seriesResult, key: 'phim-bo', subtitle: 'Theo dõi tập mới nhất mỗi ngày' },
+      { result: movieResult, key: 'phim-le', subtitle: 'Phim lẻ hấp dẫn chọn lọc' },
+      { result: animeResult, key: 'hoat-hinh', subtitle: 'Kho anime và hoạt hình nổi bật' },
+      { result: tvResult, key: 'tv-shows', subtitle: 'Chương trình truyền hình thịnh hành' }
     ];
 
     map.forEach((item) => {
@@ -212,7 +212,7 @@ export async function renderHomePage(ctx) {
         item.subtitle,
         item.key !== 'latest'
           ? {
-              actionLabel: 'Xem tat ca',
+              actionLabel: 'Xem tất cả',
               onAction: () => ctx.navigate(ROUTES.SEARCH, { q: `category:${item.key}` })
             }
           : undefined
@@ -223,7 +223,7 @@ export async function renderHomePage(ctx) {
       if (item.result.status === 'fulfilled') {
         fillCards(grid, item.result.value.items, ctx);
       } else {
-        grid.appendChild(createErrorState('Khong the tai danh sach nay. Ban co the thu lai sau.'));
+        grid.appendChild(createErrorState('Không thể tải danh sách này. Bạn có thể thử lại sau.'));
       }
 
       sectionsWrap.appendChild(section);
@@ -237,7 +237,7 @@ export async function renderHomePage(ctx) {
   } catch (error) {
     rowsContainer.innerHTML = '';
     rowsContainer.appendChild(createErrorState(UI_TEXT.networkError, [
-      { label: 'Thu lai', onClick: () => ctx.navigate(ROUTES.HOME, {}, { replace: true }) }
+      { label: 'Thử lại', onClick: () => ctx.navigate(ROUTES.HOME, {}, { replace: true }) }
     ]));
 
     return {

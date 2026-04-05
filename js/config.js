@@ -1,28 +1,28 @@
 export const BRAND = {
   name: 'Netflix',
   fullName: 'Netflix Streaming',
-  tagline: 'Nen tang xem phim truc tuyen on dinh va cap nhat nhanh',
-  shortDescription: 'Xem phim truc tuyen chat luong cao voi giao dien gon gang.'
+  tagline: 'Nền tảng xem phim trực tuyến ổn định và cập nhật nhanh',
+  shortDescription: 'Xem phim trực tuyến chất lượng cao với giao diện gọn gàng.'
 };
 
 export const API_SOURCE = {
-  name: 'NguonPhim',
-  latest: 'https://phim.nguonc.com/api/films/phim-moi-cap-nhat?page=',
-  detail: 'https://phim.nguonc.com/api/film/',
-  search: 'https://phim.nguonc.com/api/films/search?keyword=',
+  name: 'VSMov',
+  latest: 'https://vsmov.com/api/danh-sach/phim-moi-cap-nhat?page=',
+  detail: 'https://vsmov.com/api/phim/',
+  search: 'https://vsmov.com/api/tim-kiem?keyword=',
   categories: {
-    'phim-bo': 'https://phim.nguonc.com/api/films/danh-sach/phim-bo?page=',
-    'phim-le': 'https://phim.nguonc.com/api/films/danh-sach/phim-le?page=',
-    'hoat-hinh': 'https://phim.nguonc.com/api/films/danh-sach/hoat-hinh?page=',
-    'tv-shows': 'https://phim.nguonc.com/api/films/danh-sach/tv-shows?page='
+    'phim-bo': 'https://vsmov.com/api/danh-sach?type=series&page=',
+    'phim-le': 'https://vsmov.com/api/danh-sach?type=single&page=',
+    'hoat-hinh': 'https://vsmov.com/api/danh-sach?type=hoathinh&page=',
+    'tv-shows': 'https://vsmov.com/api/danh-sach?type=tvshows&page='
   }
 };
 
 export const CATEGORY_LABELS = {
   latest: 'Mới cập nhật',
-  'phim-bo': 'Phim bo',
-  'phim-le': 'Phim le',
-  'hoat-hinh': 'Anime / Hoat hinh',
+  'phim-bo': 'Phim bộ',
+  'phim-le': 'Phim lẻ',
+  'hoat-hinh': 'Anime / Hoạt hình',
   'tv-shows': 'TV Show'
 };
 
@@ -84,17 +84,17 @@ export const PLAYER_CONFIG = {
 };
 
 export const UI_TEXT = {
-  loading: 'Dang tai du lieu...',
-  loadingMeta: 'Dang tai metadata phim...',
-  noData: 'Khong co du lieu de hien thi.',
-  networkError: 'Khong the ket noi may chu. Vui long thu lai.',
-  ERROR: 'Da co loi xay ra.',
-  retry: 'Thu lai',
-  favorites: 'Yeu thich',
-  history: 'Lich su',
-  continueWatching: 'Tiep tuc xem',
-  home: 'Trang chu',
-  search: 'Tim kiem',
+  loading: 'Đang tải dữ liệu...',
+  loadingMeta: 'Đang tải metadata phim...',
+  noData: 'Không có dữ liệu để hiển thị.',
+  networkError: 'Không thể kết nối máy chủ. Vui lòng thử lại.',
+  ERROR: 'Đã có lỗi xảy ra.',
+  retry: 'Thử lại',
+  favorites: 'Yêu thích',
+  history: 'Lịch sử',
+  continueWatching: 'Tiếp tục xem',
+  home: 'Trang chủ',
+  search: 'Tìm kiếm',
   watch: 'Xem phim',
   detail: 'Chi tiết phim'
 };
@@ -111,7 +111,3 @@ export const ROUTES = {
 export const IMG_FALLBACK = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='300'><rect width='100%' height='100%' fill='%23222222'/><text x='50%25' y='50%25' fill='%23999999' font-size='14' text-anchor='middle' dominant-baseline='middle'>No Image</text></svg>";
 
 export const DEFAULT_PAGE_SIZE = 24;
-
-
-
-

@@ -44,7 +44,7 @@ export class DetailPage extends BasePage {
       const movie = detail?.movie;
       if (!movie?.slug) {
         page.innerHTML = '';
-        page.appendChild(createErrorState('Khong tim thay thong tin phim.'));
+        page.appendChild(createErrorState('Không tìm thấy thông tin phim.'));
         return page;
       }
 
@@ -72,7 +72,7 @@ export class DetailPage extends BasePage {
     });
 
     const info = createElement('div', { className: 'detail-info' });
-    info.appendChild(createElement('h1', { text: movie.name || 'Khong ro ten' }));
+    info.appendChild(createElement('h1', { text: movie.name || 'Không rõ tên' }));
 
     if (movie.originName && movie.originName !== movie.name) {
       info.appendChild(createElement('div', { className: 'detail-origin', text: movie.originName }));
@@ -86,7 +86,7 @@ export class DetailPage extends BasePage {
 
     const desc = createElement('p', {
       className: 'detail-desc',
-      text: stripHtml(movie.content || '') || 'Dang cap nhat noi dung.'
+      text: stripHtml(movie.content || '') || 'Đang cập nhật nội dung.'
     });
     info.appendChild(desc);
 
@@ -94,12 +94,12 @@ export class DetailPage extends BasePage {
     const favBtn = createElement('button', {
       type: 'button',
       className: 'btn btn-gray',
-      text: FavoritesStorage.isFavorite(movie.slug) ? 'Da thich' : 'Them yeu thich'
+      text: FavoritesStorage.isFavorite(movie.slug) ? 'Đã thích' : 'Thêm yêu thích'
     });
     favBtn.addEventListener('click', () => {
       const added = FavoritesStorage.toggle(movie);
-      favBtn.textContent = added ? 'Da thich' : 'Them yeu thich';
-      toast(added ? 'Da them vao yeu thich' : 'Da bo khoi yeu thich');
+      favBtn.textContent = added ? 'Đã thích' : 'Thêm yêu thích';
+      toast(added ? 'Đã thêm vào yêu thích' : 'Đã bỏ khỏi yêu thích');
     });
 
     const watchBtn = createElement('button', {
@@ -110,7 +110,7 @@ export class DetailPage extends BasePage {
     watchBtn.addEventListener('click', () => {
       const picked = firstPlayableEpisode(episodes);
       if (!picked) {
-        toast('Phim nay chua co nguon phat.');
+        toast('Phim này chưa có nguồn phát.');
         return;
       }
 

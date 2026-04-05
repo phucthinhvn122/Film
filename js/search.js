@@ -7,12 +7,13 @@ import {
   createEmptyState,
   createErrorState,
   createMovieCard,
-  createSkeletonGrid
+  createSkeletonGrid,
+  toast
 } from './dom.js';
-import { syncSearchInputValue } from './ui.js';
+import { FavoritesStorage } from './storage.js';
 
-function normalizeQuery(value = '') {
-  return String(value || '').trim();
+function normalizeQuery(raw = '') {
+  return String(raw || '').trim();
 }
 
 function categoryLabel(query = '') {
@@ -22,11 +23,11 @@ function categoryLabel(query = '') {
 
   switch (key) {
     case 'phim-bo':
-      return 'Phim b?';
+      return 'Phim bộ';
     case 'phim-le':
-      return 'Phim l?';
+      return 'Phim lẻ';
     case 'hoat-hinh':
-      return 'Ho?t h�nh';
+      return 'Hoạt hình';
     case 'tv-shows':
       return 'TV Shows';
     default:
@@ -46,25 +47,70 @@ export class SearchPage extends BasePage {
     this.currentQuery = query;
 
     const page = createElement('section', { className: 'search-page' });
-
-    const hero = createElement('div', { className: 'search-hero' }, [
-      createElement('h2', { className: 'search-title', text: query ? 'K?t qu? t�m ki?m' : UI_TEXT.search }),
-      createElement('p', {
-        className: 'search-subtitle',
-        text: query
-          ? (categoryLabel(query) ? `Danh m?c: ${categoryLabel(query)}` : `T? kh�a: "${query}"`)
-          : 'Nh?p t? kh�a d? t�m phim'
-      })
-    ]);
-
-    const content = createElement('div', { className: 'search-content' });
-
-    page.appendChild(hero);
+    const content = createElement('div');
     page.appendChild(content);
 
+    const header = createElement('div', { className: 'search-results-header search-hero' }, [
+      createElement('h2', { className: 'search-title', text: query ? 'Kết quả tìm kiếm' : 'Tìm kiếm' }),
+      createElement('span', { className: 'search-meta', text: query
+        ? (query.startsWith('category:')
+          ? `Danh mục: ${categoryLabel(query)}`
+          : `Từ khóa: "${query}"`)
+        : 'Nhập từ khóa để tìm phim'
+      })
+    ]);
+    content.appendChild(header);
+
+    const form = createElement('form', { className: 'search-form' });
+    const input = createElement('input', {
+      type: 'text',
+      className: 'search-input',
+      placeholder: 'Nhập tên phim...',
+      value: query,
+      autocomplete: 'off'
+    });
+    const submitBtn = createElement('button', {
+      type: 'submit',
+      className: 'section-more',
+      text: 'Tìm kiếm'
+    });
+    form.appendChild(input);
+    form.appendChild(submitBtn);
+    content.appendChild(form);
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const value = normalizeQuery(input.value);
+      if (value.length >= SEARCH_CONFIG.MIN_LENGTH) {
+        SearchStorage.pushRecent(value);
+        router.navigate(ROUTES.SEARCH, { q: value }, true);
+      }
+    });
+
     if (!query) {
-      content.appendChild(this.createSearchForm());
-      content.appendChild(this.createRecentSection());
+      const recent = SearchStorage.recent();
+      if (recent.length) {
+        const recentSection = createElement('section', { className: 'search-section' });
+        const recentTitle = createElement('div', {
+          className: 'section-title',
+          text: 'Tìm kiếm gần đây',
+          style: { marginBottom: '10px', marginTop: '16px' }
+        });
+        recentSection.appendChild(recentTitle);
+
+        const chips = createElement('div', { className: 'search-suggestions' });
+        recent.forEach((term) => {
+          const chip = createElement('button', {
+            type: 'button',
+            className: 'suggestion-item',
+            text: term
+          });
+          chip.addEventListener('click', () => router.navigate(ROUTES.SEARCH, { q: term }, true));
+          chips.appendChild(chip);
+        });
+        recentSection.appendChild(chips);
+        content.appendChild(recentSection);
+      }
       return page;
     }
 
@@ -72,106 +118,50 @@ export class SearchPage extends BasePage {
     return page;
   }
 
-  createSearchForm() {
-    const wrap = createElement('div', { className: 'search-toolbar' });
-    const form = createElement('form', { className: 'search-form' });
-    const input = createElement('input', {
-      type: 'text',
-      value: this.currentQuery,
-      placeholder: 'Nh?p t�n phim...',
-      autocomplete: 'off'
-    });
-
-    const button = createElement('button', {
-      type: 'submit',
-      className: 'toolbar-btn',
-      text: 'T�m ki?m'
-    });
-
-    form.addEventListener('submit', (event) => {
-      event.preventDefault();
-      const keyword = normalizeQuery(input.value);
-      if (keyword.length > 0 && keyword.length < SEARCH_CONFIG.MIN_LENGTH) {
-        input.focus();
-        return;
-      }
-      router.navigate(ROUTES.SEARCH, { q: keyword });
-    });
-
-    form.appendChild(input);
-    form.appendChild(button);
-    wrap.appendChild(form);
-    return wrap;
-  }
-
-  createRecentSection() {
-    const recent = SearchStorage.recent();
-    if (!recent.length) return createElement('div');
-
-    const section = createElement('section', { className: 'search-section' });
-    section.appendChild(createElement('h3', { text: 'T�m ki?m g?n d�y' }));
-
-    const row = createElement('div', { className: 'search-keywords' });
-    recent.forEach((keyword) => {
-      const chip = createElement('button', {
-        type: 'button',
-        className: 'search-keyword',
-        text: keyword
-      });
-      chip.addEventListener('click', () => {
-        router.navigate(ROUTES.SEARCH, { q: keyword });
-      });
-      row.appendChild(chip);
-    });
-
-    section.appendChild(row);
-    return section;
-  }
-
   async renderResults(query, content) {
-    content.innerHTML = '';
     content.appendChild(createSkeletonGrid(12));
 
     this.abortController = requestManager.next('search');
 
     try {
       const payload = await searchMovies(query, { signal: this.abortController.signal });
-      if (this.abortController.signal.aborted) return;
+      const items = (payload && Array.isArray(payload?.items)) ? payload.items : [];
 
-      const items = Array.isArray(payload?.items) ? payload.items : [];
-      SearchStorage.pushRecent(query);
-
-      content.innerHTML = '';
+      // Remove skeleton
+      const skeleton = content.querySelector('.search-skeleton');
+      if (skeleton) skeleton.remove();
 
       if (!items.length) {
-        content.appendChild(createEmptyState('Kh�ng t�m th?y phim ph� h?p.'));
+        content.appendChild(createEmptyState('Không tìm thấy phim phù hợp.'));
         return;
       }
 
-      const header = createElement('div', { className: 'search-results-header' }, [
-        createElement('div', { className: 'results-info' }, [
-          createElement('span', { className: 'results-count', text: `${items.length} k?t qu?` })
-        ])
+      const resultsInfo = createElement('div', { className: 'results-info' }, [
+        createElement('span', { className: 'results-count', text: `${items.length} kết quả` })
       ]);
-      content.appendChild(header);
+      content.appendChild(resultsInfo);
 
       const grid = createElement('div', { className: 'search-grid' });
       items.forEach((movie) => {
         const card = createMovieCard(movie, {
-          onOpen: (pickedMovie) => router.navigate(ROUTES.DETAIL, { slug: pickedMovie.slug })
+          isFavorite: FavoritesStorage.isFavorite(movie.slug),
+          onOpen: (pickedMovie) => router.navigate(ROUTES.DETAIL, { slug: pickedMovie.slug }),
+          onFavoriteToggle: () => {
+            const added = FavoritesStorage.toggle(movie);
+            toast(added ? 'Đã thêm vào yêu thích' : 'Đã bỏ khỏi yêu thích');
+            card.querySelector('.fav-btn')?.classList.toggle('on', added);
+          }
         });
         grid.appendChild(card);
       });
-
       content.appendChild(grid);
     } catch (_) {
-      content.innerHTML = '';
-      content.appendChild(createErrorState(UI_TEXT.networkError, [
-        {
-          label: UI_TEXT.retry,
-          onClick: () => router.navigate(ROUTES.SEARCH, { q: query }, true)
-        }
-      ]));
+      const skeleton = content.querySelector('.search-skeleton');
+      if (skeleton) skeleton.remove();
+      content.appendChild(createErrorState(UI_TEXT.networkError, [{
+        label: UI_TEXT.retry,
+        onClick: () => router.navigate(ROUTES.SEARCH, { q: query }, true)
+      }]));
     }
   }
 
@@ -189,9 +179,15 @@ export class SearchPage extends BasePage {
         // ignore
       }
     }
-
     await super.unmount();
   }
+}
+
+function syncSearchInputValue(query = '') {
+  const desktopInput = document.querySelector('#q');
+  const mobileInput = document.querySelector('#q-mob');
+  if (desktopInput) desktopInput.value = query;
+  if (mobileInput) mobileInput.value = query;
 }
 
 export default SearchPage;
