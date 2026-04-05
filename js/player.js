@@ -50,11 +50,10 @@ function resolvePlayableSource(episode, options = {}) {
   const m3u8 = String(episode?.linkM3u8 || '').trim();
   const embed = String(episode?.linkEmbed || '').trim();
   const forceEmbed = Boolean(options.forceEmbed);
-  const allowEmbed = Boolean(options.allowEmbed);
 
   if (forceEmbed && embed) return { type: 'embed', url: embed, embedUrl: '' };
   if (m3u8) return { type: 'm3u8', url: m3u8, embedUrl: embed };
-  if (allowEmbed && embed) return { type: 'embed', url: embed, embedUrl: '' };
+  if (embed) return { type: 'embed', url: embed, embedUrl: '' };
   return null;
 }
 
