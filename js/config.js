@@ -5,16 +5,19 @@ export const BRAND = {
   shortDescription: 'Xem phim trực tuyến chất lượng cao với giao diện gọn gàng.'
 };
 
+const IS_LOCAL = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+const API_BASE = IS_LOCAL ? 'https://vsmov.com/api' : '/api/vsmov';
+
 export const API_SOURCE = {
   name: 'VSMov',
-  latest: 'https://vsmov.com/api/danh-sach/phim-moi-cap-nhat?page=',
-  detail: 'https://vsmov.com/api/phim/',
-  search: 'https://vsmov.com/api/tim-kiem?keyword=',
+  latest: `${API_BASE}/danh-sach/phim-moi-cap-nhat?page=`,
+  detail: `${API_BASE}/phim/`,
+  search: `${API_BASE}/tim-kiem?keyword=`,
   categories: {
-    'phim-bo': 'https://vsmov.com/api/danh-sach?type=series&page=',
-    'phim-le': 'https://vsmov.com/api/danh-sach?type=single&page=',
-    'hoat-hinh': 'https://vsmov.com/api/danh-sach?type=hoathinh&page=',
-    'tv-shows': 'https://vsmov.com/api/danh-sach?type=tvshows&page='
+    'phim-bo': `${API_BASE}/danh-sach?type=series&page=`,
+    'phim-le': `${API_BASE}/danh-sach?type=single&page=`,
+    'hoat-hinh': `${API_BASE}/danh-sach?type=hoathinh&page=`,
+    'tv-shows': `${API_BASE}/danh-sach?type=tvshows&page=`
   }
 };
 
