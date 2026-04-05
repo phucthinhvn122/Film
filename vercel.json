@@ -1,6 +1,6 @@
 {
   "rewrites": [
-    { "source": "/api/vsmov/:path*", "destination": "/api/vsmov/:path*" },
+    { "source": "/api/vsmov/:path*", "destination": "/api/vsmov/[...path]?path=:path*" },
     { "source": "/img-proxy", "destination": "/api/img-proxy" },
     { "source": "/api/tmdb-meta", "destination": "/api/tmdb-meta" }
   ],
