@@ -1,4 +1,4 @@
-﻿import { BasePage, router } from './router.js';
+import { BasePage, router } from './router.js';
 import { ROUTES, UI_TEXT } from './config.js';
 import { fetchMovieDetail, requestManager } from './api.js';
 import {
@@ -50,7 +50,7 @@ export class DetailPage extends BasePage {
 
       page.innerHTML = '';
       page.appendChild(this.buildLayout(movie, detail.episodes || []));
-      this.setTitle(movie.name || 'Chi tiet phim');
+      this.setTitle(movie.name || 'Chi tiết phim');
       return page;
     } catch (_) {
       page.innerHTML = '';

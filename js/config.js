@@ -1,4 +1,4 @@
-﻿export const BRAND = {
+export const BRAND = {
   name: 'Netflix',
   fullName: 'Netflix Streaming',
   tagline: 'Nen tang xem phim truc tuyen on dinh va cap nhat nhanh',
@@ -19,7 +19,7 @@ export const API_SOURCE = {
 };
 
 export const CATEGORY_LABELS = {
-  latest: 'Moi cap nhat',
+  latest: 'Mới cập nhật',
   'phim-bo': 'Phim bo',
   'phim-le': 'Phim le',
   'hoat-hinh': 'Anime / Hoat hinh',
@@ -96,7 +96,7 @@ export const UI_TEXT = {
   home: 'Trang chu',
   search: 'Tim kiem',
   watch: 'Xem phim',
-  detail: 'Chi tiet phim'
+  detail: 'Chi tiết phim'
 };
 
 export const ROUTES = {

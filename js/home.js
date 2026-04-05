@@ -1,4 +1,4 @@
-﻿import { CATEGORY_LABELS, DEFAULT_PAGE_SIZE, ROUTES, UI_TEXT } from './config.js';
+import { CATEGORY_LABELS, DEFAULT_PAGE_SIZE, ROUTES, UI_TEXT } from './config.js';
 import { requestManager, fetchHomeLatest, fetchCategory } from './api.js';
 import { BasePage, router } from './router.js';
 import {
@@ -70,7 +70,7 @@ function createHero(movie, onOpen) {
     className: 'btn btn-gray'
   }, [
     createElement('i', { class: 'fa-solid fa-circle-info', 'aria-hidden': 'true' }),
-    createElement('span', { text: 'Chi tiet' })
+    createElement('span', { text: 'Chi tiết' })
   ]);
   detailBtn.addEventListener('click', () => {
     if (movie?.slug) onOpen(movie.slug);
@@ -199,7 +199,7 @@ export async function renderHomePage(ctx) {
     if (historyRow) sectionsWrap.appendChild(historyRow);
 
     const map = [
-      { result: latestResult, key: 'latest', subtitle: 'Cac tua phim vua duoc cap nhat' },
+      { result: latestResult, key: 'latest', subtitle: 'Các tựa phim vừa được cập nhật' },
       { result: seriesResult, key: 'phim-bo', subtitle: 'Theo doi tap moi nhat moi ngay' },
       { result: movieResult, key: 'phim-le', subtitle: 'Phim le hap dan chon loc' },
       { result: animeResult, key: 'hoat-hinh', subtitle: 'Kho anime va hoat hinh noi bat' },
