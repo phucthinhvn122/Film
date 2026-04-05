@@ -4,7 +4,8 @@ const ALLOWED_PATHS = [
   '/danh-sach/phim-moi-cap-nhat',
   '/danh-sach',
   '/tim-kiem',
-  '/phim/'
+  '/phim/',
+  '/v1/api/'
 ];
 
 function isAllowedPath(path) {

@@ -133,11 +133,17 @@ export function buildImageProxyUrl(url = '') {
   return target;
 }
 
-function resolveImageUrl(value = '') {
+function resolveImageUrl(value = '', imageBase = '') {
   const raw = String(value || '').trim();
   if (!raw) return IMG_FALLBACK;
   if (raw.startsWith('http://') || raw.startsWith('https://')) return buildImageProxyUrl(raw);
   if (raw.startsWith('//')) return buildImageProxyUrl(`https:${raw}`);
+
+  if (imageBase) {
+    const base = String(imageBase).endsWith('/') ? imageBase : `${imageBase}/`;
+    return buildImageProxyUrl(`${base}${raw}`);
+  }
+
   return buildImageProxyUrl(raw);
 }
 
@@ -168,7 +174,7 @@ function normalizeCategories(category) {
   return [];
 }
 
-export function normalizeMovie(item = {}) {
+export function normalizeMovie(item = {}, imageBase = '') {
   const name = String(item.name || '').trim();
   const originName = String(item.origin_name || item.original_name || '').trim();
   const contentText = stripHtml(item.content || item.description || '');
@@ -190,8 +196,8 @@ export function normalizeMovie(item = {}) {
     lang: String(item.lang || item.language || '').trim(),
     type: String(item.type || '').trim(),
     country: String(item.country?.[0]?.name || item.nation?.[0]?.name || '').trim(),
-    thumb: resolveImageUrl(rawThumb),
-    poster: resolveImageUrl(rawPoster),
+    thumb: resolveImageUrl(rawThumb, imageBase),
+    poster: resolveImageUrl(rawPoster, imageBase),
     categories: normalizeCategories(item.category),
     content: contentText,
     searchText: `${name} ${originName} ${contentText}`.toLowerCase(),
@@ -201,15 +207,18 @@ export function normalizeMovie(item = {}) {
 
 export function normalizeMovieListResponse(payload = {}) {
   // VSMov returns { status, items, pathImage, pagination }
+  // V1 API returns { status, data: { items, pathImage, pagination } }
   const items = Array.isArray(payload?.items)
     ? payload.items
     : Array.isArray(payload?.data?.items)
       ? payload.data.items
       : [];
 
+  const imageBase = String(payload?.data?.pathImage || payload?.pathImage || '').trim();
+
   return {
-    items: items.map((item) => normalizeMovie(item)).filter((item) => item.slug),
-    imageBase: '',
+    items: items.map((item) => normalizeMovie(item, imageBase)).filter((item) => item.slug),
+    imageBase,
     pagination: payload?.pagination || payload?.data?.pagination || null
   };
 }
@@ -237,8 +246,10 @@ function normalizeEpisodeServer(server = {}) {
 
 export function normalizeMovieDetailResponse(payload = {}) {
   // VSMov: { status, movie, episodes }
+  // V1 Detail: { status, data: { movie, episodes, pathImage } }
   const movieRaw = payload?.movie || payload?.data?.movie || payload?.data || payload || {};
-  const movie = normalizeMovie(movieRaw);
+  const imageBase = String(payload?.data?.pathImage || payload?.pathImage || '').trim();
+  const movie = normalizeMovie(movieRaw, imageBase);
 
   const episodesRaw = Array.isArray(payload?.episodes)
     ? payload.episodes
@@ -255,7 +266,7 @@ export function normalizeMovieDetailResponse(payload = {}) {
   return {
     movie,
     episodes,
-    imageBase: ''
+    imageBase
   };
 }
 
