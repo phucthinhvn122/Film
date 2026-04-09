@@ -58,6 +58,11 @@ function shouldTryAlternateSource(error, attemptIndex, totalAttempts) {
     return false;
   }
 
+  if (error?.status === 404) {
+    const contentType = String(error?.responseContentType || '').toLowerCase();
+    return !contentType.includes('application/json');
+  }
+
   return true;
 }
 
@@ -148,6 +153,8 @@ async function fetchJSON(url, {
     if (!response.ok) {
       const err = new Error(`HTTP_${response.status}`);
       err.status = response.status;
+      err.url = url;
+      err.responseContentType = response.headers.get('content-type') || '';
       throw err;
     }
 
