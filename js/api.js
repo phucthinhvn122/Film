@@ -1,5 +1,5 @@
 import {
-  API_SOURCE,
+  API_BASES,
   CACHE_TTL,
   IMG_FALLBACK,
   REQUEST_TIMEOUT
@@ -38,6 +38,51 @@ export class RequestManager {
 }
 
 export const requestManager = new RequestManager();
+
+const CATEGORY_TYPE_MAP = {
+  'phim-bo': 'series',
+  'phim-le': 'single',
+  'hoat-hinh': 'hoathinh',
+  'tv-shows': 'tvshows'
+};
+
+function uniqueUrls(urls = []) {
+  return Array.from(new Set(urls.map((url) => String(url || '').trim()).filter(Boolean)));
+}
+
+function shouldTryAlternateSource(error, attemptIndex, totalAttempts) {
+  if (attemptIndex >= totalAttempts - 1) return false;
+
+  const code = String(error?.message || '').trim();
+  if (!code || code === 'REQUEST_ABORTED' || code === 'INVALID_SLUG' || code === 'CATEGORY_NOT_SUPPORTED') {
+    return false;
+  }
+
+  return true;
+}
+
+function buildVsmovUrls(pathname = '') {
+  const normalizedPath = String(pathname || '').startsWith('/') ? String(pathname || '') : `/${String(pathname || '')}`;
+  return uniqueUrls(API_BASES.map((base) => `${base}${normalizedPath}`));
+}
+
+async function fetchVsmovJSON(pathname, options = {}) {
+  const urls = buildVsmovUrls(pathname);
+  let lastError = null;
+
+  for (let index = 0; index < urls.length; index += 1) {
+    try {
+      return await fetchJSON(urls[index], options);
+    } catch (error) {
+      lastError = error;
+      if (!shouldTryAlternateSource(error, index, urls.length)) {
+        throw error;
+      }
+    }
+  }
+
+  throw lastError || new Error('NETWORK_ERROR');
+}
 
 function withTimeout(promise, timeoutMs, onTimeout) {
   let timer = null;
@@ -274,8 +319,8 @@ export function getFirstEpisode(episodes = []) {
 }
 
 export async function fetchHomeLatest(page = 1, { signal, force = false } = {}) {
-  const url = `${API_SOURCE.latest}${Math.max(1, Number(page) || 1)}`;
-  const data = await fetchJSON(url, {
+  const normalizedPage = Math.max(1, Number(page) || 1);
+  const data = await fetchVsmovJSON(`/danh-sach/phim-moi-cap-nhat?page=${normalizedPage}`, {
     signal,
     timeoutMs: REQUEST_TIMEOUT.DEFAULT,
     cacheNamespace: 'home',
@@ -287,12 +332,11 @@ export async function fetchHomeLatest(page = 1, { signal, force = false } = {}) 
 }
 
 export async function fetchCategory(category, page = 1, { signal, force = false } = {}) {
-  const base = API_SOURCE.categories[category];
-  if (!base) throw new Error('CATEGORY_NOT_SUPPORTED');
-
   const normalizedPage = Math.max(1, Number(page) || 1);
-  const url = `${base}${normalizedPage}`;
-  const data = await fetchJSON(url, {
+  const type = CATEGORY_TYPE_MAP[category];
+  if (!type) throw new Error('CATEGORY_NOT_SUPPORTED');
+
+  const data = await fetchVsmovJSON(`/danh-sach?type=${encodeURIComponent(type)}&page=${normalizedPage}`, {
     signal,
     timeoutMs: REQUEST_TIMEOUT.DEFAULT,
     cacheNamespace: 'home',
@@ -307,8 +351,7 @@ export async function fetchMovieDetail(slug, { signal, force = false } = {}) {
   const movieSlug = String(slug || '').trim();
   if (!movieSlug) throw new Error('INVALID_SLUG');
 
-  const url = `${API_SOURCE.detail}${encodeURIComponent(movieSlug)}`;
-  const data = await fetchJSON(url, {
+  const data = await fetchVsmovJSON(`/phim/${encodeURIComponent(movieSlug)}`, {
     signal,
     timeoutMs: REQUEST_TIMEOUT.DETAIL,
     cacheNamespace: 'detail',
@@ -326,14 +369,12 @@ export async function searchMovies(keyword, { signal, force = false } = {}) {
 
   if (q.toLowerCase().startsWith('category:')) {
     const category = q.split(':')[1]?.trim();
-    if (category && API_SOURCE.categories[category]) {
+    if (category && CATEGORY_TYPE_MAP[category]) {
       return fetchCategory(category, 1, { signal, force });
     }
   }
 
-  const url = `${API_SOURCE.search}${encodeURIComponent(q)}`;
-
-  const data = await fetchJSON(url, {
+  const data = await fetchVsmovJSON(`/tim-kiem?keyword=${encodeURIComponent(q)}`, {
     signal,
     timeoutMs: REQUEST_TIMEOUT.SEARCH,
     cacheNamespace: 'search',

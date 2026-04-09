@@ -52,11 +52,17 @@ export class DetailPage extends BasePage {
       page.appendChild(this.buildLayout(movie, detail.episodes || []));
       this.setTitle(movie.name || 'Chi tiết phim');
       return page;
-    } catch (_) {
+    } catch (error) {
+      console.error('DetailPage render failed:', { slug, error });
       page.innerHTML = '';
-      page.appendChild(createErrorState(UI_TEXT.networkError, [
-        { label: UI_TEXT.retry, onClick: () => window.location.reload() }
-      ]));
+      page.appendChild(createErrorState(
+        error?.message === 'HTTP_404'
+          ? 'Khong tim thay phim nay.'
+          : UI_TEXT.networkError,
+        [
+          { label: UI_TEXT.retry, onClick: () => router.navigate(ROUTES.DETAIL, { slug }, true) }
+        ]
+      ));
       return page;
     }
   }

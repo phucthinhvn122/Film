@@ -765,6 +765,7 @@ export async function renderWatchPage(ctx, params = {}) {
       title: `${detail.movie.name} - ${selectedEpisode.name || 'Xem phim'}`
     };
   } catch (error) {
+    console.error('WatchPage render failed:', { slug, requestedEp, requestedServer, error });
     loading.innerHTML = '';
     loading.appendChild(createErrorState(
       error.message === 'NO_PLAYABLE_EPISODE'

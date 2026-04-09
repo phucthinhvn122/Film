@@ -5,8 +5,17 @@ export const BRAND = {
   shortDescription: 'Xem phim trực tuyến chất lượng cao với giao diện gọn gàng.'
 };
 
-const IS_LOCAL = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-const API_BASE = IS_LOCAL ? 'https://vsmov.com/api' : '/api/vsmov';
+const WINDOW_HOSTNAME = typeof window !== 'undefined' ? String(window.location.hostname || '').toLowerCase() : '';
+const WINDOW_PROTOCOL = typeof window !== 'undefined' ? String(window.location.protocol || '').toLowerCase() : '';
+const IS_LOCAL = WINDOW_HOSTNAME === 'localhost' || WINDOW_HOSTNAME === '127.0.0.1' || WINDOW_HOSTNAME === '0.0.0.0';
+const IS_FILE_PROTOCOL = WINDOW_PROTOCOL === 'file:';
+const PREFERS_DIRECT_VSMOV = IS_LOCAL || IS_FILE_PROTOCOL || WINDOW_HOSTNAME.endsWith('.github.io');
+
+export const API_BASES = PREFERS_DIRECT_VSMOV
+  ? ['https://vsmov.com/api', '/api/vsmov']
+  : ['/api/vsmov', 'https://vsmov.com/api'];
+
+const API_BASE = API_BASES[0];
 
 export const API_SOURCE = {
   name: 'VSMov',
