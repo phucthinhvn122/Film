@@ -66,6 +66,11 @@ function formatTime(seconds) {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
+function buildWatchUrl(movieSlug, epSlug, serverName = '') {
+  const path = `/watch/${encodeURIComponent(movieSlug || '')}/${encodeURIComponent(epSlug || '')}`;
+  return serverName ? `${path}?server=${encodeURIComponent(serverName)}` : path;
+}
+
 export async function renderWatchPage(ctx, params = {}) {
   const slug = String(params.slug || '').trim();
   const requestedEp = String(params.epSlug || params.ep || '').trim();
@@ -92,7 +97,6 @@ export async function renderWatchPage(ctx, params = {}) {
   let activeEpisodeSlug = '';
   let detailData = null;
   let activeSourceType = '';
-  let currentSourceUrl = '';
   let activeEpisodeRef = null;
   let qualityMode = 'auto';
   const removeListeners = [];
@@ -414,16 +418,10 @@ export async function renderWatchPage(ctx, params = {}) {
       activeEpisodeSlug = episode.slug;
       activeEpisodeRef = episode;
       ServerMemoryStorage.remember(detail.movie.slug, activeServerName);
-      const query = new URLSearchParams({
-        view: ROUTES.WATCH,
-        slug: detail.movie.slug,
-        epSlug: activeEpisodeSlug,
-        server: activeServerName
-      });
       history.replaceState(
-        { route: { name: ROUTES.WATCH, params: { slug: detail.movie.slug, epSlug: activeEpisodeSlug, server: activeServerName } } },
+        { page: ROUTES.WATCH, params: { slug: detail.movie.slug, epSlug: activeEpisodeSlug, server: activeServerName } },
         '',
-        `${window.location.pathname}?${query.toString()}`
+        buildWatchUrl(detail.movie.slug, activeEpisodeSlug, activeServerName)
       );
 
       serverList.querySelectorAll('.w-srv-btn').forEach((button) => {
@@ -477,7 +475,6 @@ export async function renderWatchPage(ctx, params = {}) {
       }
 
       activeSourceType = source.type;
-      currentSourceUrl = source.url;
       qualityMode = 'auto';
       closeQualityMenu();
       renderQualityMenu([]);

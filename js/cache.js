@@ -1,20 +1,31 @@
 ﻿import { CACHE_MAX_SIZE, CACHE_TTL } from './config.js';
 
+const CACHE_NULL = Symbol('cache-null');
+
 class TTLCache {
   constructor(maxSize = 100) {
     this.maxSize = maxSize;
     this.map = new Map();
   }
 
-  get(key) {
+  read(key) {
     const entry = this.map.get(key);
-    if (!entry) return null;
+    if (!entry) return { hit: false, value: null };
     if (Date.now() > entry.expiresAt) {
       this.map.delete(key);
-      return null;
+      return { hit: false, value: null };
     }
+
     entry.lastAccess = Date.now();
-    return entry.value;
+    return {
+      hit: true,
+      value: entry.value === CACHE_NULL ? null : entry.value
+    };
+  }
+
+  get(key) {
+    const result = this.read(key);
+    return result.hit ? result.value : null;
   }
 
   set(key, value, ttlMs, { allowNull = false } = {}) {
@@ -25,7 +36,7 @@ class TTLCache {
     }
 
     this.map.set(key, {
-      value,
+      value: value === null ? CACHE_NULL : value,
       expiresAt: Date.now() + Math.max(2000, Number(ttlMs) || 0),
       lastAccess: Date.now()
     });
@@ -77,6 +88,12 @@ export function getCache(namespace, key) {
   const cache = caches[namespace];
   if (!cache) return null;
   return cache.get(key);
+}
+
+export function readCache(namespace, key) {
+  const cache = caches[namespace];
+  if (!cache) return { hit: false, value: null };
+  return cache.read(key);
 }
 
 export function setCache(namespace, key, value, ttlMs, options) {

@@ -11,6 +11,7 @@ import {
   toast
 } from './dom.js';
 import { FavoritesStorage } from './storage.js';
+import { syncSearchInputValue } from './ui.js';
 
 function normalizeQuery(raw = '') {
   return String(raw || '').trim();
@@ -141,13 +142,16 @@ export class SearchPage extends BasePage {
       ]);
       content.appendChild(resultsInfo);
 
+      const favoriteSlugs = new Set(FavoritesStorage.list().map((item) => item.slug));
       const grid = createElement('div', { className: 'search-grid' });
       items.forEach((movie) => {
         const card = createMovieCard(movie, {
-          isFavorite: FavoritesStorage.isFavorite(movie.slug),
+          isFavorite: favoriteSlugs.has(movie.slug),
           onOpen: (pickedMovie) => router.navigate(ROUTES.DETAIL, { slug: pickedMovie.slug }),
           onFavoriteToggle: () => {
             const added = FavoritesStorage.toggle(movie);
+            if (added) favoriteSlugs.add(movie.slug);
+            else favoriteSlugs.delete(movie.slug);
             toast(added ? 'Đã thêm vào yêu thích' : 'Đã bỏ khỏi yêu thích');
             card.querySelector('.fav-btn')?.classList.toggle('on', added);
           }
@@ -181,13 +185,6 @@ export class SearchPage extends BasePage {
     }
     await super.unmount();
   }
-}
-
-function syncSearchInputValue(query = '') {
-  const desktopInput = document.querySelector('#q');
-  const mobileInput = document.querySelector('#q-mob');
-  if (desktopInput) desktopInput.value = query;
-  if (mobileInput) mobileInput.value = query;
 }
 
 export default SearchPage;

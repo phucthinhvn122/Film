@@ -1,5 +1,4 @@
-﻿import { ROUTES } from './config.js';
-import { $, $$, SELECTORS, createElement } from './dom.js';
+import { $, SELECTORS, toast } from './dom.js';
 
 let cleanupFns = [];
 let drawerOpen = false;
@@ -12,6 +11,7 @@ function closeDrawer() {
   const drawer = $(SELECTORS.drawer);
   const hamburger = $('#hamburger');
   if (!drawer) return;
+
   drawer.classList.remove('open');
   drawer.setAttribute('aria-hidden', 'true');
   hamburger?.classList.remove('open');
@@ -23,6 +23,7 @@ function openDrawer() {
   const drawer = $(SELECTORS.drawer);
   const hamburger = $('#hamburger');
   if (!drawer) return;
+
   drawer.classList.add('open');
   drawer.setAttribute('aria-hidden', 'false');
   hamburger?.classList.add('open');
@@ -33,59 +34,6 @@ function openDrawer() {
 function toggleDrawer() {
   if (drawerOpen) closeDrawer();
   else openDrawer();
-}
-
-export function showToast(message, durationMs = 2500) {
-  const toast = createElement('div', {
-    text: message,
-    style: {
-      position: 'fixed',
-      top: '86px',
-      left: '50%',
-      transform: 'translateX(-50%)',
-      zIndex: '9999',
-      background: 'rgba(18,18,18,.92)',
-      color: '#fff',
-      border: '1px solid rgba(255,255,255,.16)',
-      borderRadius: '12px',
-      padding: '10px 14px',
-      fontWeight: '700',
-      boxShadow: '0 18px 40px rgba(0,0,0,.55)'
-    }
-  });
-  document.body.appendChild(toast);
-  setTimeout(() => {
-    try {
-      toast.remove();
-    } catch (_) {
-      // ignore
-    }
-  }, durationMs);
-}
-
-function routeToTab(routeName) {
-  switch (routeName) {
-    case ROUTES.SEARCH:
-      return 'search';
-    case ROUTES.HISTORY:
-      return 'history';
-    case ROUTES.FAVORITES:
-      return 'favorites';
-    default:
-      return 'home';
-  }
-}
-
-export function setActiveNavigation(routeName) {
-  const tab = routeToTab(routeName);
-  $$(SELECTORS.mobileNavItems).forEach((item) => {
-    item.classList.toggle('active', item.dataset.tab === tab);
-  });
-
-  $$(SELECTORS.desktopNavItems).forEach((item) => {
-    const id = item.id?.replace('nav-', '') || '';
-    item.classList.toggle('active', id === tab);
-  });
 }
 
 export function syncSearchInputValue(value = '') {
@@ -138,10 +86,10 @@ export function initUI(actions) {
         if (event.target === actionNode) closeDrawer();
         break;
       case 'notifications':
-        showToast('Tinh nang thong bao dang phat trien.');
+        toast('Tinh nang thong bao dang phat trien.');
         break;
       case 'profile':
-        showToast('Tinh nang ho so dang phat trien.');
+        toast('Tinh nang ho so dang phat trien.');
         break;
       default:
         break;
@@ -159,13 +107,12 @@ export function initUI(actions) {
     const input = form.querySelector('input');
     const keyword = String(input?.value || '').trim();
     actions.goSearch(keyword);
+
     if (action === 'mobile-search-form') closeDrawer();
   };
 
   const onEscape = (event) => {
-    if (event.key === 'Escape' && drawerOpen) {
-      closeDrawer();
-    }
+    if (event.key === 'Escape' && drawerOpen) closeDrawer();
   };
 
   const onScroll = () => {
@@ -177,6 +124,7 @@ export function initUI(actions) {
   const bindSearchFx = (selector) => {
     const form = $(selector);
     if (!form) return;
+
     const input = form.querySelector('input');
     if (!input) return;
 
@@ -226,5 +174,3 @@ export function destroyUI() {
   });
   cleanupFns = [];
 }
-
-

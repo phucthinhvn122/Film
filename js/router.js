@@ -27,23 +27,12 @@ class RouterState {
     this.currentPage = PAGES.HOME;
     this.previousPage = null;
     this.isTransitioning = false;
-    this.pageHistory = [];
     this.scrollPositions = new Map();
   }
 
   setCurrentPage(page) {
     this.previousPage = this.currentPage;
     this.currentPage = page;
-    this.pageHistory.push({
-      page,
-      timestamp: Date.now(),
-      scrollY: window.scrollY || 0
-    });
-    
-    // Keep history limited to last 10 pages
-    if (this.pageHistory.length > 10) {
-      this.pageHistory = this.pageHistory.slice(-10);
-    }
   }
 
   setTransitioning(transitioning) {
@@ -162,10 +151,6 @@ export class BasePage {
     setMain(errorContent);
   }
 
-  setLoading(loading) {
-    // Override in subclasses for loading state management
-  }
-
   setTitle(title) {
     document.title = `${title} - Netflix`;
   }
@@ -203,13 +188,6 @@ class PageRegistry {
     return new PageClass();
   }
 
-  get(name) {
-    return this.pages.get(name);
-  }
-
-  has(name) {
-    return this.pages.has(name);
-  }
 }
 
 export const pageRegistry = new PageRegistry();
@@ -288,7 +266,8 @@ export class Router {
         return `${origin}/detail/${encodeURIComponent(params.slug || '')}`;
       
       case PAGES.WATCH:
-        return `${origin}/watch/${encodeURIComponent(params.slug || '')}/${encodeURIComponent(params.epSlug || params.ep || '')}`;
+        const server = params.server ? `?server=${encodeURIComponent(params.server)}` : '';
+        return `${origin}/watch/${encodeURIComponent(params.slug || '')}/${encodeURIComponent(params.epSlug || params.ep || '')}${server}`;
       
       case PAGES.SEARCH:
         const query = params.q ? `?q=${encodeURIComponent(params.q)}` : '';
@@ -330,7 +309,8 @@ export class Router {
         page: PAGES.WATCH, 
         params: { 
           slug: decodeURIComponent(watchMatch[1]),
-          epSlug: decodeURIComponent(watchMatch[2])
+          epSlug: decodeURIComponent(watchMatch[2]),
+          server: params.get('server') || ''
         } 
       };
     }
@@ -360,7 +340,9 @@ export class Router {
   async init() {
     // Handle browser back/forward
     window.addEventListener('popstate', (e) => {
-      const state = e.state || { page: PAGES.HOME, params: {} };
+      const state = e.state?.route
+        ? { page: e.state.route.name, params: e.state.route.params || {} }
+        : (e.state || { page: PAGES.HOME, params: {} });
       this.navigate(state.page, state.params, true);
     });
 
@@ -405,10 +387,6 @@ export class Router {
         ">Tai lai trang</button>
       </div>
     `;
-  }
-
-  getCurrentPage() {
-    return this.currentPage;
   }
 
   getCurrentPageName() {

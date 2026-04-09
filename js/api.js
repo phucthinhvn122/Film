@@ -4,16 +4,12 @@ import {
   IMG_FALLBACK,
   REQUEST_TIMEOUT
 } from './config.js';
-import { getCache, setCache } from './cache.js';
+import { readCache, setCache } from './cache.js';
 import { stripHtml } from './dom.js';
 
 export class RequestManager {
   constructor() {
     this.controllers = new Map();
-  }
-
-  createController(key) {
-    return this.next(key);
   }
 
   next(key) {
@@ -77,8 +73,8 @@ async function fetchJSON(url, {
   const key = cacheKey || url;
 
   if (!force && cacheNamespace) {
-    const hit = getCache(cacheNamespace, key);
-    if (hit !== null) return hit;
+    const hit = readCache(cacheNamespace, key);
+    if (hit.hit) return hit.value;
   }
 
   const controller = new AbortController();
@@ -355,8 +351,8 @@ export async function fetchTmdbMeta(title, year, { signal, force = false } = {})
 
   const key = `${normalizedTitle.toLowerCase()}::${String(year || '').trim()}`;
   if (!force) {
-    const hit = getCache('tmdb', key);
-    if (hit !== null) return hit;
+    const hit = readCache('tmdb', key);
+    if (hit.hit) return hit.value;
   }
 
   const query = new URLSearchParams({ title: normalizedTitle });
@@ -408,109 +404,3 @@ export async function fetchTmdbMeta(title, year, { signal, force = false } = {})
     return null;
   }
 }
-
-function mapLegacyCategory(input = []) {
-  if (!Array.isArray(input)) return [];
-  return input
-    .map((item) => ({
-      slug: String(item?.slug || '').trim(),
-      name: String(item?.name || '').trim()
-    }))
-    .filter((item) => item.slug || item.name);
-}
-
-function normalizeLegacyMovie(movie = {}) {
-  const normalized = normalizeMovie(movie);
-  return {
-    slug: normalized.slug,
-    name: normalized.name,
-    origin_name: normalized.originName,
-    originName: normalized.originName,
-    status: normalized.status,
-    year: normalized.year,
-    quality: normalized.quality,
-    episode_current: normalized.episodeCurrent,
-    episodeCurrent: normalized.episodeCurrent,
-    episode_total: normalized.episodeTotal,
-    episodeTotal: normalized.episodeTotal,
-    time: normalized.time,
-    lang: normalized.lang,
-    type: normalized.type,
-    country: normalized.country,
-    content: normalized.content,
-    category: mapLegacyCategory(normalized.categories),
-    categories: mapLegacyCategory(normalized.categories),
-    _thumb: normalized.thumb,
-    _poster: normalized.poster,
-    thumb: normalized.thumb,
-    poster: normalized.poster,
-    searchText: normalized.searchText,
-    raw: normalized.raw
-  };
-}
-
-function normalizeLegacyDetail(detail = {}) {
-  const movie = detail?.movie || {};
-  const episodes = Array.isArray(detail?.episodes) ? detail.episodes : [];
-
-  return {
-    movie: {
-      ...normalizeLegacyMovie(movie),
-      episodes: episodes.map((server) => ({
-        server_name: server?.name || 'Server',
-        items: Array.isArray(server?.items)
-          ? server.items.map((ep) => ({
-              name: String(ep?.name || '').trim(),
-              slug: String(ep?.slug || '').trim(),
-              link_m3u8: String(ep?.linkM3u8 || '').trim(),
-              link_embed: String(ep?.linkEmbed || '').trim()
-            }))
-          : []
-      }))
-    },
-    episodes: episodes.map((server) => ({
-      server_name: server?.name || 'Server',
-      items: Array.isArray(server?.items)
-        ? server.items.map((ep) => ({
-            name: String(ep?.name || '').trim(),
-            slug: String(ep?.slug || '').trim(),
-            link_m3u8: String(ep?.linkM3u8 || '').trim(),
-            link_embed: String(ep?.linkEmbed || '').trim()
-          }))
-        : []
-    })),
-    pathImage: ''
-  };
-}
-
-export const DataNormalizer = {
-  normalizeMovie(movie = {}) {
-    return normalizeLegacyMovie(movie);
-  },
-
-  normalizeItems(payload = {}) {
-    if (Array.isArray(payload)) return payload.map((item) => normalizeLegacyMovie(item));
-    const items = Array.isArray(payload?.items) ? payload.items : [];
-    return items.map((item) => normalizeLegacyMovie(item));
-  }
-};
-
-export const movieSourceClient = {
-  async search(keyword, force = false, options = {}) {
-    return searchMovies(keyword, { force, signal: options?.signal });
-  },
-
-  async fetchDetail(slug, force = false, options = {}) {
-    const detail = await fetchMovieDetail(slug, { force, signal: options?.signal });
-    return normalizeLegacyDetail(detail);
-  },
-
-  async fetchCategory(category, force = false, options = {}) {
-    const page = Math.max(1, Number(options?.page) || 1);
-    return fetchCategory(category, page, { force, signal: options?.signal });
-  },
-
-  async fetchLatest(page = 1, force = false, options = {}) {
-    return fetchHomeLatest(page, { force, signal: options?.signal });
-  }
-};
