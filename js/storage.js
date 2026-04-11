@@ -23,16 +23,16 @@ function safeWriteJSON(key, value) {
 }
 
 function normalizeHistoryEntry(entry = {}) {
-  const movieSlug = String(entry.movieSlug || '').trim();
-  const epSlug = String(entry.epSlug || '').trim();
+  const movieSlug = String(entry.movieSlug || entry.slug || entry.movie?.slug || '').trim();
+  const epSlug = String(entry.epSlug || entry.episodeSlug || entry.episode?.slug || movieSlug).trim();
   if (!movieSlug || !epSlug) return null;
 
   return {
     movieSlug,
     epSlug,
-    serverName: String(entry.serverName || '').trim(),
-    movieName: String(entry.movieName || '').trim(),
-    episodeName: String(entry.episodeName || '').trim(),
+    serverName: String(entry.serverName || entry.server || '').trim(),
+    movieName: String(entry.movieName || entry.name || entry.movie?.name || '').trim(),
+    episodeName: String(entry.episodeName || entry.episode?.name || '').trim(),
     poster: String(entry.poster || '').trim(),
     progressSeconds: Math.max(0, Number(entry.progressSeconds) || 0),
     durationSeconds: Math.max(0, Number(entry.durationSeconds) || 0),

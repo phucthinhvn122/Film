@@ -1,6 +1,6 @@
 import { BasePage, router } from './router.js';
 import { ROUTES, UI_TEXT } from './config.js';
-import { fetchMovieDetail, requestManager } from './api.js';
+import { fetchMovieDetail, requestManager, searchMovies } from './api.js';
 import {
   createElement,
   createErrorState,
@@ -19,6 +19,60 @@ function firstPlayableEpisode(episodes = []) {
   return null;
 }
 
+function normalizeLookupText(value = '') {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+function pickMovieByTitle(items = [], title = '') {
+  const target = normalizeLookupText(title);
+  if (!target) return null;
+
+  let best = null;
+  let bestScore = -1;
+
+  items.forEach((item) => {
+    const names = [item?.name, item?.originName].map(normalizeLookupText).filter(Boolean);
+    if (!names.length) return;
+
+    let score = 0;
+    if (names.includes(target)) score = 4;
+    else if (names.some((name) => name.startsWith(target) || target.startsWith(name))) score = 3;
+    else if (names.some((name) => name.includes(target) || target.includes(name))) score = 2;
+    else {
+      const terms = target.split(/\s+/).filter(Boolean);
+      const matchedTerms = terms.filter((term) => names.some((name) => name.includes(term))).length;
+      score = matchedTerms > 0 ? 1 + (matchedTerms / Math.max(terms.length, 1)) : 0;
+    }
+
+    if (score > bestScore) {
+      best = item;
+      bestScore = score;
+    }
+  });
+
+  return bestScore > 0 ? best : null;
+}
+
+async function fetchDetailWithFallback(slug, fallbackTitle, signal) {
+  try {
+    return await fetchMovieDetail(slug, { signal });
+  } catch (error) {
+    const canFallback = Boolean(fallbackTitle) && (error?.message === 'HTTP_404' || error?.message === 'NETWORK_ERROR');
+    if (!canFallback) throw error;
+
+    const results = await searchMovies(fallbackTitle, { signal, force: true });
+    const matched = pickMovieByTitle(results?.items || [], fallbackTitle);
+    if (!matched?.slug) throw error;
+
+    return fetchMovieDetail(matched.slug, { signal, force: true });
+  }
+}
+
 export class DetailPage extends BasePage {
   constructor() {
     super(ROUTES.DETAIL);
@@ -27,6 +81,7 @@ export class DetailPage extends BasePage {
 
   async render(params = {}) {
     const slug = String(params.slug || '').trim();
+    const fallbackTitle = String(params.fallbackTitle || params.title || '').trim();
     const page = createElement('section', { className: 'detail-page' });
 
     if (!slug) {
@@ -38,7 +93,7 @@ export class DetailPage extends BasePage {
     this.abortController = requestManager.next('detail');
 
     try {
-      const detail = await fetchMovieDetail(slug, { signal: this.abortController.signal });
+      const detail = await fetchDetailWithFallback(slug, fallbackTitle, this.abortController.signal);
       if (this.abortController.signal.aborted) return page;
 
       const movie = detail?.movie;

@@ -77,7 +77,7 @@ function renderContinueRow(ctx) {
       thumb: item.poster,
       poster: item.poster
     }, {
-      onOpen: () => ctx.navigate(ROUTES.DETAIL, { slug: item.movieSlug })
+      onOpen: () => ctx.navigate(ROUTES.DETAIL, { slug: item.movieSlug, fallbackTitle: item.movieName || '' })
     });
     row.appendChild(card);
   });
@@ -108,7 +108,7 @@ function renderHistoryRow(ctx) {
       thumb: item.poster,
       poster: item.poster
     }, {
-      onOpen: () => ctx.navigate(ROUTES.DETAIL, { slug: item.movieSlug })
+      onOpen: () => ctx.navigate(ROUTES.DETAIL, { slug: item.movieSlug, fallbackTitle: item.movieName || '' })
     });
     row.appendChild(card);
   });

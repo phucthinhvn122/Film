@@ -42,7 +42,7 @@ async function renderHistoryPage(ctx) {
   } else {
     history.forEach((item) => {
       const card = createMovieCard(mapHistoryToMovie(item), {
-        onOpen: () => ctx.navigate(ROUTES.DETAIL, { slug: item.movieSlug })
+        onOpen: () => ctx.navigate(ROUTES.DETAIL, { slug: item.movieSlug, fallbackTitle: item.movieName || '' })
       });
       grid.appendChild(card);
     });
