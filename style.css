@@ -1182,27 +1182,30 @@ mark.hl {
 
 .detail-info {
   flex: 1;
-  min-width: 0
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px
 }
 
 .detail-info h1 {
   font-size: clamp(1.6rem, 3vw, 2.8rem);
   font-weight: 800;
   line-height: 1.1;
-  margin-bottom: 8px
+  margin-bottom: 0
 }
 
 .detail-origin {
   color: var(--muted);
   font-size: 1rem;
-  margin-bottom: 18px
+  margin-bottom: 0
 }
 
 .tags {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-bottom: 20px
+  margin-bottom: 0
 }
 
 .tag {
@@ -1222,7 +1225,7 @@ mark.hl {
   font-size: .95rem;
   line-height: 1.7;
   color: var(--text2);
-  margin-bottom: 20px;
+  margin-bottom: 0;
   max-width: 700px;
   word-break: break-word;
   white-space: pre-wrap;
@@ -1231,7 +1234,7 @@ mark.hl {
 
 .detail-block {
   width: 100%;
-  margin-top: 14px;
+  margin-top: 0;
   padding: 16px 18px;
   border: 1px solid rgba(185, 195, 210, .1);
   border-radius: 18px;
@@ -1239,11 +1242,11 @@ mark.hl {
 }
 
 .detail-actions-block {
-  margin-top: 12px
+  margin-top: 0
 }
 
 .detail-categories-block {
-  margin-top: 12px
+  margin-top: 0
 }
 
 .detail-actions-row {
