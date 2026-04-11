@@ -25,7 +25,7 @@ async function renderFavoritesPage(ctx) {
   const favorites = FavoritesStorage.list();
 
   if (!favorites.length) {
-    grid.appendChild(createEmptyState('Ban chua them phim nao vao danh sach yeu thich.'));
+    grid.appendChild(createEmptyState('Bạn chưa thêm phim nào vào danh sách yêu thích.'));
   } else {
     favorites.forEach((item) => {
       const card = createMovieCard(mapFavoriteToMovie(item), {

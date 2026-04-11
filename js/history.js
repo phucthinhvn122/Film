@@ -25,7 +25,7 @@ async function renderHistoryPage(ctx) {
   const clearBtn = createElement('button', {
     type: 'button',
     className: 'toolbar-btn',
-    text: 'Xoa toan bo lich su'
+    text: 'Xóa toàn bộ lịch sử'
   });
   clearBtn.addEventListener('click', () => {
     HistoryStorage.clear();
@@ -38,7 +38,7 @@ async function renderHistoryPage(ctx) {
   const history = HistoryStorage.list();
 
   if (!history.length) {
-    grid.appendChild(createEmptyState('Ban chua co lich su xem phim.'));
+    grid.appendChild(createEmptyState('Bạn chưa có lịch sử xem phim.'));
   } else {
     history.forEach((item) => {
       const card = createMovieCard(mapHistoryToMovie(item), {
