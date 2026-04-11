@@ -5,27 +5,7 @@ export const BRAND = {
   shortDescription: 'Xem phim trực tuyến chất lượng cao với giao diện gọn gàng.'
 };
 
-const WINDOW_HOSTNAME = typeof window !== 'undefined' ? String(window.location.hostname || '').toLowerCase() : '';
-const WINDOW_PROTOCOL = typeof window !== 'undefined' ? String(window.location.protocol || '').toLowerCase() : '';
-const IS_LOCAL = WINDOW_HOSTNAME === 'localhost' || WINDOW_HOSTNAME === '127.0.0.1' || WINDOW_HOSTNAME === '0.0.0.0';
-const IS_FILE_PROTOCOL = WINDOW_PROTOCOL === 'file:';
-const PREFERS_DIRECT_VSMOV = IS_LOCAL || IS_FILE_PROTOCOL || WINDOW_HOSTNAME.endsWith('.github.io');
-
 export const API_BASES = ['https://phimapi.com'];
-const API_BASE = API_BASES[0];
-
-export const API_SOURCE = {
-  name: 'NguonPhim',
-  latest: `${API_BASE}/danh-sach/phim-moi-cap-nhat?page=`,
-  detail: `${API_BASE}/phim/`,
-  search: `${API_BASE}/v1/api/tim-kiem?keyword=`,
-  categories: {
-    'phim-bo': `${API_BASE}/v1/api/danh-sach/phim-bo?page=`,
-    'phim-le': `${API_BASE}/v1/api/danh-sach/phim-le?page=`,
-    'hoat-hinh': `${API_BASE}/v1/api/danh-sach/hoat-hinh?page=`,
-    'tv-shows': `${API_BASE}/v1/api/danh-sach/tv-shows?page=`
-  }
-};
 
 export const CATEGORY_LABELS = {
   latest: 'Mới cập nhật',

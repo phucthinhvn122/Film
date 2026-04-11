@@ -5,19 +5,12 @@
 
 import { setMain } from './dom.js';
 import { SessionStorage } from './storage.js';
-import { UI_CONFIG } from './config.js';
+import { ROUTES, UI_CONFIG } from './config.js';
 
 /**
  * Page types and their corresponding handlers
  */
-export const PAGES = {
-  HOME: 'home',
-  DETAIL: 'detail',
-  WATCH: 'watch',
-  SEARCH: 'search',
-  HISTORY: 'history',
-  FAVORITES: 'favorites'
-};
+export const PAGES = ROUTES;
 
 /**
  * Router state
@@ -447,7 +440,6 @@ export const NavigationHelpers = {
   }
 };
 
-// Import qsa from dom.js for internal use
 const qsa = (sel, el = document) => Array.from(el.querySelectorAll(sel));
 
 export default {

@@ -14,8 +14,7 @@ function mapHistoryToMovie(entry) {
     poster: entry.poster || ''
   };
 }
-
-export async function renderHistoryPage(ctx) {
+async function renderHistoryPage(ctx) {
   const page = createElement('section', { className: 'search-page' });
   const hero = createElement('div', { className: 'search-hero' }, [
     createElement('h2', { text: UI_TEXT.history })
@@ -26,7 +25,7 @@ export async function renderHistoryPage(ctx) {
   const clearBtn = createElement('button', {
     type: 'button',
     className: 'toolbar-btn',
-    text: 'Xóa toàn b? l?ch s?'
+    text: 'Xoa toan bo lich su'
   });
   clearBtn.addEventListener('click', () => {
     HistoryStorage.clear();
@@ -39,7 +38,7 @@ export async function renderHistoryPage(ctx) {
   const history = HistoryStorage.list();
 
   if (!history.length) {
-    grid.appendChild(createEmptyState('B?n chua có l?ch s? xem phim.'));
+    grid.appendChild(createEmptyState('Ban chua co lich su xem phim.'));
   } else {
     history.forEach((item) => {
       const card = createMovieCard(mapHistoryToMovie(item), {

@@ -3,7 +3,18 @@ import { createElement, createMovieCard, createEmptyState } from './dom.js';
 import { FavoritesStorage } from './storage.js';
 import { BasePage, router } from './router.js';
 
-export async function renderFavoritesPage(ctx) {
+function mapFavoriteToMovie(item) {
+  return {
+    slug: item.slug,
+    name: item.name,
+    year: item.year,
+    quality: item.quality,
+    episodeCurrent: '',
+    thumb: item.thumb,
+    poster: item.poster
+  };
+}
+async function renderFavoritesPage(ctx) {
   const page = createElement('section', { className: 'search-page' });
   const hero = createElement('div', { className: 'search-hero' }, [
     createElement('h2', { text: UI_TEXT.favorites })
@@ -14,18 +25,10 @@ export async function renderFavoritesPage(ctx) {
   const favorites = FavoritesStorage.list();
 
   if (!favorites.length) {
-    grid.appendChild(createEmptyState('B?n chua thêm phim nào vào danh sách yêu thích.'));
+    grid.appendChild(createEmptyState('Ban chua them phim nao vao danh sach yeu thich.'));
   } else {
     favorites.forEach((item) => {
-      const card = createMovieCard({
-        slug: item.slug,
-        name: item.name,
-        year: item.year,
-        quality: item.quality,
-        episodeCurrent: '',
-        thumb: item.thumb,
-        poster: item.poster
-      }, {
+      const card = createMovieCard(mapFavoriteToMovie(item), {
         isFavorite: true,
         onOpen: (movie) => ctx.navigate(ROUTES.DETAIL, { slug: movie.slug }),
         onFavoriteToggle: () => {

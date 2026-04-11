@@ -234,7 +234,7 @@ export function createMovieCard(movie, options = {}) {
 
 let transitionToken = 0;
 
-export function setMainContent(node, onMounted) {
+function setMainContent(node, onMounted) {
   const main = $(SELECTORS.main);
   if (!main) return;
 
@@ -280,52 +280,12 @@ export function setMainContent(node, onMounted) {
   }, 220);
 }
 
-export function updateDocumentTitle(pageTitle, appName = 'Netflix') {
-  document.title = pageTitle ? `${pageTitle} | ${appName}` : appName;
-}
-
 export function setMain(node, onMounted) {
   setMainContent(node, onMounted);
 }
 
 export function el(tag, attrs = {}, children = []) {
   return createElement(tag, attrs, children);
-}
-
-export function loader(message = 'Dang tai...') {
-  return createLoaderState(message);
-}
-
-export function buildSearchSkeleton(count = 10) {
-  return createSkeletonGrid(count);
-}
-
-export function renderCardsProgressively(container, items = [], pageSize = 24, renderCard) {
-  if (!container || typeof renderCard !== 'function') return;
-  const list = Array.isArray(items) ? items : [];
-  const step = Math.max(1, Number(pageSize) || 24);
-  let index = 0;
-
-  const push = () => {
-    if (index >= list.length) return;
-    const frag = document.createDocumentFragment();
-    const end = Math.min(list.length, index + step);
-
-    for (let i = index; i < end; i += 1) {
-      const node = renderCard(list[i], i);
-      if (node instanceof Node) frag.appendChild(node);
-    }
-
-    container.appendChild(frag);
-    index = end;
-
-    if (index < list.length) {
-      if (typeof requestAnimationFrame === 'function') requestAnimationFrame(push);
-      else setTimeout(push, 0);
-    }
-  };
-
-  push();
 }
 
 export function toast(message, durationMs = 2500) {
@@ -357,16 +317,6 @@ export function toast(message, durationMs = 2500) {
       // ignore
     }
   }, Math.max(600, Number(durationMs) || 2500));
-}
-
-export function highlightText(text = '', keyword = '') {
-  const source = String(text || '');
-  const q = String(keyword || '').trim();
-  if (!q) return escapeHtml(source);
-
-  const pattern = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const regex = new RegExp(`(${pattern})`, 'ig');
-  return escapeHtml(source).replace(regex, '<mark>$1</mark>');
 }
 
 export function createHeroCarousel(onOpen) {

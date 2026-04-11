@@ -43,12 +43,15 @@ function fillCards(grid, movies, ctx) {
     return;
   }
 
+  const favoriteSlugs = new Set(FavoritesStorage.list().map((item) => item.slug));
   movies.slice(0, DEFAULT_PAGE_SIZE).forEach((movie) => {
     const card = createMovieCard(movie, {
-      isFavorite: FavoritesStorage.isFavorite(movie.slug),
+      isFavorite: favoriteSlugs.has(movie.slug),
       onOpen: (pickedMovie) => ctx.navigate(ROUTES.DETAIL, { slug: pickedMovie.slug }),
       onFavoriteToggle: () => {
         const added = FavoritesStorage.toggle(movie);
+        if (added) favoriteSlugs.add(movie.slug);
+        else favoriteSlugs.delete(movie.slug);
         ctx.toast(added ? 'Đã thêm vào yêu thích' : 'Đã bỏ khỏi yêu thích');
         card.querySelector('.fav-btn')?.classList.toggle('on', added);
       }
@@ -114,7 +117,7 @@ function renderHistoryRow(ctx) {
   return section;
 }
 
-export async function renderHomePage(ctx) {
+async function renderHomePage(ctx) {
   const controller = requestManager.next('home');
   const heroCarousel = createHeroCarousel((slug) => ctx.navigate(ROUTES.DETAIL, { slug }));
   const node = createElement('div');
@@ -236,5 +239,3 @@ export class HomePage extends BasePage {
     window.scrollTo(0, 0);
   }
 }
-
-
