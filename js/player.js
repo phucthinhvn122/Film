@@ -301,6 +301,7 @@ export async function renderWatchPage(ctx, params = {}) {
     const episodeGrid = createElement('div', { className: 'watch-ep-grid' });
     episodeCard.appendChild(episodeGrid);
 
+
     mainCol.appendChild(summary);
     mainCol.appendChild(serverCard);
     mainCol.appendChild(episodeCard);
@@ -504,23 +505,6 @@ export async function renderWatchPage(ctx, params = {}) {
         iframe.style.height = '100%';
         iframe.style.border = 'none';
         embedFrameWrap.appendChild(iframe);
-
-        const openExternalBtn = createElement('button', {
-          type: 'button',
-          className: 'section-more',
-          text: 'Mo trinh phat ben ngoai',
-          style: {
-            position: 'relative',
-            zIndex: '30',
-            background: 'rgba(0,0,0,.65)',
-            borderColor: 'rgba(255,255,255,.35)',
-            color: '#fff'
-          }
-        });
-        openExternalBtn.addEventListener('click', () => {
-          window.open(source.url, '_blank', 'noopener,noreferrer');
-        });
-        embedFrameWrap.appendChild(openExternalBtn);
         playerBody.appendChild(embedFrameWrap);
         playBtn.disabled = true;
         muteBtn.disabled = true;
@@ -599,19 +583,20 @@ export async function renderWatchPage(ctx, params = {}) {
           mountSource(activeServerName, next.slug);
         }
       });
-      bind(video, 'error', () => {
+      const handleFatalError = () => {
+        if (source.embedUrl) {
+          console.warn('M3U8 load failed, auto falling back to embed');
+          mountSource(activeServerName, activeEpisodeSlug, { preserveTime: false, forceEmbed: true });
+          return;
+        }
         const actions = [
           { label: UI_TEXT.retry, onClick: () => mountSource(activeServerName, activeEpisodeSlug) }
         ];
-        if (source.embedUrl) {
-          actions.push({
-            label: 'Mở nguồn nhúng',
-            onClick: () => mountSource(activeServerName, activeEpisodeSlug, { preserveTime: false, forceEmbed: true })
-          });
-        }
         playerBody.innerHTML = '';
         playerBody.appendChild(createErrorState('Nguồn M3U8 bị lỗi hoặc bị chặn.', actions));
-      });
+      };
+
+      bind(video, 'error', handleFatalError);
 
       if (video.canPlayType('application/vnd.apple.mpegurl')) {
         video.src = source.url;
@@ -620,11 +605,28 @@ export async function renderWatchPage(ctx, params = {}) {
         if (!Hls?.isSupported?.()) {
           video.src = source.url;
         } else {
-          hls = new Hls({ enableWorker: true, lowLatencyMode: false, backBufferLength: 30 });
+          hls = new Hls({
+            enableWorker: true,
+            lowLatencyMode: true,
+            backBufferLength: 90,
+            maxBufferSize: 60 * 1000 * 1000,
+            maxMaxBufferLength: 600,
+            capLevelToPlayerSize: false,
+            startLevel: -1
+          });
           hls.loadSource(source.url);
           hls.attachMedia(video);
           bindHls(hls, Hls.Events.MANIFEST_PARSED, (_, data) => {
             const levels = getUniqueQualityLevels(data?.levels || hls.levels || []);
+
+            if (levels.length > 0) {
+              const maxLvlIdx = Number(levels[0].value);
+              hls.currentLevel = maxLvlIdx;
+              hls.loadLevel = maxLvlIdx;
+              qualityMode = String(maxLvlIdx);
+              updateQualityLabel(levels[0].label);
+            }
+
             renderQualityMenu(levels);
           });
           bindHls(hls, Hls.Events.LEVEL_SWITCHED, (_, data) => {
@@ -635,6 +637,16 @@ export async function renderWatchPage(ctx, params = {}) {
             }
             const currentLevel = hls.levels?.[nextLevel];
             if (currentLevel?.height) updateQualityLabel(`${currentLevel.height}p`);
+          });
+          bindHls(hls, Hls.Events.ERROR, (_, data) => {
+            if (data.fatal) {
+              if (data.type === Hls.ErrorTypes.NETWORK_ERROR || data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+                handleFatalError();
+              } else {
+                hls.destroy();
+                handleFatalError();
+              }
+            }
           });
         }
       }

@@ -40,10 +40,10 @@ export class RequestManager {
 export const requestManager = new RequestManager();
 
 const CATEGORY_TYPE_MAP = {
-  'phim-bo': 'series',
-  'phim-le': 'single',
-  'hoat-hinh': 'hoathinh',
-  'tv-shows': 'tvshows'
+  'phim-bo': 'phim-bo',
+  'phim-le': 'phim-le',
+  'hoat-hinh': 'hoat-hinh',
+  'tv-shows': 'tv-shows'
 };
 
 function uniqueUrls(urls = []) {
@@ -255,20 +255,18 @@ export function normalizeMovie(item = {}, imageBase = '') {
 }
 
 export function normalizeMovieListResponse(payload = {}) {
-  // VSMov returns { status, items, pathImage, pagination }
-  // V1 API returns { status, data: { items, pathImage, pagination } }
   const items = Array.isArray(payload?.items)
     ? payload.items
     : Array.isArray(payload?.data?.items)
       ? payload.data.items
       : [];
 
-  const imageBase = String(payload?.data?.pathImage || payload?.pathImage || '').trim();
+  const imageBase = String(payload?.data?.APP_DOMAIN_CDN_IMAGE || payload?.data?.pathImage || payload?.APP_DOMAIN_CDN_IMAGE || payload?.pathImage || '').trim();
 
   return {
     items: items.map((item) => normalizeMovie(item, imageBase)).filter((item) => item.slug),
     imageBase,
-    pagination: payload?.pagination || payload?.data?.pagination || null
+    pagination: payload?.pagination || payload?.data?.params?.pagination || payload?.data?.pagination || null
   };
 }
 
@@ -343,7 +341,7 @@ export async function fetchCategory(category, page = 1, { signal, force = false 
   const type = CATEGORY_TYPE_MAP[category];
   if (!type) throw new Error('CATEGORY_NOT_SUPPORTED');
 
-  const data = await fetchVsmovJSON(`/danh-sach?type=${encodeURIComponent(type)}&page=${normalizedPage}`, {
+  const data = await fetchVsmovJSON(`/v1/api/danh-sach/${encodeURIComponent(type)}?page=${normalizedPage}`, {
     signal,
     timeoutMs: REQUEST_TIMEOUT.DEFAULT,
     cacheNamespace: 'home',
@@ -381,7 +379,7 @@ export async function searchMovies(keyword, { signal, force = false } = {}) {
     }
   }
 
-  const data = await fetchVsmovJSON(`/tim-kiem?keyword=${encodeURIComponent(q)}`, {
+  const data = await fetchVsmovJSON(`/v1/api/tim-kiem?keyword=${encodeURIComponent(q)}`, {
     signal,
     timeoutMs: REQUEST_TIMEOUT.SEARCH,
     cacheNamespace: 'search',

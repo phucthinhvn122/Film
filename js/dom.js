@@ -369,6 +369,111 @@ export function highlightText(text = '', keyword = '') {
   return escapeHtml(source).replace(regex, '<mark>$1</mark>');
 }
 
+export function createHeroCarousel(onOpen) {
+  const container = createElement('div', { className: 'hero-carousel-wrap', style: { position: 'relative', overflow: 'hidden' } });
+  const hero = createElement('section', { className: 'hero' });
+  const bg = createElement('div', { className: 'hero-bg', style: { position: 'absolute', inset: 0, backgroundSize: 'cover', backgroundPosition: 'center top', transition: 'background-image 0.6s ease' } });
+  
+  hero.appendChild(bg);
+  const body = createElement('div', { className: 'hero-body' });
+  hero.appendChild(body);
+
+  const thumbsWrap = createElement('div', { className: 'hero-thumbs' });
+  hero.appendChild(thumbsWrap);
+  container.appendChild(hero);
+
+  let timer = null;
+  let items = [];
+  let currentIndex = 0;
+
+  const cleanup = () => {
+    if (timer) clearInterval(timer);
+  };
+
+  const renderSlide = (index) => {
+    if (!items.length) return;
+    const m = items[index];
+    const image = m.poster || m.thumb || m.APP_DOMAIN_CDN_IMAGE || '';
+    bg.style.backgroundImage = `url('${image}')`;
+    
+    body.style.opacity = 0;
+    setTimeout(() => {
+      body.innerHTML = '';
+      body.appendChild(createElement('span', { className: 'hero-badge', text: 'Nổi Bật' }));
+      body.appendChild(createElement('h1', { className: 'hero-title', text: m.name || '' }));
+      body.appendChild(createElement('p', { className: 'hero-sub', text: m.originName || m.episodeCurrent || '' }));
+      body.appendChild(createElement('p', { className: 'hero-desc', text: stripHtml(m.content) || '' }));
+      
+      const btns = createElement('div', { className: 'hero-btns' });
+      const watchBtn = createElement('button', { type: 'button', className: 'btn btn-orange' }, [
+        createElement('i', { class: 'fa-solid fa-play', 'aria-hidden': 'true' }),
+        createElement('span', { text: 'Xem ngay' })
+      ]);
+      const detailBtn = createElement('button', { type: 'button', className: 'btn btn-gray' }, [
+        createElement('i', { class: 'fa-solid fa-circle-info', 'aria-hidden': 'true' }),
+        createElement('span', { text: 'Chi tiết' })
+      ]);
+      watchBtn.addEventListener('click', () => { cleanup(); onOpen?.(m.slug); });
+      detailBtn.addEventListener('click', () => { cleanup(); onOpen?.(m.slug); });
+      btns.appendChild(watchBtn);
+      btns.appendChild(detailBtn);
+      body.appendChild(btns);
+      
+      body.style.transition = 'opacity 0.4s ease';
+      body.style.opacity = 1;
+    }, 250);
+
+    Array.from(thumbsWrap.children).forEach((t, i) => {
+      t.className = `hero-thumb${i === index ? ' active' : ''}`;
+    });
+  };
+
+  const nextSlide = () => {
+    currentIndex = (currentIndex + 1) % items.length;
+    renderSlide(currentIndex);
+  };
+
+  let touchStartX = 0;
+  hero.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+  }, { passive: true });
+  
+  hero.addEventListener('touchend', (e) => {
+    const touchEndX = e.changedTouches[0].screenX;
+    if (touchEndX < touchStartX - 40) {
+      cleanup(); nextSlide(); timer = setInterval(nextSlide, 7000);
+    } else if (touchEndX > touchStartX + 40) {
+      cleanup(); currentIndex = (currentIndex - 1 + items.length) % items.length; renderSlide(currentIndex); timer = setInterval(nextSlide, 7000);
+    }
+  });
+
+  const setItems = (movies = []) => {
+    cleanup();
+    items = movies.slice(0, 6);
+    if (!items.length) return;
+
+    thumbsWrap.innerHTML = '';
+    items.forEach((m, idx) => {
+      const thumb = createElement('button', { type: 'button', className: 'hero-thumb', 'aria-label': 'Chon phim' });
+      const img = createElement('img', { src: m.thumb || m.poster || '', alt: m.name, loading: 'lazy' });
+      thumb.appendChild(img);
+      thumb.addEventListener('click', () => {
+        cleanup();
+        currentIndex = idx;
+        renderSlide(idx);
+        timer = setInterval(nextSlide, 7000);
+      });
+      thumbsWrap.appendChild(thumb);
+    });
+
+    currentIndex = 0;
+    renderSlide(0);
+    timer = setInterval(nextSlide, 7000);
+  };
+
+  return { element: container, setItems, cleanup };
+}
+
 
 
 

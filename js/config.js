@@ -11,22 +11,19 @@ const IS_LOCAL = WINDOW_HOSTNAME === 'localhost' || WINDOW_HOSTNAME === '127.0.0
 const IS_FILE_PROTOCOL = WINDOW_PROTOCOL === 'file:';
 const PREFERS_DIRECT_VSMOV = IS_LOCAL || IS_FILE_PROTOCOL || WINDOW_HOSTNAME.endsWith('.github.io');
 
-export const API_BASES = PREFERS_DIRECT_VSMOV
-  ? ['https://vsmov.com/api', '/api/vsmov']
-  : ['/api/vsmov', 'https://vsmov.com/api'];
-
+export const API_BASES = ['https://phimapi.com'];
 const API_BASE = API_BASES[0];
 
 export const API_SOURCE = {
-  name: 'VSMov',
+  name: 'NguonPhim',
   latest: `${API_BASE}/danh-sach/phim-moi-cap-nhat?page=`,
   detail: `${API_BASE}/phim/`,
-  search: `${API_BASE}/tim-kiem?keyword=`,
+  search: `${API_BASE}/v1/api/tim-kiem?keyword=`,
   categories: {
-    'phim-bo': `${API_BASE}/danh-sach?type=series&page=`,
-    'phim-le': `${API_BASE}/danh-sach?type=single&page=`,
-    'hoat-hinh': `${API_BASE}/danh-sach?type=hoathinh&page=`,
-    'tv-shows': `${API_BASE}/danh-sach?type=tvshows&page=`
+    'phim-bo': `${API_BASE}/v1/api/danh-sach/phim-bo?page=`,
+    'phim-le': `${API_BASE}/v1/api/danh-sach/phim-le?page=`,
+    'hoat-hinh': `${API_BASE}/v1/api/danh-sach/hoat-hinh?page=`,
+    'tv-shows': `${API_BASE}/v1/api/danh-sach/tv-shows?page=`
   }
 };
 
