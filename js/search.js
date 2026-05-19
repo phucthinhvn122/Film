@@ -138,19 +138,22 @@ export class SearchPage extends BasePage {
     form.appendChild(submitBtn);
     content.appendChild(form);
 
+    // Results container — lives below the form, gets swapped on live search
+    const resultsContainer = createElement('div', { className: 'search-results-container' });
+    content.appendChild(resultsContainer);
+
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       const value = normalizeQuery(input.value);
       if (value) SearchStorage.pushRecent(value);
-      router.navigate(ROUTES.SEARCH, { q: value }, true);
+      this._doLiveUpdate(value, resultsContainer, header);
     });
 
     const liveSearch = debounce((value) => {
       const trimmed = normalizeQuery(value);
       if (trimmed === this.currentQuery) return;
       if (trimmed.length > 0 && trimmed.length < SEARCH_CONFIG.MIN_LENGTH) return;
-      SearchPage._restoreFocus = true;
-      router.navigate(ROUTES.SEARCH, { q: trimmed }, true);
+      this._doLiveUpdate(trimmed, resultsContainer, header);
     }, SEARCH_CONFIG.DEBOUNCE_MS);
 
     input.addEventListener('input', (event) => {
@@ -159,60 +162,99 @@ export class SearchPage extends BasePage {
 
     this._liveSearchCancel = liveSearch.cancel;
     this._searchInput = input;
+    this._resultsContainer = resultsContainer;
 
     if (!query) {
-      const openQuery = (value) => {
-        SearchStorage.pushRecent(value);
-        router.navigate(ROUTES.SEARCH, { q: value }, true);
-      };
-
-      // Smart chips - categories and genres
-      const smart = renderSuggestionChips('Khám phá nhanh', SMART_CHIPS, openQuery);
-      if (smart) content.appendChild(smart);
-
-      // Recent searches
-      const recent = SearchStorage.recent();
-      if (recent.length > 0) {
-        const recentSection = renderSuggestionChips('Tìm kiếm gần đây', recent, openQuery);
-        if (recentSection) content.appendChild(recentSection);
-      }
-
-      // Trending keywords
-      const trendingSection = renderSuggestionChips('Từ khóa phổ biến', TRENDING_KEYWORDS, openQuery);
-      if (trendingSection) content.appendChild(trendingSection);
-
+      this._renderSuggestions(resultsContainer);
       return page;
     }
 
-    await this.renderResults(query, content);
+    await this._fetchAndRenderResults(query, resultsContainer);
     return page;
   }
 
-  async renderResults(query, content) {
-    content.appendChild(createSkeletonGrid(12));
+  _renderSuggestions(container) {
+    container.innerHTML = '';
+    const openQuery = (value) => {
+      SearchStorage.pushRecent(value);
+      this._searchInput.value = value;
+      this._doLiveUpdate(value, this._resultsContainer);
+    };
 
+    const smart = renderSuggestionChips('Khám phá nhanh', SMART_CHIPS, openQuery);
+    if (smart) container.appendChild(smart);
+
+    const recent = SearchStorage.recent();
+    if (recent.length > 0) {
+      const recentSection = renderSuggestionChips('Tìm kiếm gần đây', recent, openQuery);
+      if (recentSection) container.appendChild(recentSection);
+    }
+
+    const trendingSection = renderSuggestionChips('Từ khóa phổ biến', TRENDING_KEYWORDS, openQuery);
+    if (trendingSection) container.appendChild(trendingSection);
+  }
+
+  _doLiveUpdate(query, container, header) {
+    this.currentQuery = query;
+    syncSearchInputValue(query);
+
+    // Update URL without full navigation
+    const url = query
+      ? `${window.location.origin}/search?q=${encodeURIComponent(query)}`
+      : `${window.location.origin}/search`;
+    history.replaceState({ page: ROUTES.SEARCH, params: { q: query } }, '', url);
+
+    // Update header text
+    if (header) {
+      const titleEl = header.querySelector('.search-title');
+      const metaEl = header.querySelector('.search-meta');
+      if (titleEl) {
+        titleEl.textContent = query
+          ? (query.startsWith('category:') ? categoryLabel(query) : `"${query}"`)
+          : 'Tìm kiếm';
+      }
+      if (metaEl) {
+        metaEl.textContent = query
+          ? (query.startsWith('category:')
+            ? `Danh mục: ${categoryLabel(query)}`
+            : `Kết quả cho "${query}"`)
+          : 'Nhập từ khóa để tìm phim, thể loại yêu thích';
+      }
+    }
+
+    if (!query) {
+      this._renderSuggestions(container);
+      return;
+    }
+
+    this._fetchAndRenderResults(query, container);
+  }
+
+  async _fetchAndRenderResults(query, container) {
+    container.innerHTML = '';
+    container.appendChild(createSkeletonGrid(12));
+
+    if (this.abortController) {
+      try { this.abortController.abort(); } catch (_) {}
+    }
     this.abortController = requestManager.next('search');
 
     try {
       const payload = await searchMovies(query, { signal: this.abortController.signal });
       const items = (payload && Array.isArray(payload?.items)) ? payload.items : [];
 
-      // Remove skeleton
-      const skeleton = content.querySelector('.search-skeleton');
-      if (skeleton) skeleton.remove();
+      container.innerHTML = '';
 
       if (!items.length) {
-        content.appendChild(createEmptyState('Không tìm thấy phim phù hợp. Thử tìm kiếm khác hoặc khám phá danh mục.'));
+        container.appendChild(createEmptyState('Không tìm thấy phim phù hợp. Thử tìm kiếm khác hoặc khám phá danh mục.'));
         return;
       }
 
-      // Results info with count
       const resultsInfo = createElement('div', { className: 'results-info' }, [
         createElement('span', { className: 'results-count', text: `${items.length} kết quả tìm thấy` })
       ]);
-      content.appendChild(resultsInfo);
+      container.appendChild(resultsInfo);
 
-      // Movie grid with optimized rendering
       const favoriteSlugs = new Set(FavoritesStorage.list().map((item) => item.slug));
       const grid = createElement('div', { className: 'search-grid' });
 
@@ -234,13 +276,12 @@ export class SearchPage extends BasePage {
         grid.appendChild(card);
       });
 
-      content.appendChild(grid);
+      container.appendChild(grid);
     } catch (_) {
-      const skeleton = content.querySelector('.search-skeleton');
-      if (skeleton) skeleton.remove();
-      content.appendChild(createErrorState(UI_TEXT.networkError, [{
+      container.innerHTML = '';
+      container.appendChild(createErrorState(UI_TEXT.networkError, [{
         label: UI_TEXT.retry,
-        onClick: () => router.navigate(ROUTES.SEARCH, { q: query }, true)
+        onClick: () => this._doLiveUpdate(query, container)
       }]));
     }
   }
@@ -248,20 +289,14 @@ export class SearchPage extends BasePage {
   onMounted() {
     this.updateActiveTab('search');
     syncSearchInputValue(this.currentQuery);
-    const shouldRestore = SearchPage._restoreFocus;
-    SearchPage._restoreFocus = false;
-    if (this._searchInput && (shouldRestore || !this.currentQuery)) {
+    if (this._searchInput && !this.currentQuery) {
       try {
         this._searchInput.focus({ preventScroll: true });
       } catch (_) {
         this._searchInput.focus();
       }
-      if (shouldRestore && typeof this._searchInput.setSelectionRange === 'function') {
-        const len = this._searchInput.value.length;
-        try { this._searchInput.setSelectionRange(len, len); } catch (_) { /* ignore */ }
-      }
     }
-    if (!shouldRestore) window.scrollTo(0, 0);
+    window.scrollTo(0, 0);
   }
 
   async unmount() {
