@@ -400,6 +400,7 @@ body.watch-mode .tv-app-bar {
   mask-composite: exclude;
   opacity: 0;
   transition: opacity .28s ease;
+  pointer-events: none;
 }
 
 .search-box:focus-within::before {
@@ -1034,6 +1035,7 @@ body.watch-mode .tv-app-bar {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent);
   opacity: 0;
   transition: opacity 0.3s ease;
+  pointer-events: none;
 }
 
 .btn:hover::before {
@@ -1359,6 +1361,7 @@ body.watch-mode .tv-app-bar {
   mask-composite: exclude;
   opacity: 0;
   transition: opacity 0.3s ease;
+  pointer-events: none;
 }
 
 .card:hover {
