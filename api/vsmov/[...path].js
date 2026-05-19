@@ -1,30 +1,6 @@
 const UPSTREAM_BASE = 'https://phimapi.com';
 const REQUEST_TIMEOUT_MS = 15000;
 
-const ALLOWED_PATH_PREFIXES = [
-  '/danh-sach/phim-moi-cap-nhat',
-  '/v1/api/danh-sach/',
-  '/v1/api/tim-kiem',
-  '/phim/'
-];
-
-function isAllowedPath(path) {
-  return ALLOWED_PATH_PREFIXES.some((allowed) => path === allowed || path.startsWith(allowed));
-}
-
-function buildQueryString(queryParams = {}) {
-  const params = new URLSearchParams();
-  for (const [key, value] of Object.entries(queryParams)) {
-    if (value === undefined || value === null) continue;
-    if (Array.isArray(value)) {
-      value.forEach((item) => params.append(key, String(item)));
-    } else {
-      params.append(key, String(value));
-    }
-  }
-  return params.toString();
-}
-
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -44,17 +20,26 @@ export default async function handler(req, res) {
     .map((seg) => String(seg || '').replace(/^\/+|\/+$/g, ''))
     .filter(Boolean);
 
+  if (!cleanSegments.length) {
+    return res.status(400).json({ error: 'EMPTY_PATH' });
+  }
+
   if (cleanSegments.some((seg) => seg === '..' || seg === '.' || seg.includes('\\'))) {
     return res.status(400).json({ error: 'INVALID_PATH_SEGMENT' });
   }
 
   const apiPath = `/${cleanSegments.join('/')}`;
 
-  if (!isAllowedPath(apiPath)) {
-    return res.status(400).json({ error: 'INVALID_PATH', path: apiPath });
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(queryParams)) {
+    if (value === undefined || value === null) continue;
+    if (Array.isArray(value)) {
+      value.forEach((item) => params.append(key, String(item)));
+    } else {
+      params.append(key, String(value));
+    }
   }
-
-  const queryString = buildQueryString(queryParams);
+  const queryString = params.toString();
   const targetUrl = `${UPSTREAM_BASE}${apiPath}${queryString ? `?${queryString}` : ''}`;
 
   const controller = new AbortController();
@@ -71,15 +56,15 @@ export default async function handler(req, res) {
       }
     });
 
-    const contentType = response.headers.get('content-type') || '';
-
     if (!response.ok) {
       return res.status(response.status).json({
         error: `UPSTREAM_${response.status}`,
         status: response.status,
-        url: targetUrl
+        target: targetUrl
       });
     }
+
+    const contentType = response.headers.get('content-type') || '';
 
     if (!contentType.toLowerCase().includes('application/json')) {
       const text = await response.text();
@@ -95,7 +80,8 @@ export default async function handler(req, res) {
     const isAbort = error?.name === 'AbortError';
     return res.status(isAbort ? 504 : 502).json({
       error: isAbort ? 'UPSTREAM_TIMEOUT' : 'PROXY_ERROR',
-      message: String(error?.message || '')
+      message: String(error?.message || ''),
+      target: targetUrl
     });
   } finally {
     clearTimeout(timer);

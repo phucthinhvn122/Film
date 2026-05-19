@@ -5,17 +5,23 @@ export const BRAND = {
   shortDescription: 'Xem phim trực tuyến chất lượng cao với giao diện gọn gàng.'
 };
 
+// Upstream phim API. Public, supports CORS, can be reached directly from the browser.
+const UPSTREAM_DIRECT = 'https://phimapi.com';
+const PROXY_BASE = '/api/vsmov';
+
 function resolveApiBases() {
-  if (typeof window === 'undefined') return ['/api/vsmov'];
+  if (typeof window === 'undefined') return [PROXY_BASE, UPSTREAM_DIRECT];
   const { hostname, port } = window.location;
   const isLocalHost = hostname === 'localhost' || hostname === '127.0.0.1';
-  // Vercel dev defaults to port 3000 — keep using the /api/vsmov proxy.
-  // Other static-server ports (3001, 5000, 8080…) bypass straight to upstream.
+  // Vercel dev defaults to port 3000 — proxy is available, keep it as the primary.
   const isVercelDev = port === '3000' || port === '';
   if (isLocalHost && !isVercelDev) {
-    return ['https://phimapi.com'];
+    // Plain static server: proxy doesn't exist, talk to upstream directly.
+    return [UPSTREAM_DIRECT];
   }
-  return ['/api/vsmov'];
+  // Production / vercel dev: try proxy first (cached, rate-limited),
+  // fall back to direct upstream if the proxy is broken or has been redeployed.
+  return [PROXY_BASE, UPSTREAM_DIRECT];
 }
 
 export const API_BASES = resolveApiBases();

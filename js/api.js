@@ -80,10 +80,8 @@ function shouldTryAlternateSource(error, attemptIndex, totalAttempts) {
     return false;
   }
 
-  if (error?.status === 404) {
-    const contentType = String(error?.responseContentType || '').toLowerCase();
-    return !contentType.includes('application/json');
-  }
+  // If proxy breaks (404/5xx/CORS/non-json), still try direct upstream.
+  if (error?.status >= 400) return true;
 
   return true;
 }
