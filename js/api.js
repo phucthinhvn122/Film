@@ -10,6 +10,8 @@ import { stripHtml } from './dom.js';
 export class RequestManager {
   constructor() {
     this.controllers = new Map();
+    this.pendingRequests = new Map(); // Deduplication
+    this.requestQueue = []; // Priority queue for requests
   }
 
   next(key) {
@@ -28,12 +30,32 @@ export class RequestManager {
       // ignore
     }
     this.controllers.delete(key);
+    this.pendingRequests.delete(key);
   }
 
   cancelAll() {
     for (const [key] of this.controllers.entries()) {
       this.cancel(key);
     }
+    this.requestQueue = [];
+  }
+
+  // Smart deduplication: if request is pending, return existing Promise
+  getOrCreate(key, createFn) {
+    const existing = this.pendingRequests.get(key);
+    if (existing) {
+      console.log(`[RequestManager] Reusing pending request: ${key}`);
+      return existing;
+    }
+
+    const promise = createFn();
+    this.pendingRequests.set(key, promise);
+
+    promise.finally(() => {
+      this.pendingRequests.delete(key);
+    });
+
+    return promise;
   }
 }
 
@@ -71,13 +93,40 @@ function buildVsmovUrls(pathname = '') {
   return uniqueUrls(API_BASES.map((base) => `${base}${normalizedPath}`));
 }
 
+async function fetchWithRetry(url, options = {}, maxRetries = 2) {
+  let lastError = null;
+  
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await fetchJSON(url, options);
+    } catch (error) {
+      lastError = error;
+      
+      const nonRetryable = new Set(['REQUEST_ABORTED', 'INVALID_SLUG', 'CATEGORY_NOT_SUPPORTED', 'HTTP_404', 'HTTP_500', 'HTTP_502', 'REQUEST_TIMEOUT']);
+      const errorCode = String(error?.message || '').split(':')[0];
+      if (nonRetryable.has(errorCode)) {
+        throw error;
+      }
+      
+      // Exponential backoff: 500ms, 1500ms
+      if (attempt < maxRetries) {
+        const delay = Math.pow(2, attempt) * 500 + Math.random() * 300;
+        await new Promise(r => setTimeout(r, delay));
+      }
+    }
+  }
+  
+  throw lastError || new Error('NETWORK_ERROR');
+}
+
 async function fetchVsmovJSON(pathname, options = {}) {
   const urls = buildVsmovUrls(pathname);
   let lastError = null;
 
   for (let index = 0; index < urls.length; index += 1) {
     try {
-      return await fetchJSON(urls[index], options);
+      // Thử với retry cho mỗi URL
+      return await fetchWithRetry(urls[index], options, 2);
     } catch (error) {
       lastError = error;
       if (!shouldTryAlternateSource(error, index, urls.length)) {
@@ -325,15 +374,17 @@ export function getFirstEpisode(episodes = []) {
 
 export async function fetchHomeLatest(page = 1, { signal, force = false } = {}) {
   const normalizedPage = Math.max(1, Number(page) || 1);
-  const data = await fetchVsmovJSON(`/danh-sach/phim-moi-cap-nhat?page=${normalizedPage}`, {
+  const cacheKey = `latest:${normalizedPage}`;
+  const load = () => fetchVsmovJSON(`/danh-sach/phim-moi-cap-nhat?page=${normalizedPage}`, {
     signal,
     timeoutMs: REQUEST_TIMEOUT.DEFAULT,
     cacheNamespace: 'home',
-    cacheKey: `latest:${page}`,
+    cacheKey,
     cacheTTL: CACHE_TTL.HOME,
     force
-  });
-  return normalizeMovieListResponse(data);
+  }).then(normalizeMovieListResponse);
+
+  return force ? load() : requestManager.getOrCreate(cacheKey, load);
 }
 
 export async function fetchCategory(category, page = 1, { signal, force = false } = {}) {
@@ -341,31 +392,33 @@ export async function fetchCategory(category, page = 1, { signal, force = false 
   const type = CATEGORY_TYPE_MAP[category];
   if (!type) throw new Error('CATEGORY_NOT_SUPPORTED');
 
-  const data = await fetchVsmovJSON(`/v1/api/danh-sach/${encodeURIComponent(type)}?page=${normalizedPage}`, {
+  const cacheKey = `${category}:${normalizedPage}`;
+  const load = () => fetchVsmovJSON(`/v1/api/danh-sach/${encodeURIComponent(type)}?page=${normalizedPage}`, {
     signal,
     timeoutMs: REQUEST_TIMEOUT.DEFAULT,
     cacheNamespace: 'home',
-    cacheKey: `${category}:${normalizedPage}`,
+    cacheKey,
     cacheTTL: CACHE_TTL.HOME,
     force
-  });
-  return normalizeMovieListResponse(data);
+  }).then(normalizeMovieListResponse);
+
+  return force ? load() : requestManager.getOrCreate(cacheKey, load);
 }
 
 export async function fetchMovieDetail(slug, { signal, force = false } = {}) {
   const movieSlug = String(slug || '').trim();
   if (!movieSlug) throw new Error('INVALID_SLUG');
 
-  const data = await fetchVsmovJSON(`/phim/${encodeURIComponent(movieSlug)}`, {
+  const load = () => fetchVsmovJSON(`/phim/${encodeURIComponent(movieSlug)}`, {
     signal,
     timeoutMs: REQUEST_TIMEOUT.DETAIL,
     cacheNamespace: 'detail',
     cacheKey: movieSlug,
     cacheTTL: CACHE_TTL.DETAIL,
     force
-  });
+  }).then(normalizeMovieDetailResponse);
 
-  return normalizeMovieDetailResponse(data);
+  return force ? load() : requestManager.getOrCreate(`detail:${movieSlug}`, load);
 }
 
 export async function searchMovies(keyword, { signal, force = false } = {}) {
@@ -379,16 +432,17 @@ export async function searchMovies(keyword, { signal, force = false } = {}) {
     }
   }
 
-  const data = await fetchVsmovJSON(`/v1/api/tim-kiem?keyword=${encodeURIComponent(q)}`, {
+  const cacheKey = q.toLowerCase();
+  const load = () => fetchVsmovJSON(`/v1/api/tim-kiem?keyword=${encodeURIComponent(q)}&limit=64`, {
     signal,
     timeoutMs: REQUEST_TIMEOUT.SEARCH,
     cacheNamespace: 'search',
-    cacheKey: q.toLowerCase(),
+    cacheKey,
     cacheTTL: CACHE_TTL.SEARCH,
     force
-  });
+  }).then(normalizeMovieListResponse);
 
-  return normalizeMovieListResponse(data);
+  return force ? load() : requestManager.getOrCreate(`search:${cacheKey}`, load);
 }
 
 export async function fetchTmdbMeta(title, year, { signal, force = false } = {}) {

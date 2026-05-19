@@ -220,7 +220,21 @@ export function createMovieCard(movie, options = {}) {
   }
 
   const open = () => options.onOpen?.(movie);
+  let prefetchTimer = null;
+  const schedulePrefetch = () => {
+    if (!options.onPrefetch || prefetchTimer) return;
+    prefetchTimer = setTimeout(() => options.onPrefetch?.(movie), 140);
+  };
+  const cancelPrefetch = () => {
+    if (!prefetchTimer) return;
+    clearTimeout(prefetchTimer);
+    prefetchTimer = null;
+  };
 
+  card.addEventListener('pointerenter', schedulePrefetch, { passive: true });
+  card.addEventListener('pointerleave', cancelPrefetch, { passive: true });
+  card.addEventListener('focus', schedulePrefetch);
+  card.addEventListener('blur', cancelPrefetch);
   card.addEventListener('click', open);
   card.addEventListener('keydown', (event) => {
     if (event.key === 'Enter' || event.key === ' ') {

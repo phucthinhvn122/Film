@@ -8,3 +8,11 @@ Thumbs.db
 .snapshots/
 .vscode/
 package-lock.json
+android-tv-app/.gradle/
+android-tv-app/local.properties
+android-tv-app/app/build/
+android-tv-app/keystore/
+android-tv-app/keystore.properties
+
+.vercel
+.env*.local

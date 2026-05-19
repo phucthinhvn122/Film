@@ -218,6 +218,15 @@ export async function renderWatchPage(ctx, params = {}) {
     page.appendChild(playerWrap);
 
     const controls = createElement('div', { className: 'controls' });
+    
+    // Phím tắt hiển thị
+    const shortcutsHint = createElement('div', { className: 'shortcuts-hint' }, [
+      createElement('span', { text: '␣ Play/Pause' }),
+      createElement('span', { text: '← → Seek' }),
+      createElement('span', { text: 'F Fullscreen' }),
+      createElement('span', { text: 'M Mute' })
+    ]);
+    controls.appendChild(shortcutsHint);
     const progressWrap = createElement('div', { className: 'progress-wrap' });
     const progressFill = createElement('div', { className: 'progress-fill' });
     progressWrap.appendChild(progressFill);
@@ -569,10 +578,14 @@ export async function renderWatchPage(ctx, params = {}) {
       bind(video, 'play', () => {
         const icon = playBtn.querySelector('i');
         if (icon) icon.className = 'fa-solid fa-pause';
+        page.classList.add('playing');
+        page.classList.remove('paused');
       });
       bind(video, 'pause', () => {
         const icon = playBtn.querySelector('i');
         if (icon) icon.className = 'fa-solid fa-play';
+        page.classList.add('paused');
+        page.classList.remove('playing');
       });
       bind(video, 'ended', () => {
         saveProgress(true);
@@ -618,15 +631,6 @@ export async function renderWatchPage(ctx, params = {}) {
           hls.attachMedia(video);
           bindHls(hls, Hls.Events.MANIFEST_PARSED, (_, data) => {
             const levels = getUniqueQualityLevels(data?.levels || hls.levels || []);
-
-            if (levels.length > 0) {
-              const maxLvlIdx = Number(levels[0].value);
-              hls.currentLevel = maxLvlIdx;
-              hls.loadLevel = maxLvlIdx;
-              qualityMode = String(maxLvlIdx);
-              updateQualityLabel(levels[0].label);
-            }
-
             renderQualityMenu(levels);
           });
           bindHls(hls, Hls.Events.LEVEL_SWITCHED, (_, data) => {
@@ -653,7 +657,7 @@ export async function renderWatchPage(ctx, params = {}) {
 
       if (preserveTime) {
         const saved = ProgressStorage.get(detail.movie.slug, episode.slug, activeServerName);
-        if (saved.progressSeconds > 0) {
+        if (saved?.progressSeconds > 0) {
           video.currentTime = saved.progressSeconds;
         }
       }

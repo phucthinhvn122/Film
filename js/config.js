@@ -5,7 +5,7 @@ export const BRAND = {
   shortDescription: 'Xem phim trực tuyến chất lượng cao với giao diện gọn gàng.'
 };
 
-export const API_BASES = ['https://phimapi.com'];
+export const API_BASES = ['/api/vsmov'];
 
 export const CATEGORY_LABELS = {
   latest: 'Mới cập nhật',
@@ -32,12 +32,12 @@ export const STORAGE_LIMITS = {
 };
 
 export const CACHE_TTL = {
-  HOME: 5 * 60 * 1000,
-  DETAIL: 30 * 60 * 1000,
-  SEARCH: 4 * 60 * 1000,
-  TMDB_META: 6 * 60 * 60 * 1000,
-  TMDB_ERROR: 90 * 1000,
-  IMAGE_PROXY: 60 * 60 * 1000
+  HOME: 10 * 60 * 1000,
+  DETAIL: 60 * 60 * 1000,
+  SEARCH: 8 * 60 * 1000,
+  TMDB_META: 12 * 60 * 60 * 1000,
+  TMDB_ERROR: 2 * 60 * 1000,
+  IMAGE_PROXY: 24 * 60 * 60 * 1000
 };
 
 export const CACHE_MAX_SIZE = {

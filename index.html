@@ -9,6 +9,8 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Netflix">
   <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png">
   <link rel="manifest" href="/manifest.json">
   <title>Netflix | Xem phim trực tuyến</title>
 
@@ -21,7 +23,7 @@
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
-  <link rel="stylesheet" href="/style.css?v=7">
+  <link rel="stylesheet" href="/style.css?v=9">
 </head>
 <body>
   <header id="header">
@@ -42,6 +44,9 @@
       <button class="top-icon-btn" type="button" title="Thong bao" aria-label="Thong bao" data-action="notifications">
         <i class="fa-regular fa-bell"></i>
       </button>
+      <button class="top-icon-btn theme-toggle" type="button" title="Doi giao dien" aria-label="Doi giao dien" data-action="theme-toggle">
+        <i class="fa-solid fa-moon"></i>
+      </button>
       <img class="profile-avatar" src="https://i.pravatar.cc/64?img=12" alt="Ho so nguoi dung" loading="lazy" data-action="profile">
 
       <form class="search-box" data-action="search-form" role="search" aria-label="Tim phim tren Netflix">
@@ -59,6 +64,18 @@
       </button>
     </div>
   </header>
+
+  <nav id="tv-app-bar" class="tv-app-bar" aria-label="Dieu huong Android TV">
+    <button type="button" class="tv-logo" data-action="home" aria-label="Ve trang chu">Net<span>flix</span></button>
+    <div class="tv-nav-track" role="menubar" aria-label="Muc dieu huong">
+      <button type="button" class="tv-nav-item active" data-tab="home" data-action="home" role="menuitem">Trang chu</button>
+      <button type="button" class="tv-nav-item" data-tab="series" data-action="category" data-category="phim-bo" role="menuitem">Phim bo</button>
+      <button type="button" class="tv-nav-item" data-tab="movie" data-action="category" data-category="phim-le" role="menuitem">Phim le</button>
+      <button type="button" class="tv-nav-item" data-tab="search" data-action="search" role="menuitem">Kham pha</button>
+      <button type="button" class="tv-nav-item" data-tab="history" data-action="history" role="menuitem">Lich su</button>
+      <button type="button" class="tv-nav-item" data-tab="favorites" data-action="favorites" role="menuitem">Yeu thich</button>
+    </div>
+  </nav>
 
   <div class="mob-drawer" id="drawer" data-action="drawer-backdrop">
     <div class="mob-drawer-inner" data-action="drawer-inner" role="dialog" aria-label="Menu di dong">
@@ -98,6 +115,6 @@
     </button>
   </nav>
 
-  <script type="module" src="/js/app.js"></script>
+  <script type="module" src="/js/app.js?v=9"></script>
 </body>
 </html>

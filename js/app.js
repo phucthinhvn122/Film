@@ -10,6 +10,7 @@ import { HistoryPage } from './history.js';
 import { FavoritesPage } from './favorites.js';
 import { initUI, destroyUI } from './ui.js';
 import { requestManager } from './api.js';
+import { initTheme } from './theme.js';
 
 class App {
   constructor() {
@@ -25,6 +26,7 @@ class App {
     if (this.isInitialized) return;
 
     try {
+      initTheme();
       StorageUtils.migrate();
       initCacheCleanup();
       CacheManager.cleanup();

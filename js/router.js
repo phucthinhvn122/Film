@@ -154,6 +154,11 @@ export class BasePage {
       item.classList.toggle('active', item.dataset.tab === tabName);
     });
 
+    // Update Android TV app bar if exists
+    qsa('.tv-nav-item').forEach(item => {
+      item.classList.toggle('active', item.dataset.tab === tabName);
+    });
+
     // Update desktop navigation if exists
     qsa('.nav-links a').forEach(item => {
       item.classList.toggle('active', item.id === `nav-${tabName}`);
@@ -195,16 +200,22 @@ export class Router {
     this.notFoundPage = null;
   }
 
-  async navigate(pageName, params = {}, replace = false) {
+  async navigate(pageName, params = {}, options = {}) {
     if (routerState.isTransitioning) {
       console.warn('Router is transitioning, ignoring navigation');
       return;
     }
 
+    const replace = typeof options === 'boolean' ? options : Boolean(options?.replace);
+
     try {
       // Unmount current page
       if (this.currentPage) {
-        await this.currentPage.unmount();
+        try {
+          await this.currentPage.unmount();
+        } catch (unmountError) {
+          console.warn('Unmount error suppressed:', unmountError);
+        }
         this.currentPage = null;
       }
 
@@ -225,7 +236,10 @@ export class Router {
 
     } catch (error) {
       console.error('Navigation error:', error);
-      
+
+      // Reset transitioning flag in case it was stuck
+      routerState.setTransitioning(false);
+
       // Try to navigate to not found page or default page
       if (this.notFoundPage && pageName !== this.notFoundPage) {
         await this.navigate(this.notFoundPage, { error: error.message }, replace);
@@ -235,6 +249,9 @@ export class Router {
         // Last resort - show error
         this.showFatalError(error);
       }
+    } finally {
+      // Always reset to avoid permanent lock
+      routerState.setTransitioning(false);
     }
   }
 
@@ -258,13 +275,15 @@ export class Router {
       case PAGES.DETAIL:
         return `${origin}/detail/${encodeURIComponent(params.slug || '')}`;
       
-      case PAGES.WATCH:
+      case PAGES.WATCH: {
         const server = params.server ? `?server=${encodeURIComponent(params.server)}` : '';
         return `${origin}/watch/${encodeURIComponent(params.slug || '')}/${encodeURIComponent(params.epSlug || params.ep || '')}${server}`;
-      
-      case PAGES.SEARCH:
+      }
+
+      case PAGES.SEARCH: {
         const query = params.q ? `?q=${encodeURIComponent(params.q)}` : '';
         return `${origin}/search${query}`;
+      }
       
       case PAGES.HISTORY:
         return `${origin}/history`;
@@ -333,10 +352,10 @@ export class Router {
   async init() {
     // Handle browser back/forward
     window.addEventListener('popstate', (e) => {
-      const state = e.state?.route
-        ? { page: e.state.route.name, params: e.state.route.params || {} }
-        : (e.state || { page: PAGES.HOME, params: {} });
-      this.navigate(state.page, state.params, true);
+      const state = (e.state && typeof e.state === 'object' && e.state.page)
+        ? e.state
+        : { page: PAGES.HOME, params: {} };
+      this.navigate(state.page, state.params || {}, true);
     });
 
     // Parse current URL and navigate

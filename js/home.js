@@ -1,5 +1,5 @@
 import { CATEGORY_LABELS, DEFAULT_PAGE_SIZE, ROUTES, UI_TEXT } from './config.js';
-import { requestManager, fetchHomeLatest, fetchCategory } from './api.js';
+import { requestManager, fetchHomeLatest, fetchCategory, fetchMovieDetail } from './api.js';
 import { BasePage, router } from './router.js';
 import {
   createElement,
@@ -48,6 +48,9 @@ function fillCards(grid, movies, ctx) {
     const card = createMovieCard(movie, {
       isFavorite: favoriteSlugs.has(movie.slug),
       onOpen: (pickedMovie) => ctx.navigate(ROUTES.DETAIL, { slug: pickedMovie.slug }),
+      onPrefetch: (pickedMovie) => {
+        fetchMovieDetail(pickedMovie.slug, { force: false }).catch(() => {});
+      },
       onFavoriteToggle: () => {
         const added = FavoritesStorage.toggle(movie);
         if (added) favoriteSlugs.add(movie.slug);
@@ -136,7 +139,7 @@ async function renderHomePage(ctx) {
     ]);
 
     if (controller.signal.aborted) {
-      return { node, cleanup: () => requestManager.cancel('home') };
+      return { node, cleanup: () => { requestManager.cancel('home'); heroCarousel.cleanup(); } };
     }
 
     const sectionsWrap = createElement('div', { className: 'home-sections' });
@@ -153,11 +156,11 @@ async function renderHomePage(ctx) {
     if (historyRow) sectionsWrap.appendChild(historyRow);
 
     const map = [
-      { result: latestResult, key: 'latest', subtitle: 'Các tựa phim vừa được cập nhật' },
-      { result: seriesResult, key: 'phim-bo', subtitle: 'Theo dõi tập mới nhất mỗi ngày' },
-      { result: movieResult, key: 'phim-le', subtitle: 'Phim lẻ hấp dẫn chọn lọc' },
-      { result: animeResult, key: 'hoat-hinh', subtitle: 'Kho anime và hoạt hình nổi bật' },
-      { result: tvResult, key: 'tv-shows', subtitle: 'Chương trình truyền hình thịnh hành' }
+      { result: latestResult, key: 'latest', subtitle: 'Tiếp cận nhanh các phim vừa cập nhật' },
+      { result: seriesResult, key: 'phim-bo', subtitle: 'Xem dài tập, cập nhật tập mới liên tục' },
+      { result: movieResult, key: 'phim-le', subtitle: 'Chọn nhanh phim lẻ nổi bật cho buổi tối' },
+      { result: animeResult, key: 'hoat-hinh', subtitle: 'Anime và hoạt hình dễ xem, dễ theo dõi' },
+      { result: tvResult, key: 'tv-shows', subtitle: 'Show truyền hình và nội dung giải trí' }
     ];
 
     map.forEach((item) => {
@@ -185,7 +188,7 @@ async function renderHomePage(ctx) {
 
     return {
       node,
-      cleanup: () => requestManager.cancel('home'),
+      cleanup: () => { requestManager.cancel('home'); heroCarousel.cleanup(); },
       title: 'Trang chu'
     };
   } catch (error) {
@@ -196,7 +199,7 @@ async function renderHomePage(ctx) {
 
     return {
       node,
-      cleanup: () => requestManager.cancel('home'),
+      cleanup: () => { requestManager.cancel('home'); heroCarousel.cleanup(); },
       title: 'Trang chu'
     };
   }
