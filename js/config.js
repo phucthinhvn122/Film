@@ -5,7 +5,20 @@ export const BRAND = {
   shortDescription: 'Xem phim trực tuyến chất lượng cao với giao diện gọn gàng.'
 };
 
-export const API_BASES = ['/api/vsmov'];
+function resolveApiBases() {
+  if (typeof window === 'undefined') return ['/api/vsmov'];
+  const { hostname, port } = window.location;
+  const isLocalHost = hostname === 'localhost' || hostname === '127.0.0.1';
+  // Vercel dev defaults to port 3000 — keep using the /api/vsmov proxy.
+  // Other static-server ports (3001, 5000, 8080…) bypass straight to upstream.
+  const isVercelDev = port === '3000' || port === '';
+  if (isLocalHost && !isVercelDev) {
+    return ['https://phimapi.com'];
+  }
+  return ['/api/vsmov'];
+}
+
+export const API_BASES = resolveApiBases();
 
 export const CATEGORY_LABELS = {
   latest: 'Mới cập nhật',
