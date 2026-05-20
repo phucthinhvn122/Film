@@ -1,6 +1,7 @@
 {
   "name": "thinfilm",
   "version": "2.0.0",
+  "type": "module",
   "private": true,
   "description": "ThinhFilm - Nền tảng xem phim trực tuyến (Vercel static + serverless)",
   "scripts": {
