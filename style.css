@@ -2701,25 +2701,31 @@ mark.hl {
 
 .ctrl-row {
   display: flex;
+  flex-direction: row;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  width: 100%
+  width: 100%;
+  flex-wrap: nowrap
 }
 
 .ctrl-left {
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: 8px;
   flex: 1;
-  min-width: 0
+  min-width: 0;
+  overflow: hidden
 }
 
 .ctrl-right {
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: 8px;
-  flex-shrink: 0
+  flex-shrink: 0;
+  flex-wrap: nowrap
 }
 
 .cb:hover {
