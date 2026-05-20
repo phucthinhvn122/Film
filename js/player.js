@@ -692,7 +692,6 @@ export async function renderWatchPage(ctx, params = {}) {
       } else {
         video.src = source.url;
       }
-    }
 
       if (preserveTime) {
         const saved = ProgressStorage.get(detail.movie.slug, episode.slug, activeServerName);
