@@ -355,6 +355,21 @@ export async function renderWatchPage(ctx, params = {}) {
           createElement('strong', { text: 'Chất lượng' }),
           createElement('span', { text: 'Tự động' })
         ]));
+        const autoBtn = createElement('button', {
+          type: 'button',
+          className: 'qbtn active',
+          dataset: { qualityValue: 'auto' }
+        }, [
+          createElement('span', { text: 'Auto' }),
+          createElement('span', { className: 'qbtn-meta', text: 'Tự động tối ưu' })
+        ]);
+        autoBtn.addEventListener('click', () => {
+          if (hls) { hls.currentLevel = -1; hls.nextLevel = -1; }
+          qualityMode = 'auto';
+          updateQualityLabel('Auto');
+          closeQualityMenu();
+        });
+        qmenu.appendChild(autoBtn);
         updateQualityLabel(activeSourceType === 'embed' ? 'Embed' : 'Auto');
         qualityBtn.disabled = activeSourceType !== 'm3u8';
         return;
@@ -628,49 +643,56 @@ export async function renderWatchPage(ctx, params = {}) {
 
       bind(video, 'error', handleFatalError);
 
-      if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = source.url;
-      } else {
-        const Hls = await ensureHlsScript();
-        if (!Hls?.isSupported?.()) {
-          video.src = source.url;
-        } else {
-          hls = new Hls({
-            enableWorker: true,
-            lowLatencyMode: true,
-            backBufferLength: 90,
-            maxBufferSize: 60 * 1000 * 1000,
-            maxMaxBufferLength: 600,
-            capLevelToPlayerSize: false,
-            startLevel: -1
-          });
-          hls.loadSource(source.url);
-          hls.attachMedia(video);
-          bindHls(hls, Hls.Events.MANIFEST_PARSED, (_, data) => {
-            const levels = getUniqueQualityLevels(data?.levels || hls.levels || []);
+      const Hls = await ensureHlsScript().catch(() => null);
+      if (Hls?.isSupported?.()) {
+        hls = new Hls({
+          enableWorker: true,
+          lowLatencyMode: true,
+          backBufferLength: 90,
+          maxBufferSize: 60 * 1000 * 1000,
+          maxMaxBufferLength: 600,
+          capLevelToPlayerSize: false,
+          startLevel: -1
+        });
+        hls.loadSource(source.url);
+        hls.attachMedia(video);
+        bindHls(hls, Hls.Events.MANIFEST_PARSED, (_, data) => {
+          const levels = getUniqueQualityLevels(data?.levels || hls.levels || []);
+          renderQualityMenu(levels);
+        });
+        bindHls(hls, Hls.Events.LEVEL_LOADED, () => {
+          if (qualityBtn.disabled && hls.levels?.length > 1) {
+            const levels = getUniqueQualityLevels(hls.levels);
             renderQualityMenu(levels);
-          });
-          bindHls(hls, Hls.Events.LEVEL_SWITCHED, (_, data) => {
-            const nextLevel = Number(data?.level);
-            if (qualityMode === 'auto') {
-              updateQualityLabel('Auto');
-              return;
+          }
+        });
+        bindHls(hls, Hls.Events.LEVEL_SWITCHED, (_, data) => {
+          const nextLevel = Number(data?.level);
+          if (qualityMode === 'auto') {
+            updateQualityLabel('Auto');
+            return;
+          }
+          const currentLevel = hls.levels?.[nextLevel];
+          if (currentLevel?.height) updateQualityLabel(`${currentLevel.height}p`);
+        });
+        bindHls(hls, Hls.Events.ERROR, (_, data) => {
+          if (data.fatal) {
+            if (data.type === Hls.ErrorTypes.NETWORK_ERROR || data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+              handleFatalError();
+            } else {
+              hls.destroy();
+              handleFatalError();
             }
-            const currentLevel = hls.levels?.[nextLevel];
-            if (currentLevel?.height) updateQualityLabel(`${currentLevel.height}p`);
-          });
-          bindHls(hls, Hls.Events.ERROR, (_, data) => {
-            if (data.fatal) {
-              if (data.type === Hls.ErrorTypes.NETWORK_ERROR || data.type === Hls.ErrorTypes.MEDIA_ERROR) {
-                handleFatalError();
-              } else {
-                hls.destroy();
-                handleFatalError();
-              }
-            }
-          });
-        }
+          }
+        });
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = source.url;
+        qualityBtn.disabled = true;
+        updateQualityLabel('Auto');
+      } else {
+        video.src = source.url;
       }
+    }
 
       if (preserveTime) {
         const saved = ProgressStorage.get(detail.movie.slug, episode.slug, activeServerName);
