@@ -178,7 +178,7 @@ export async function renderWatchPage(ctx, params = {}) {
     const backBtn = createElement('button', {
       type: 'button',
       className: 'watch-back',
-      'aria-label': 'Quay lai trang chi tiet'
+      'aria-label': 'Quay lại trang chi tiết'
     }, [createElement('i', { class: 'fa-solid fa-arrow-left', 'aria-hidden': 'true' })]);
     backBtn.addEventListener('click', () => {
       cleanup();
@@ -751,6 +751,24 @@ export async function renderWatchPage(ctx, params = {}) {
         closeQualityMenu();
       }
     });
+
+    let idleTimer = null;
+    const IDLE_DELAY = 3000;
+    const setIdle = () => {
+      if (video && !video.paused) page.classList.add('idle');
+    };
+    const wakeUp = () => {
+      page.classList.remove('idle');
+      if (idleTimer) clearTimeout(idleTimer);
+      idleTimer = setTimeout(setIdle, IDLE_DELAY);
+    };
+    bind(playerWrap, 'mousemove', wakeUp);
+    bind(playerWrap, 'touchstart', wakeUp, { passive: true });
+    bind(playerWrap, 'mouseleave', () => {
+      if (idleTimer) clearTimeout(idleTimer);
+      setIdle();
+    });
+    removeListeners.push(() => { if (idleTimer) clearTimeout(idleTimer); });
 
     mountSource(selectedServer.name, selectedEpisode.slug);
 
