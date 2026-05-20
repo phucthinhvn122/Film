@@ -2739,6 +2739,12 @@ mark.hl {
   transform: scale(.95)
 }
 
+.cb:disabled {
+  opacity: .3;
+  pointer-events: none;
+  transform: none
+}
+
 .cb.on {
   color: #e50914;
   background: rgba(229, 9, 20, .15);
@@ -4322,6 +4328,13 @@ body.watch-mode .mobile-bottom-nav {
   .watch-page #pipbtn,
   .watch-page #theaterbtn,
   .watch-page #autonextbtn {
+    display: none
+  }
+
+  .watch-page #skipbackbtn,
+  .watch-page #skipfwdbtn,
+  .watch-page #prevepbtn,
+  .watch-page #nextepbtn {
     display: none
   }
 

@@ -235,17 +235,29 @@ export async function renderWatchPage(ctx, params = {}) {
     const left = createElement('div', { className: 'ctrl-left' });
     const right = createElement('div', { className: 'ctrl-right' });
 
-    const playBtn = createElement('button', { type: 'button', className: 'cb', id: 'playbtn' }, [
+    const playBtn = createElement('button', { type: 'button', className: 'cb', id: 'playbtn', title: 'Phát/Tạm dừng (Space)' }, [
       createElement('i', { class: 'fa-solid fa-play', 'aria-hidden': 'true' })
     ]);
-    const muteBtn = createElement('button', { type: 'button', className: 'cb', id: 'mutebtn' }, [
+    const prevEpBtn = createElement('button', { type: 'button', className: 'cb', id: 'prevepbtn', title: 'Tập trước' }, [
+      createElement('i', { class: 'fa-solid fa-backward-step', 'aria-hidden': 'true' })
+    ]);
+    const nextEpBtn = createElement('button', { type: 'button', className: 'cb', id: 'nextepbtn', title: 'Tập sau' }, [
+      createElement('i', { class: 'fa-solid fa-forward-step', 'aria-hidden': 'true' })
+    ]);
+    const skipBackBtn = createElement('button', { type: 'button', className: 'cb', id: 'skipbackbtn', title: 'Lùi 10 giây (←)' }, [
+      createElement('i', { class: 'fa-solid fa-rotate-left', 'aria-hidden': 'true' })
+    ]);
+    const skipFwdBtn = createElement('button', { type: 'button', className: 'cb', id: 'skipfwdbtn', title: 'Tới 10 giây (→)' }, [
+      createElement('i', { class: 'fa-solid fa-rotate-right', 'aria-hidden': 'true' })
+    ]);
+    const muteBtn = createElement('button', { type: 'button', className: 'cb', id: 'mutebtn', title: 'Tắt/Bật âm (M)' }, [
       createElement('i', { class: 'fa-solid fa-volume-high', 'aria-hidden': 'true' })
     ]);
-    const fsBtn = createElement('button', { type: 'button', className: 'cb', id: 'fsbtn' }, [
+    const fsBtn = createElement('button', { type: 'button', className: 'cb', id: 'fsbtn', title: 'Toàn màn hình (F)' }, [
       createElement('i', { class: 'fa-solid fa-expand', 'aria-hidden': 'true' })
     ]);
-    const retryBtn = createElement('button', { type: 'button', className: 'cb', id: 'retrybtn' }, [
-      createElement('i', { class: 'fa-solid fa-rotate-right', 'aria-hidden': 'true' })
+    const retryBtn = createElement('button', { type: 'button', className: 'cb', id: 'retrybtn', title: 'Tải lại nguồn' }, [
+      createElement('i', { class: 'fa-solid fa-arrows-rotate', 'aria-hidden': 'true' })
     ]);
     const qualityBtn = createElement('button', {
       type: 'button',
@@ -264,6 +276,10 @@ export async function renderWatchPage(ctx, params = {}) {
     qmenuWrap.appendChild(qmenu);
 
     left.appendChild(playBtn);
+    left.appendChild(skipBackBtn);
+    left.appendChild(skipFwdBtn);
+    left.appendChild(prevEpBtn);
+    left.appendChild(nextEpBtn);
     left.appendChild(muteBtn);
     left.appendChild(qualityText);
     left.appendChild(timeText);
@@ -438,6 +454,7 @@ export async function renderWatchPage(ctx, params = {}) {
         button.classList.toggle('active', button.dataset.serverName === activeServerName);
       });
       rebuildEpisodeGrid(server);
+      updateEpisodeBtns();
 
       title.textContent = `${detail.movie.name} • ${episode.name || ''}`;
       metaOverlay.querySelector('.player-meta-ep').textContent = episode.name || '';
@@ -683,6 +700,90 @@ export async function renderWatchPage(ctx, params = {}) {
       if (video.paused) video.play().catch(() => {});
       else video.pause();
     });
+
+    const seekBy = (deltaSeconds) => {
+      if (!video) return;
+      const duration = Number.isFinite(video.duration) ? video.duration : 0;
+      const target = (Number(video.currentTime) || 0) + deltaSeconds;
+      if (duration > 0) {
+        video.currentTime = Math.max(0, Math.min(duration - 0.5, target));
+      } else {
+        video.currentTime = Math.max(0, target);
+      }
+    };
+
+    const goToEpisode = (offset) => {
+      const server = detail.episodes.find((s) => s.name === activeServerName) || detail.episodes[0];
+      if (!server) return;
+      const list = server.items || [];
+      const idx = list.findIndex((ep) => ep.slug === activeEpisodeSlug);
+      if (idx < 0) return;
+      const target = list[idx + offset];
+      if (target) mountSource(activeServerName, target.slug);
+    };
+
+    const updateEpisodeBtns = () => {
+      const server = detail.episodes.find((s) => s.name === activeServerName) || detail.episodes[0];
+      const list = server?.items || [];
+      const idx = list.findIndex((ep) => ep.slug === activeEpisodeSlug);
+      prevEpBtn.disabled = idx <= 0;
+      nextEpBtn.disabled = idx < 0 || idx >= list.length - 1;
+    };
+
+    skipBackBtn.addEventListener('click', () => seekBy(-PLAYER_CONFIG.SEEK_STEP_SECONDS));
+    skipFwdBtn.addEventListener('click', () => seekBy(PLAYER_CONFIG.SEEK_STEP_SECONDS));
+    prevEpBtn.addEventListener('click', () => goToEpisode(-1));
+    nextEpBtn.addEventListener('click', () => goToEpisode(1));
+
+    let lastTapAt = 0;
+    let lastTapX = 0;
+    let pendingClickTimer = null;
+    const onPlayerBodyClick = (event) => {
+      if (!video || activeSourceType !== 'm3u8') return;
+      if (event.target.tagName === 'IFRAME') return;
+      if (pendingClickTimer) clearTimeout(pendingClickTimer);
+      pendingClickTimer = setTimeout(() => {
+        pendingClickTimer = null;
+        if (video.paused) video.play().catch(() => {});
+        else video.pause();
+      }, 250);
+    };
+    const onPlayerBodyDblClick = (event) => {
+      if (!video || activeSourceType !== 'm3u8') return;
+      if (pendingClickTimer) {
+        clearTimeout(pendingClickTimer);
+        pendingClickTimer = null;
+      }
+      const rect = playerBody.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const isLeft = x < rect.width / 2;
+      seekBy(isLeft ? -PLAYER_CONFIG.SEEK_STEP_SECONDS : PLAYER_CONFIG.SEEK_STEP_SECONDS);
+    };
+    const onPlayerBodyTouch = (event) => {
+      if (!video || activeSourceType !== 'm3u8') return;
+      const touch = event.changedTouches?.[0];
+      if (!touch) return;
+      const now = Date.now();
+      const rect = playerBody.getBoundingClientRect();
+      const x = touch.clientX - rect.left;
+      if (now - lastTapAt < 320 && Math.abs(x - lastTapX) < 80) {
+        if (pendingClickTimer) {
+          clearTimeout(pendingClickTimer);
+          pendingClickTimer = null;
+        }
+        const isLeft = x < rect.width / 2;
+        seekBy(isLeft ? -PLAYER_CONFIG.SEEK_STEP_SECONDS : PLAYER_CONFIG.SEEK_STEP_SECONDS);
+        lastTapAt = 0;
+        event.preventDefault();
+      } else {
+        lastTapAt = now;
+        lastTapX = x;
+      }
+    };
+    bind(playerBody, 'click', onPlayerBodyClick);
+    bind(playerBody, 'dblclick', onPlayerBodyDblClick);
+    bind(playerBody, 'touchend', onPlayerBodyTouch);
+    removeListeners.push(() => { if (pendingClickTimer) clearTimeout(pendingClickTimer); });
 
     muteBtn.addEventListener('click', () => {
       if (!video) return;
