@@ -170,6 +170,19 @@ export const ProgressStorage = {
       durationSeconds: Math.max(0, Number(durationSeconds) || 0),
       updatedAt: Date.now()
     };
+
+    const MAX_ENTRIES = 200;
+    const keys = Object.keys(all);
+    if (keys.length > MAX_ENTRIES) {
+      const sorted = keys
+        .map((k) => ({ k, t: Number(all[k]?.updatedAt) || 0 }))
+        .sort((a, b) => b.t - a.t);
+      const toKeep = new Set(sorted.slice(0, MAX_ENTRIES).map((e) => e.k));
+      for (const k of keys) {
+        if (!toKeep.has(k)) delete all[k];
+      }
+    }
+
     return safeWriteJSON(STORAGE_KEYS.WATCH_PROGRESS, all);
   }
 };

@@ -720,6 +720,7 @@ export async function renderWatchPage(ctx, params = {}) {
     });
 
     const onKeyDown = (event) => {
+      if (!document.body.classList.contains('watch-mode')) return;
       const tag = String(event.target?.tagName || '').toLowerCase();
       if (tag === 'input' || tag === 'textarea' || tag === 'button') return;
 
@@ -731,10 +732,13 @@ export async function renderWatchPage(ctx, params = {}) {
 
       if (!video) return;
 
+      const duration = Number.isFinite(video.duration) ? video.duration : 0;
       if (event.key === 'ArrowLeft') {
         video.currentTime = Math.max(0, (video.currentTime || 0) - PLAYER_CONFIG.SEEK_STEP_SECONDS);
       } else if (event.key === 'ArrowRight') {
-        video.currentTime = Math.min((video.duration || 0) - 1, (video.currentTime || 0) + PLAYER_CONFIG.SEEK_STEP_SECONDS);
+        if (duration > 0) {
+          video.currentTime = Math.min(duration - 1, (video.currentTime || 0) + PLAYER_CONFIG.SEEK_STEP_SECONDS);
+        }
       } else if (event.key.toLowerCase() === 'f') {
         fsBtn.click();
       } else if (event.key.toLowerCase() === 'm') {

@@ -172,6 +172,7 @@ export function syncSearchInputValue(value = '') {
 }
 
 export function initUI(actions) {
+  if (cleanupFns.length) destroyUI();
   tvMode = isLikelyAndroidTv();
   document.body.classList.toggle('tv-mode', tvMode);
 

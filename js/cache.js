@@ -36,7 +36,7 @@ class TTLCache {
     }
 
     this.map.set(key, {
-      value: value === null ? CACHE_NULL : value,
+      value: (value === null || value === undefined) ? CACHE_NULL : value,
       expiresAt: Date.now() + Math.max(2000, Number(ttlMs) || 0),
       lastAccess: Date.now()
     });

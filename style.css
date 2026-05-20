@@ -228,7 +228,8 @@ button,
 }
 
 :focus-visible {
-  outline: none;
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* HEADER - Modern Netflix-inspired design */
@@ -4584,7 +4585,7 @@ body {
 }
 
 .card-thumb {
-  aspect-ratio: 2 / 3 !important;
+  aspect-ratio: var(--thumb-ratio, 2 / 3);
   min-height: 180px;
 }
 

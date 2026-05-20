@@ -163,19 +163,15 @@ export default async function handler(req, res) {
   let fetchUrl = target.toString();
   if (width > 0) {
     const urlObj = new URL(fetchUrl);
-    // Tmdb: hỗ trợ resize qua path
     if (urlObj.hostname.includes('tmdb.org')) {
       const pathParts = urlObj.pathname.split('/');
-      const idx = pathParts.indexOf('t/p');
-      if (idx > 0 && pathParts[idx + 1]?.startsWith('w')) {
-        pathParts[idx + 1] = `w${width}`;
+      const tIdx = pathParts.indexOf('t');
+      if (tIdx > 0 && pathParts[tIdx + 1] === 'p' && pathParts[tIdx + 2]?.startsWith('w')) {
+        pathParts[tIdx + 2] = `w${width}`;
         urlObj.pathname = pathParts.join('/');
         fetchUrl = urlObj.toString();
       }
-    }
-    // VSMov: thử append size param
-    else if (fetchUrl.includes('/uploads/')) {
-      const urlObj = new URL(fetchUrl);
+    } else if (fetchUrl.includes('/uploads/')) {
       urlObj.searchParams.set('w', String(width));
       urlObj.searchParams.set('q', String(quality));
       fetchUrl = urlObj.toString();

@@ -1,10 +1,28 @@
 const UPSTREAM_BASE = 'https://phimapi.com';
 const REQUEST_TIMEOUT_MS = 15000;
 
-export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+const ALLOWED_ORIGINS = new Set([
+  'https://film.vercel.app',
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:5173'
+]);
+
+function setCorsHeaders(req, res) {
+  const origin = req.headers?.origin || '';
+  const host = req.headers?.host || '';
+  const sameOrigin = origin && host && origin.endsWith(host);
+  if (sameOrigin || ALLOWED_ORIGINS.has(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+}
+
+export default async function handler(req, res) {
+  setCorsHeaders(req, res);
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -59,8 +77,7 @@ export default async function handler(req, res) {
     if (!response.ok) {
       return res.status(response.status).json({
         error: `UPSTREAM_${response.status}`,
-        status: response.status,
-        target: targetUrl
+        status: response.status
       });
     }
 
@@ -79,9 +96,7 @@ export default async function handler(req, res) {
   } catch (error) {
     const isAbort = error?.name === 'AbortError';
     return res.status(isAbort ? 504 : 502).json({
-      error: isAbort ? 'UPSTREAM_TIMEOUT' : 'PROXY_ERROR',
-      message: String(error?.message || ''),
-      target: targetUrl
+      error: isAbort ? 'UPSTREAM_TIMEOUT' : 'PROXY_ERROR'
     });
   } finally {
     clearTimeout(timer);

@@ -28,8 +28,8 @@
 <body>
   <header id="header">
     <div class="header-left">
-      <button class="logo" type="button" data-action="home" aria-label="Ve trang chu Netflix">Net<span>flix</span></button>
-      <nav class="nav-links" aria-label="Dieu huong chinh">
+      <button class="logo" type="button" data-action="home" aria-label="Về trang chủ Netflix">Net<span>flix</span></button>
+      <nav class="nav-links" aria-label="Điều hướng chính">
         <a href="#" id="nav-home" class="active" data-action="home">Trang chủ</a>
         <a href="#" id="nav-series" data-action="category" data-category="phim-bo">Phim bộ</a>
         <a href="#" id="nav-movie" data-action="category" data-category="phim-le">Phim lẻ</a>
@@ -38,26 +38,26 @@
     </div>
 
     <div class="header-right">
-      <button class="top-icon-btn" type="button" title="Tim kiem" aria-label="Tim kiem" data-action="search">
+      <button class="top-icon-btn" type="button" title="Tìm kiếm" aria-label="Tìm kiếm" data-action="search">
         <i class="fa-solid fa-magnifying-glass"></i>
       </button>
-      <button class="top-icon-btn" type="button" title="Thong bao" aria-label="Thong bao" data-action="notifications">
+      <button class="top-icon-btn" type="button" title="Thông báo" aria-label="Thông báo" data-action="notifications">
         <i class="fa-regular fa-bell"></i>
       </button>
-      <button class="top-icon-btn theme-toggle" type="button" title="Doi giao dien" aria-label="Doi giao dien" data-action="theme-toggle">
+      <button class="top-icon-btn theme-toggle" type="button" title="Đổi giao diện" aria-label="Đổi giao diện" data-action="theme-toggle">
         <i class="fa-solid fa-moon"></i>
       </button>
-      <img class="profile-avatar" src="https://i.pravatar.cc/64?img=12" alt="Ho so nguoi dung" loading="lazy" data-action="profile">
+      <img class="profile-avatar" src="https://i.pravatar.cc/64?img=12" alt="Hồ sơ người dùng" loading="lazy" data-action="profile">
 
-      <form class="search-box" role="search" aria-label="Tim phim tren Netflix">
+      <form class="search-box" role="search" aria-label="Tìm phim trên Netflix">
         <input id="q" type="text" placeholder="Tìm phim..." autocomplete="off" aria-label="Nhập từ khóa tìm kiếm">
-        <button type="submit" title="Tim kiem" aria-label="Thuc hien tim kiem">
+        <button type="submit" title="Tìm kiếm" aria-label="Thực hiện tìm kiếm">
           <i class="fa-solid fa-magnifying-glass"></i>
-          <span class="sr-only">Tim kiem</span>
+          <span class="sr-only">Tìm kiếm</span>
         </button>
       </form>
 
-      <button class="hamburger" id="hamburger" type="button" data-action="drawer-toggle" aria-label="Mo menu">
+      <button class="hamburger" id="hamburger" type="button" data-action="drawer-toggle" aria-label="Mở menu">
         <span></span>
         <span></span>
         <span></span>
@@ -65,26 +65,26 @@
     </div>
   </header>
 
-  <nav id="tv-app-bar" class="tv-app-bar" aria-label="Dieu huong Android TV">
-    <button type="button" class="tv-logo" data-action="home" aria-label="Ve trang chu">Net<span>flix</span></button>
-    <div class="tv-nav-track" role="menubar" aria-label="Muc dieu huong">
-      <button type="button" class="tv-nav-item active" data-tab="home" data-action="home" role="menuitem">Trang chu</button>
-      <button type="button" class="tv-nav-item" data-tab="series" data-action="category" data-category="phim-bo" role="menuitem">Phim bo</button>
-      <button type="button" class="tv-nav-item" data-tab="movie" data-action="category" data-category="phim-le" role="menuitem">Phim le</button>
-      <button type="button" class="tv-nav-item" data-tab="search" data-action="search" role="menuitem">Kham pha</button>
-      <button type="button" class="tv-nav-item" data-tab="history" data-action="history" role="menuitem">Lich su</button>
-      <button type="button" class="tv-nav-item" data-tab="favorites" data-action="favorites" role="menuitem">Yeu thich</button>
+  <nav id="tv-app-bar" class="tv-app-bar" aria-label="Điều hướng Android TV">
+    <button type="button" class="tv-logo" data-action="home" aria-label="Về trang chủ">Net<span>flix</span></button>
+    <div class="tv-nav-track" role="menubar" aria-label="Mục điều hướng">
+      <button type="button" class="tv-nav-item active" data-tab="home" data-action="home" role="menuitem">Trang chủ</button>
+      <button type="button" class="tv-nav-item" data-tab="series" data-action="category" data-category="phim-bo" role="menuitem">Phim bộ</button>
+      <button type="button" class="tv-nav-item" data-tab="movie" data-action="category" data-category="phim-le" role="menuitem">Phim lẻ</button>
+      <button type="button" class="tv-nav-item" data-tab="search" data-action="search" role="menuitem">Khám phá</button>
+      <button type="button" class="tv-nav-item" data-tab="history" data-action="history" role="menuitem">Lịch sử</button>
+      <button type="button" class="tv-nav-item" data-tab="favorites" data-action="favorites" role="menuitem">Yêu thích</button>
     </div>
   </nav>
 
   <div class="mob-drawer" id="drawer" data-action="drawer-backdrop">
-    <div class="mob-drawer-inner" data-action="drawer-inner" role="dialog" aria-label="Menu di dong">
+    <div class="mob-drawer-inner" data-action="drawer-inner" role="dialog" aria-label="Menu di động">
       <div class="drawer-title">Net<span>flix</span></div>
-      <form class="mob-search" role="search" aria-label="Tim phim tren menu di dong">
+      <form class="mob-search" role="search" aria-label="Tìm phim trên menu di động">
         <input id="q-mob" type="text" placeholder="Tìm phim..." autocomplete="off" aria-label="Nhập từ khóa tìm kiếm">
-        <button type="submit" title="Tim kiem" aria-label="Thuc hien tim kiem">
+        <button type="submit" title="Tìm kiếm" aria-label="Thực hiện tìm kiếm">
           <i class="fa-solid fa-magnifying-glass"></i>
-          <span class="sr-only">Tim kiem</span>
+          <span class="sr-only">Tìm kiếm</span>
         </button>
       </form>
       <a href="#" data-action="home"><i class="fa-solid fa-house icon-w20"></i>Trang chủ</a>
@@ -95,21 +95,26 @@
   </div>
 
   <main id="main" aria-live="polite"></main>
+  <noscript>
+    <div style="display:flex;align-items:center;justify-content:center;min-height:60vh;padding:2rem;text-align:center;color:#fff;font-family:sans-serif;">
+      <p>Vui lòng bật JavaScript để sử dụng ứng dụng này.</p>
+    </div>
+  </noscript>
 
-  <nav class="mobile-bottom-nav" aria-label="Dieu huong nhanh">
-    <button type="button" class="mb-nav-item active" data-tab="home" data-action="home" aria-label="Trang chu">
+  <nav class="mobile-bottom-nav" aria-label="Điều hướng nhanh">
+    <button type="button" class="mb-nav-item active" data-tab="home" data-action="home" aria-label="Trang chủ">
       <i class="fa-solid fa-house"></i>
       <span>Trang chủ</span>
     </button>
-    <button type="button" class="mb-nav-item" data-tab="search" data-action="search" aria-label="Tim kiem">
+    <button type="button" class="mb-nav-item" data-tab="search" data-action="search" aria-label="Tìm kiếm">
       <i class="fa-solid fa-magnifying-glass"></i>
       <span>Tìm kiếm</span>
     </button>
-    <button type="button" class="mb-nav-item" data-tab="history" data-action="history" aria-label="Lich su">
+    <button type="button" class="mb-nav-item" data-tab="history" data-action="history" aria-label="Lịch sử">
       <i class="fa-solid fa-clock-rotate-left"></i>
       <span>Lịch sử</span>
     </button>
-    <button type="button" class="mb-nav-item" data-tab="favorites" data-action="favorites" aria-label="Yeu thich">
+    <button type="button" class="mb-nav-item" data-tab="favorites" data-action="favorites" aria-label="Yêu thích">
       <i class="fa-solid fa-heart"></i>
       <span>Yêu thích</span>
     </button>

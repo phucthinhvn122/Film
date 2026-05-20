@@ -41,7 +41,7 @@ export function createElement(tag, attrs = {}, children = []) {
       continue;
     }
 
-    if (key === 'dataset' && typeof value === 'object') {
+    if (key === 'dataset' && value && typeof value === 'object') {
       Object.entries(value).forEach(([datasetKey, datasetValue]) => {
         node.dataset[datasetKey] = String(datasetValue);
       });
@@ -267,6 +267,7 @@ function setMainContent(node, onMounted) {
   const isWatchPage = safeNode.classList?.contains('watch-page') || false;
 
   const mountNow = () => {
+    if (token !== transitionToken) return;
     clearNode(main);
     main.appendChild(safeNode);
     document.body.classList.toggle('watch-mode', isWatchPage);
@@ -347,27 +348,33 @@ export function createHeroCarousel(onOpen) {
   container.appendChild(hero);
 
   let timer = null;
+  let slideTimeout = null;
   let items = [];
   let currentIndex = 0;
+  let destroyed = false;
 
   const cleanup = () => {
-    if (timer) clearInterval(timer);
+    if (timer) { clearInterval(timer); timer = null; }
+    if (slideTimeout) { clearTimeout(slideTimeout); slideTimeout = null; }
   };
 
   const renderSlide = (index) => {
-    if (!items.length) return;
+    if (destroyed || !items.length) return;
     const m = items[index];
     const image = m.poster || m.thumb || m.APP_DOMAIN_CDN_IMAGE || '';
     bg.style.backgroundImage = `url('${image}')`;
-    
+
     body.style.opacity = 0;
-    setTimeout(() => {
+    if (slideTimeout) clearTimeout(slideTimeout);
+    slideTimeout = setTimeout(() => {
+      slideTimeout = null;
+      if (destroyed) return;
       body.innerHTML = '';
       body.appendChild(createElement('span', { className: 'hero-badge', text: 'Nổi Bật' }));
       body.appendChild(createElement('h1', { className: 'hero-title', text: m.name || '' }));
       body.appendChild(createElement('p', { className: 'hero-sub', text: m.originName || m.episodeCurrent || '' }));
       body.appendChild(createElement('p', { className: 'hero-desc', text: stripHtml(m.content) || '' }));
-      
+
       const btns = createElement('div', { className: 'hero-btns' });
       const watchBtn = createElement('button', { type: 'button', className: 'btn btn-orange' }, [
         createElement('i', { class: 'fa-solid fa-play', 'aria-hidden': 'true' }),
@@ -382,7 +389,7 @@ export function createHeroCarousel(onOpen) {
       btns.appendChild(watchBtn);
       btns.appendChild(detailBtn);
       body.appendChild(btns);
-      
+
       body.style.transition = 'opacity 0.4s ease';
       body.style.opacity = 1;
     }, 250);
@@ -393,23 +400,25 @@ export function createHeroCarousel(onOpen) {
   };
 
   const nextSlide = () => {
+    if (destroyed || !items.length) return;
     currentIndex = (currentIndex + 1) % items.length;
     renderSlide(currentIndex);
   };
 
   let touchStartX = 0;
-  hero.addEventListener('touchstart', (e) => {
+  const onTouchStart = (e) => {
     touchStartX = e.changedTouches[0].screenX;
-  }, { passive: true });
-  
-  hero.addEventListener('touchend', (e) => {
+  };
+  const onTouchEnd = (e) => {
     const touchEndX = e.changedTouches[0].screenX;
     if (touchEndX < touchStartX - 40) {
       cleanup(); nextSlide(); timer = setInterval(nextSlide, 7000);
     } else if (touchEndX > touchStartX + 40) {
       cleanup(); currentIndex = (currentIndex - 1 + items.length) % items.length; renderSlide(currentIndex); timer = setInterval(nextSlide, 7000);
     }
-  });
+  };
+  hero.addEventListener('touchstart', onTouchStart, { passive: true });
+  hero.addEventListener('touchend', onTouchEnd);
 
   const setItems = (movies = []) => {
     cleanup();
@@ -418,7 +427,7 @@ export function createHeroCarousel(onOpen) {
 
     thumbsWrap.innerHTML = '';
     items.forEach((m, idx) => {
-      const thumb = createElement('button', { type: 'button', className: 'hero-thumb', 'aria-label': 'Chon phim' });
+      const thumb = createElement('button', { type: 'button', className: 'hero-thumb', 'aria-label': 'Chọn phim' });
       const img = createElement('img', { src: m.thumb || m.poster || '', alt: m.name, loading: 'lazy' });
       thumb.appendChild(img);
       thumb.addEventListener('click', () => {
@@ -435,7 +444,14 @@ export function createHeroCarousel(onOpen) {
     timer = setInterval(nextSlide, 7000);
   };
 
-  return { element: container, setItems, cleanup };
+  const destroy = () => {
+    destroyed = true;
+    cleanup();
+    hero.removeEventListener('touchstart', onTouchStart);
+    hero.removeEventListener('touchend', onTouchEnd);
+  };
+
+  return { element: container, setItems, cleanup, destroy };
 }
 
 

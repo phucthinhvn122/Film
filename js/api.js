@@ -51,7 +51,7 @@ export class RequestManager {
     const promise = createFn();
     this.pendingRequests.set(key, promise);
 
-    promise.finally(() => {
+    promise.catch(() => {}).finally(() => {
       this.pendingRequests.delete(key);
     });
 
@@ -80,9 +80,6 @@ function shouldTryAlternateSource(error, attemptIndex, totalAttempts) {
     return false;
   }
 
-  // If proxy breaks (404/5xx/CORS/non-json), still try direct upstream.
-  if (error?.status >= 400) return true;
-
   return true;
 }
 
@@ -100,7 +97,7 @@ async function fetchWithRetry(url, options = {}, maxRetries = 2) {
     } catch (error) {
       lastError = error;
       
-      const nonRetryable = new Set(['REQUEST_ABORTED', 'INVALID_SLUG', 'CATEGORY_NOT_SUPPORTED', 'HTTP_404', 'HTTP_500', 'HTTP_502', 'REQUEST_TIMEOUT']);
+      const nonRetryable = new Set(['REQUEST_ABORTED', 'INVALID_SLUG', 'CATEGORY_NOT_SUPPORTED', 'HTTP_400', 'HTTP_401', 'HTTP_403', 'HTTP_404']);
       const errorCode = String(error?.message || '').split(':')[0];
       if (nonRetryable.has(errorCode)) {
         throw error;
